@@ -1,0 +1,264 @@
+/*
+Stylesheet for text and controls in MyAbsences classes
+*/
+/* 
+    Created on : Feb 4, 2021, 1:29:36 PM
+    Author     : Christopher Burgess
+*/
+.bpane{
+      -fx-background-color:lightslategray;
+}
+.ttgreen{
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(greenyellow, limegreen);
+     -fx-text-fill: Black;
+ }
+ .ttpurple{
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(violet, palevioletred);
+     -fx-text-fill: Black;
+ }
+ .ttorange{
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(orange, orangered);
+     -fx-text-fill: White;
+ }
+.ttblue{
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(cyan, deepskyblue);
+     -fx-text-fill: Black;
+ }
+ .ttyellow {
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(yellow, yellowgreen);
+     -fx-text-fill: Black;     
+ }
+ .ttred {
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(pink, red);
+     -fx-text-fill: White;     
+ }
+ 
+ .btnday{
+     -fx-background-radius: 1 1 1 1;  
+ } 
+ .btndaygreen {
+     -fx-background-color:linear-gradient(greenyellow, limegreen);
+     -fx-background-radius: 1 1 1 1; 
+     -fx-border-color: Green;
+     -fx-border-width: .8;
+ }
+  .btndaypurple {
+     -fx-background-color:linear-gradient(violet, palevioletred);
+     -fx-background-radius: 1 1 1 1; 
+     -fx-border-color: Green;
+     -fx-border-width: .8;
+ }
+ .btndayblue {
+     -fx-background-color:linear-gradient(cyan, deepskyblue);
+     -fx-background-radius: 1 1 1 1; 
+     -fx-border-color: Blue;
+     -fx-border-width: .8;     
+ }
+ .btndayorange {
+     -fx-background-color:linear-gradient(orange, orangered);
+     -fx-background-radius: 1 1 1 1; 
+     -fx-border-color: Orange;
+     -fx-border-width: .8;
+ }
+ .btndayred {
+     -fx-background-color:linear-gradient(pink, red);
+     -fx-background-radius: 1 1 1 1; 
+     -fx-border-color: Red;
+     -fx-border-width: .8;     
+ } 
+ .btndayyellow {
+     -fx-background-color:linear-gradient(yellow, yellowgreen);
+     -fx-background-radius: 1 1 1 1; 
+     -fx-border-color: Yellow;
+     -fx-border-width: .8;     
+ }
+  .btnweekend{
+     -fx-background-radius: 1 1 1 1;
+     -fx-text-fill: Grey;
+ }
+  .btntoday{
+     -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Blue;
+     -fx-border-color: Blue;
+     -fx-border-insets: 0;
+ }
+ 
+ .btnNav {
+    -fx-border-color: transparent;
+    -fx-background-radius: 7 7 7 7;
+    -fx-text-fill: lightslategray;
+    -fx-font-family: "Ariel"; 
+    -fx-border-width: .8;
+    -fx-font-weight: bold;
+ }
+ .bgsmoke{
+     -fx-background-color: whitesmoke;
+ }
+ .calendar {
+     -fx-background-color: whitesmoke;
+     -fx-background-color: whitesmoke; 
+     -fx-border-color: black;
+ }
+ .calmonth{
+     -fx-background-color: white, -fx-control-inner-background; -fx-background-insets: 2, 2; -fx-padding: 10;
+ }
+ .daytitle{    
+     -fx-font: 20px Tahoma;
+     -fx-font-weight: bold;
+     -fx-fill: lightslategray; 
+ }
+ .title{    
+     -fx-font: 35px Tahoma;
+     -fx-font-weight: bold;
+     -fx-stroke: black;
+     -fx-Stroke-width: .5; 
+     -fx-fill: white; 
+     -fx-effect: dropshadow(gaussian, darkgray, 10, 0.5, 0.0, 0.0);
+ }
+ .monthtitle {
+     -fx-font-family: "Cambria";
+     -fx-font-size: 20;
+     -fx-text-fill: lightslategray;    
+ }
+ .dayformtop {
+     -fx-background-color:white
+ }
+  .dayentry {
+     -fx-background-color:linear-gradient(white,lightgray); 
+ }
+ .summaryreport {
+     -fx-background-color:linear-gradient(white,lightgray);
+     -fx-border-color: Black;    
+ }
+.summaryheader {
+     -fx-underline: false;
+     -fx-font-weight: bold;
+     -fx-text-fill: Black;
+ }
+ .typegreen {
+     -fx-text-fill: limegreen;
+     -fx-font-weight: bold;
+ }
+  .typepurple {
+     -fx-text-fill: violet;
+     -fx-font-weight: bold;
+ }
+ .typered {
+     -fx-text-fill: red; 
+     -fx-font-weight: bold;
+ }
+ .typeyellow {
+     -fx-text-fill: #d6cf06;
+     -fx-font-weight: bold;
+ }
+ .typeorange {
+     -fx-text-fill: orange;
+     -fx-font-weight: bold;
+ }
+ .typeblue {
+     -fx-text-fill: deepskyblue;
+     -fx-font-weight: bold;
+ }
+  .lblgreen {
+     -fx-text-fill: limegreen;
+ }
+  .lblpurple {
+     -fx-text-fill: purple;
+ }
+ .lblred {
+     -fx-text-fill: red; 
+ }
+ .lblyellow {
+     -fx-text-fill: yellow;
+ }
+ .lblorange {
+     -fx-text-fill: orange;
+ }
+ .lblblue {
+     -fx-text-fill: deepskyblue;
+ }
+ .lbldata {
+     -fx-text-fill: black;
+ }
+ .txtwarning {
+     -fx-font: 12px Tahoma;
+     -fx-stroke: #d6cf06;
+     -fx-Stroke-width: .5; 
+     -fx-fill: white; 
+ }
+  .formgreen {
+     -fx-background-color:lightgreen;
+     -fx-background-radius: 1 1 1 1; 
+ }
+  .formpurple {
+     -fx-background-color:violet;
+     -fx-background-radius: 1 1 1 1; 
+ }
+ .formblue {
+     -fx-background-color:lightblue;
+     -fx-background-radius: 1 1 1 1;  
+ }
+ .formorange {
+     -fx-background-color:orange;
+     -fx-background-radius: 1 1 1 1; 
+ }
+ .formred {
+     -fx-background-color:pink;
+     -fx-background-radius: 1 1 1 1;   
+ } 
+ .formyellow {
+     -fx-background-color:#d6cf06;
+     -fx-background-radius: 1 1 1 1;    
+ }
+.underline {
+     -fx-underline: true;
+ }
+.btnwarnred{
+     -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Red;
+     -fx-border-color: Red;
+     -fx-border-insets: 0;
+ }
+ .btnwarnorange{
+     -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Red;
+     -fx-border-color: Orange;
+     -fx-border-insets: 0;
+ }
+ .btnwarngreen{
+     -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Green;
+     -fx-border-color: Yellow;
+     
+ }
+ .btnwarnblue{
+     -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Red;
+     -fx-border-color: Blue;
+     -fx-border-insets: 0;
+ }
+ .btnwarnyellow{
+      -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Red;
+     -fx-border-color: Yellow;
+     -fx-border-insets: 0;
+ }
+ .btnwarnpurple{
+     -fx-border-width: 1.0;
+     -fx-font-weight: bold;
+     -fx-text-fill: Red;
+     -fx-border-color: Purple;
+     -fx-border-insets: 0;
+ }
