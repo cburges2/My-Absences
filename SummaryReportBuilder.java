@@ -22,7 +22,6 @@ import org.json.simple.JSONObject;
  *  bottom section of the main screen Border Pane 
  * @author Christopher Burgess
  */
-
 public class SummaryReportBuilder {
     
     String year;                                     // current year on the calendar
@@ -51,7 +50,12 @@ public class SummaryReportBuilder {
     String absenceType = "";
     int absenceID = 0;
     
-    // Constructer
+    /* SummaryReportBuilder Constructer
+    *
+    *  year - The current year in the main calendar
+    *
+    * This sets the year, the end of year date, and gets the data needed from the db 
+    * into the ArrayLists.  It sets the size of the report and the days in the year for calculations */
     public SummaryReportBuilder (String year) { 
                 
         this.year = year;   // Set class variable year from parameter
@@ -84,7 +88,9 @@ public class SummaryReportBuilder {
      * balances: The starting balances from the db Starting Balances table  
      * absences: The absence data from the db Absences table
      *
-    */
+     * => GridPane
+     *
+     * The constructs the GridPane that contains the summpary report*/ 
     public final GridPane buildReport () {
 
         /* Set bottomReport Attributes */ 
@@ -149,8 +155,7 @@ public class SummaryReportBuilder {
     /* private buildSummaryTable()
      *
      *
-     *
-    */
+     * Called from buildReport - Builds a 2D array of calculated data to be put the a GridPane */
     private void buildSummaryTable() {
         
         // iterate through the absence_types in Start Balances to get data from ArrayLists to build the summary table rows
@@ -205,10 +210,12 @@ public class SummaryReportBuilder {
     
     /* private findMaxAccrual
     *
-    *
-    *
-    *
-    */
+    * This method steps through the days of the year until it finds the day of Max Accrual for an accrued type with a Max 
+    * It checks each day to see if there is submitted time on that day, and subtracts it from the running total of accrued hours
+    * Once day is found, it adds an entry to the Warnings table, to be read by TopPaneBuilder to add the warning 
+    * If there is already a warning for the absence type, it will update it  
+    * if there no warning, it will insert it to the table 
+    * if no max found to warn about, it will delete the warning if there was one in the table from before  */
     private void findMaxAccrual () {
   
         String dayDate = todayStr;
@@ -270,8 +277,10 @@ public class SummaryReportBuilder {
     
     /* private getHoursBreakdown
     *
+    * h - decimal hours string
+    * => A string breaking down Weeks, Days, Hours and Minutes
     *
-    *                                    */
+    * returns a string reprentation of hours in Weeks, Days, Hours and Minutes format   */
     private String getHoursBreakdown(String h) {
         
         double hrs = Double.valueOf(h);
@@ -301,8 +310,12 @@ public class SummaryReportBuilder {
     
     /*private calcAccruedToday
     *
+    * accrualRate - the absence type accrual rate
+    * 
+    * Example: calcAccruedToday (.526)  - with today's date March 2
+    * => 24
     *
-    *                       */
+    * Calulates hours accrued from the start of the year              */
     private String calcAccruedToday(double accrualRate) {
         
         String startStr = "2021-01-01";
@@ -326,9 +339,13 @@ public class SummaryReportBuilder {
     
     /* private getaccrualType
     *
+    * accrualType - type data from the db table
     *
+    * Example"
+    * getaccrualType(0)
+    * => "Fixed"
     *
-    *                                 */
+    * Returns the accrualType for the absence type in Absence_Types table       */
     private String getaccrualType(double accrualType) {
         
         String aType = "";
@@ -344,9 +361,12 @@ public class SummaryReportBuilder {
     
     /* private calcFixedRemainingHours
     *
+    * usedHours - hours used up to current date for type
+    * plannedHours - hours planned for type from tomorrow to end of year
+    * startBalance - the starting balance for the type
+    * => returns the calculation (Start - (used + planned))
     *
-    *
-    *                           */
+    * Calcs the remining hours at the end of the year for a fixed type                          */
     private String calcFixedRemainingHours(double usedHours, double plannedHours, double startBalance) {
         
         return String.valueOf(startBalance - (usedHours + plannedHours));
@@ -354,9 +374,13 @@ public class SummaryReportBuilder {
     
     /* private calcAccuredRemainingHours
     *
+    * usedHours - hours used up to current date for type
+    * plannedHours - hours planned for type from tomorrow to end of year
+    * startBalance - the starting balance for the type
+    * accrualRAte - the accrual rate for the absence type
+    * => returns the calculation ((days in year * rate) - (used + planned) + starting balance)
     *
-    *
-    *                  */
+    * returns the hours remaining at the end of the year for an accrued type          */
     private String calcAccuredRemainingHours(double usedHours, double plannedHours, double startBalance, double accrualRate) {
                     
         double remaining = (daysInYear * accrualRate) - (usedHours + plannedHours) + startBalance;
@@ -367,9 +391,10 @@ public class SummaryReportBuilder {
     
     /* private leapYear
     *
+    * year - the current year
+    * => true if leap year, false if not
     *
-    *
-    *                      */
+    * For calculating accrued types remaining balance for a year  */
     private boolean leapYear (int year) {
         
         boolean isLeap = false;
