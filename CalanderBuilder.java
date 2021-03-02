@@ -46,8 +46,10 @@ public class CalanderBuilder {
     String buildDate;         // the date we are building in the month calendar
     
     /* Constructor
-    * year and today set the current year and today's date for building a calendar
-    * note: todayStr will not show on past year calendars        */
+    * year sets the current year being viewed in the calendar
+    * 
+    * This sets the year, populates the absneces and warnings arrays from db
+    * and sets today's date in db format      */
     public CalanderBuilder(String year) {
         
         this.year = year;
@@ -56,16 +58,14 @@ public class CalanderBuilder {
         // Set Today's date as a string in db format            
         Date today = Calendar.getInstance().getTime();
         SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");  
-        todayStr = formatDb.format(today);
+        todayStr = formatDb.format(today); //note: todayStr will not show on past year calendars 
         
     }    
     
     /* public buildCalendar Method - Build the calendar and return the GridPane
     *
-    * absences - The arraylist containing the absence data from db for the absence days
-    *
     * Examples:
-    * buildCalendar(absences)
+    * buildCalendar()
     * * => Gridpane containing the calendar year from constructor with absences and today colored
     * 
     * Returns the calendar GridPane for the main screen border pane middle  */
@@ -341,8 +341,13 @@ public class CalanderBuilder {
     
     /* private getHoursMin 
     *
+    * decimalHours - the hours in decimal format
     *
-    */
+    * Example:
+    * getHoursMinutes(4.25);
+    * * => 4 Hours 15 Min
+    *
+    * Returns a string that says the Hours and Minutes */
     private String getHoursMinutes (double decimalHours) {
         
         int hours = (int)decimalHours;
