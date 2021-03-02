@@ -20,8 +20,9 @@ import static myabsences.MyAbsences.btnsTop;
 import org.json.simple.JSONObject;
 
 /**
- *
+ * TopPaneBuilder Class
  * @author Christopher
+ * This class builds a HBox containing all the top pane features
  */
 public class TopPaneBuilder {
     
@@ -29,6 +30,11 @@ public class TopPaneBuilder {
     String year = "";   // calendar year
     ArrayList<String> years = new ArrayList<>();     // years to put in ComboBox
     
+    /* public TopPaneBuilder - Constructor
+    * 
+    * year - The year currently in the main calendar
+    *
+    * This sets the year and gets the years in the Balances table from db */
     public TopPaneBuilder (String year){
 
         this.year = year;     
@@ -40,9 +46,9 @@ public class TopPaneBuilder {
     
     /* public buildTopPane
      *
+     * Returns an HBox 
      *
-     *
-    */
+     * HBox returned contains the buttons, warning box, Title, Year combobox, and an Image */
     public HBox buildTopPane () {
         
         HBox buttonHBox = new HBox();           // Button Pane - put in Left VBox
