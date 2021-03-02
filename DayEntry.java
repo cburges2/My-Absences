@@ -24,14 +24,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-//import static myabsences.MyAbsences.myDatabase;
 import org.json.simple.JSONObject;
 
 /**
  *
  * @author Christopher
  */
-//Begin Subclass ListReport
+//Begin Subclass DayEntry
 public class DayEntry extends Application {
   
     static Stage dayEntryStage = new Stage();  // stage for the form
@@ -70,7 +69,13 @@ public class DayEntry extends Application {
     
     GridPane formGPane = new GridPane();
 
-    // Constructor
+    /* Constructor
+    *
+    * dDate - the date of the day button the user pressed to get here
+    *
+    * This constructor sets the dayDate of the absence, and gets the day data for the day if there is any
+    * it sets the class variables for the form data that was saved in the absences table for the day 
+    * it converts the saved decimal hours data to days and minutes*/
     public DayEntry (String dDate) {
         
         this.dayDate = dDate;
@@ -78,8 +83,6 @@ public class DayEntry extends Application {
         // Get absence data for the day and the absnece types
         dayData = Database.getAbsence(dayDate);  // single JSONObject of the day data
         typesData = Database.getAbsenceTypes();  // Arraylist of JSONObject type data
-        
-        System.out.println("Absence Type is " + (String)dayData.get("Absence_Type"));
        
         // if there was data for the day set the variables to it
         if (((String)dayData.get("Absence_Type")) != null) {
@@ -318,6 +321,10 @@ public class DayEntry extends Application {
         
     }
 
+    /* removeToggleFields()
+    *
+    * This method toggles the fields that need to be removed for a Company Holiday
+    * it removes the fields from the pane when Company Holiday checkbox is ticked */
     private void removeToggleFields() {
         
         formGPane.getChildren().remove(lblHours);
@@ -333,7 +340,11 @@ public class DayEntry extends Application {
             formGPane.getChildren().remove(lblRepeatDays);
         }
     }
-    
+ 
+    /* addToggleFields()
+    *
+    * This method toggles the fields that need to be added for a standard form
+    * it adds the fields back into the pane when Company Holiday checkbox is un-ticked */    
     private void addToggleFields() {
         
         // Absence Type
@@ -372,9 +383,7 @@ public class DayEntry extends Application {
     
     /* private insertAbsence
     *
-    *
-    *
-    *                       */ 
+    * Inserts the absence data from the controls into the database if it is a new entry   */ 
     private void insertAbsence() {
         
         getValues();   // get current values from the controls
@@ -403,7 +412,14 @@ public class DayEntry extends Application {
             } 
         }
     } // end insertAbsence
-    
+
+    /* private addDay
+    *
+    * date - the date to add the days to
+    * days - how many days to add
+    * => the Date days number in the future
+    *
+    * Adds days to a data to get the new date days in the future   */     
     private Date addDay(Date date, int days)
     {
         Calendar cal = Calendar.getInstance();
@@ -414,9 +430,8 @@ public class DayEntry extends Application {
     
     /* private updateAbsence
     *
-    *
-    *
-    *                       */ 
+    * Updates the absences table with data from the form, if already an absence on the day 
+    * builds the update string and calls the database SQLUpdate method*/ 
     private void updateAbsence() {
         
         getValues();   // get current values from the controls
@@ -434,9 +449,8 @@ public class DayEntry extends Application {
 
     /* private deleteAbsence
     *
-    *
-    *
-    *                       */ 
+    * Deletes the absence in the absences table for the dayDate  
+    * Builds the delete string and calls the Database SQLUpdate method */ 
     private void deleteAbsence() {
         
         getValues();   // get current values from the controls
@@ -450,9 +464,7 @@ public class DayEntry extends Application {
     
     /* private getValues
      *
-     *
-     *
-     *                 */ 
+     * Gets the values currently in the form controls to the class variables       */ 
     private void getValues() {
         
         title = tfTitle.getText();
@@ -480,8 +492,8 @@ public class DayEntry extends Application {
     
     /* private getHoursMin 
     *
-    *
-    */
+    * Returns a string breaking down class variable decimal hours to 
+    * class variables hours and minutes*/
     private void getHoursMinutes () {
         
         hours = (int)decimalHours;
@@ -497,10 +509,9 @@ public class DayEntry extends Application {
     
     
     /* private getHoursDecimal
-    *
-    *
-    *
-    */
+    * 
+    * Opposite of getHoursMinutes, coverts class variables hours and minutes*
+    * to update the class variable decimalHours */
     private void getHoursDecimal() {
         
         // use flost for accuracy of mintue conversion
@@ -514,9 +525,10 @@ public class DayEntry extends Application {
     
     /* private getAbsenceTypeID
     *
+    * absence_Type - the absence type of the absence
+    * => The absenceID for the type
     *
-    *
-    *                        */
+    * Gets the absence_ID for an absence type              */
     private int getAbsenceTypeID(String absence_Type) {
         
         int ID = 0;
@@ -529,17 +541,4 @@ public class DayEntry extends Application {
         
         return ID;
     }
-    
-    /*
-    *
-    *
-    *                      */
-    public void setDate(String date) {
-        dayDate = date;
-    }
-    
-}
-
-    
-
-
+} // end lcass DayEntry
