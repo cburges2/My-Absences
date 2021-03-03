@@ -246,6 +246,7 @@ public class SummaryReportBuilder {
             String calDate = "";
             // Check if the totalHours are now more than the accrual Max
             absenceID = JsonMatch.getJsonInt(startBalances,"Absence_Type",absenceType,"Absence_ID");
+            String warningName = "MAX_ACCRUAL";
             if ((totalHours  > accrualMax) && numDays < warningLimit) {
                 try {
                     Date date = formatDb.parse(dayDate);
@@ -253,23 +254,13 @@ public class SummaryReportBuilder {
                 } catch (ParseException de) {
                     // handle error
                 }
-                if (JsonMatch.getJsonIndex(warnings,"Absence_Type",absenceType) == -1) {
-                    String sql = "INSERT into WARNINGS (Warning_Name, Absence_ID, Date, Cal_Date) " +
-                                 "VALUES ('MAX_ACCRUAL','" + absenceID + "', '" + dayDate + "', '" + calDate + "')";
-                    Database.SQLUpdate(sql);    
-                } else {
-                    String sql = "UPDATE WARNINGS " + "SET Date = '" + dayDate + "', Cal_Date = '" + calDate + "' " +
-                                 "WHERE Absence_ID = " + absenceID + " and Warning_Name = 'MAX_ACCRUAL'";
-                    Database.SQLUpdate(sql);
-                }
+                // add or update the warning
+                Warnings.addWarning(absenceID, dayDate, warningName);
                 done = true;
             }
             // Stop looking after end of this year and Delete any past warnings for absence type
             if (!dayDate.substring(0,4).equals(year)) {
-                if (JsonMatch.getJsonIndex(warnings,"Absence_Type",absenceType) != -1) { 
-                    String sql = "DELETE from WARNINGS where Absence_ID = '" + absenceID + "' and Warning_Name = 'MAX_ACCRUAL'";
-                    Database.SQLUpdate(sql);    
-                }     
+                Warnings.removeWarning(absenceID, warningName);
                 done = true;
             }
         }
