@@ -190,9 +190,9 @@ public class SummaryReportBuilder {
                 summaryTable[row][5] = calcFixedRemainingHours(past_Hours,future_Hours,startBalance); 
             }        
             // Holidays - not calculated
-            if (accrualType.equals("Holiday")) {
+            if (accrualType.equals("Added")) {
                 summaryTable[row][1] = Double.toString(past_Hours + future_Hours);
-                summaryTable[row][4] =  "--";            // no accurred today for not calculated hours, just show dashes
+                summaryTable[row][4] =  "--";    // no accurred today for not calculated hours, just show dashes
                 summaryTable[row][5] = "--";     // no remaining balance, show just dashes
             }
         }
@@ -345,7 +345,7 @@ public class SummaryReportBuilder {
            aType = "Accrued";
         } else if (accrualType == 0) {
            aType = "Fixed"; 
-        } else {aType = "Holiday";}
+        } else {aType = "Added";}
         
         return aType;
     } // End getaccrualType
