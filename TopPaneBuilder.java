@@ -111,18 +111,11 @@ public class TopPaneBuilder {
         
         // Put the warnings in the warningHBox if current year
         if (year.equals(thisYear)) {
-            ArrayList<JSONObject> warnings = Database.getWarnings();
+            ArrayList<String> warnings = Warnings.getWarnings();
             for (int i = 0; i < warnings.size(); i++) {
-                if (((String)warnings.get(i).get("Warning_Name")).equals("MAX_ACCRUAL")) {
-                        if ( !((String)warnings.get(i).get("Date")).equals(" ") ) {
-                        String absenceType = (String)warnings.get(i).get("Absence_Type");
-                        //String color = ((String)warnings.get(i).get("Color")).toLowerCase();
-                        String calDate = (String)warnings.get(i).get("Cal_Date");
-                        Text warning = new Text(absenceType + " Max Accrual on " + calDate);
-                        warning.getStyleClass().add("txtwarning");        // flag accrual max within two weeks
-                        warningVBox.getChildren().add(warning);
-                    }
-                }
+                Text warning = new Text(warnings.get(i));
+                warning.getStyleClass().add("txtwarning");   
+                warningVBox.getChildren().add(warning);
             }
         }
         
