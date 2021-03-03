@@ -160,17 +160,15 @@ public class CalanderBuilder {
                                 String absenceType = JsonMatch.getJsonString(absences, "Date", buildDate, "Absence_Type");
                                 toolTipText = toolTipText + absenceType + "\n";
                                 toolTipText = toolTipText + JsonMatch.getJsonString(absences, "Date", buildDate, "Title") + "\n";
-                                if (!absenceType.equals("Company Holiday")) {
-                                    double dblHours = JsonMatch.getJsonDouble(absences, "Date", buildDate, "Hours");
-                                    String hoursMin = getHoursMinutes(dblHours);
-                                    toolTipText = toolTipText + hoursMin + "\n"; 
-                                    int submit = JsonMatch.getJsonInt(absences, "Date", buildDate, "Submitted");
-                                    if (submit == 1) {   
-                                        toolTipText = toolTipText + "Submitted";
-                                    } else {
-                                        toolTipText = toolTipText + "Not Submitted";
-                                        btnMonth[buildMonth][btnIter].getStyleClass().add("underline"); 
-                                    }
+                                double dblHours = JsonMatch.getJsonDouble(absences, "Date", buildDate, "Hours");
+                                String hoursMin = getHoursMinutes(dblHours);
+                                toolTipText = toolTipText + hoursMin + "\n"; 
+                                int submit = JsonMatch.getJsonInt(absences, "Date", buildDate, "Submitted");
+                                if (submit == 1) {   
+                                    toolTipText = toolTipText + "Submitted";
+                                } else {
+                                    toolTipText = toolTipText + "Not Submitted";
+                                    btnMonth[buildMonth][btnIter].getStyleClass().add("underline"); 
                                 }
                                 Tooltip btp = new Tooltip(toolTipText);
                                 String btnColor = "btnday" + color.toLowerCase();
