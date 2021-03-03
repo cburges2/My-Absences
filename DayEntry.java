@@ -53,7 +53,6 @@ public class DayEntry extends Application {
     boolean prePopulated = false; // flag for day already having data on load
     // controls
     TextField tfTitle = new TextField();
-    CheckBox ckbHoliday = new CheckBox("Company Holiday");
     ComboBox<String> cboType = new ComboBox();
     ComboBox cboHours = new ComboBox();
     ComboBox cboMinutes = new ComboBox();
@@ -99,7 +98,6 @@ public class DayEntry extends Application {
 
             // convert decimal hours from db to hours and minutes
             getHoursMinutes(); 
-            
         }
     }
     
@@ -129,20 +127,14 @@ public class DayEntry extends Application {
         GridPane.setConstraints(tfTitle, 1, 1);
         formGPane.getChildren().add(tfTitle);
         
-        // checkbox for is holiday
         if (absenceType.equals("Company Holiday")) {
-            ckbHoliday.setSelected(true);
+            ckbSubmitted.setSelected(true);
         }
-        GridPane.setConstraints(ckbHoliday, 1, 3);
-        GridPane.setColumnSpan(ckbHoliday,2);
-        formGPane.getChildren().add(ckbHoliday);
         
         // combobox for type - add data from types date       
         for (int i = 0; i < typesData.size(); i++) {
             String aType = (String)typesData.get(i).get("Absence_Type");
-            if (!aType.equals("Company Holiday")) {
-               cboType.getItems().add(aType); 
-            }
+            cboType.getItems().add(aType); 
         }
         
         if (!absenceType.isEmpty()) {cboType.setValue(absenceType);}
@@ -176,10 +168,32 @@ public class DayEntry extends Application {
         cboRepeat.setValue(1);
         cboRepeat.setPrefWidth(55);
         
-        // add the fields that can toggle for Holiday
-        if (!absenceType.equals("Company Holiday")) {
-            addToggleFields();  
-        }
+        // *** ADD Fields ***
+        // Absence Type
+        GridPane.setConstraints(lblType,1,5);
+        GridPane.setColumnSpan(lblType, 2);
+        formGPane.getChildren().add(lblType);
+        GridPane.setConstraints(cboType, 3, 5);
+        GridPane.setColumnSpan(cboType, 2);
+        formGPane.getChildren().add(cboType);    
+        // Hours
+        GridPane.setConstraints(lblHours, 2, 7);
+        formGPane.getChildren().add(lblHours);        
+        GridPane.setConstraints(cboHours, 1, 7);
+        formGPane.getChildren().add(cboHours);
+        // Minutes
+        GridPane.setConstraints(lblMinutes, 4, 7);
+        formGPane.getChildren().add(lblMinutes);
+        GridPane.setConstraints(cboMinutes, 3, 4);
+        GridPane.setConstraints(cboMinutes, 3, 7);
+        formGPane.getChildren().add(cboMinutes); 
+        // Submitted
+        GridPane.setColumnSpan(ckbSubmitted, 2);
+        GridPane.setConstraints(ckbSubmitted, 1, 9);
+        formGPane.getChildren().add(ckbSubmitted);   
+        
+        // add the repeat entry fields for an empty form
+        addToggleFields(); 
         
         // text field for notes 
         Label lblNotes = new Label("Notes:");
@@ -288,27 +302,16 @@ public class DayEntry extends Application {
             }
         });
         
-        ckbHoliday.setOnAction(e-> {
-            try {
-            if (ckbHoliday.isSelected()) {
-                removeToggleFields(); // remove the controls
-                // Set the control values for Company Holiday
-                cboType.setValue("Company Holiday");
-                cboHours.setValue(8);
-                cboMinutes.setValue(0);
-                ckbSubmitted.setSelected(true);
-            } else {addToggleFields();}
-            } catch (Exception exit) {
-                
-            }
-        });
-
         // Type Combobox Handler - Set background color of form to selected type
         cboType.setOnAction(e->{
             try {
                 String type = cboType.getValue(); // get type from combo box
-                int typePos = JsonMatch.getJsonIndex(typesData,"Absence_Type",type);
-                String cboColor = (String)typesData.get(typePos).get("Color");
+                //int typePos = JsonMatch.getJsonIndex(typesData,"Absence_Type",type);
+                //String cboColor = (String)typesData.get(typePos).get("Color");
+                String cboColor = JsonMatch.getJsonString(typesData,"Absence_Type",type,"Color");
+                double aRate = JsonMatch.getJsonDouble(typesData,"Absence_Type",type,"Accrual_Rate");
+                if (aRate == -1) {ckbSubmitted.setSelected(true);}
+                else {ckbSubmitted.setSelected(false);}
                 String css = "form" + cboColor.toLowerCase();
                 formGPane.getStyleClass().clear();
                 formGPane.getStyleClass().add(css);
@@ -320,55 +323,12 @@ public class DayEntry extends Application {
         });
         
     }
-
-    /* removeToggleFields()
-    *
-    * This method toggles the fields that need to be removed for a Company Holiday
-    * it removes the fields from the pane when Company Holiday checkbox is ticked */
-    private void removeToggleFields() {
-        
-        formGPane.getChildren().remove(lblHours);
-        formGPane.getChildren().remove(cboHours);
-        formGPane.getChildren().remove(lblMinutes);
-        formGPane.getChildren().remove(cboMinutes);
-        formGPane.getChildren().remove(lblType);
-        formGPane.getChildren().remove(cboType);
-        formGPane.getChildren().remove(ckbSubmitted);  
-        if (!prePopulated) {
-            formGPane.getChildren().remove(cboRepeat);
-            formGPane.getChildren().remove(lblRepeat);
-            formGPane.getChildren().remove(lblRepeatDays);
-        }
-    }
  
     /* addToggleFields()
     *
-    * This method toggles the fields that need to be added for a standard form
-    * it adds the fields back into the pane when Company Holiday checkbox is un-ticked */    
+    * This method toggles the fields for a repeat entry to only show on empty form */   
     private void addToggleFields() {
         
-        // Absence Type
-        GridPane.setConstraints(lblType,1,5);
-        GridPane.setColumnSpan(lblType, 2);
-        formGPane.getChildren().add(lblType);
-        GridPane.setConstraints(cboType, 3, 5);
-        GridPane.setColumnSpan(cboType, 2);
-        formGPane.getChildren().add(cboType);    
-        // Hours
-        GridPane.setConstraints(lblHours, 2, 7);
-        formGPane.getChildren().add(lblHours);        
-        GridPane.setConstraints(cboHours, 1, 7);
-        formGPane.getChildren().add(cboHours);
-        // Minutes
-        GridPane.setConstraints(lblMinutes, 4, 7);
-        formGPane.getChildren().add(lblMinutes);
-        GridPane.setConstraints(cboMinutes, 3, 4);
-        GridPane.setConstraints(cboMinutes, 3, 7);
-        formGPane.getChildren().add(cboMinutes); 
-        // Submitted
-        GridPane.setColumnSpan(ckbSubmitted, 2);
-        GridPane.setConstraints(ckbSubmitted, 1, 9);
-        formGPane.getChildren().add(ckbSubmitted);   
         // Repeat 
         if (!prePopulated) {
             GridPane.setConstraints(lblRepeat,1,10);
@@ -541,4 +501,4 @@ public class DayEntry extends Application {
         
         return ID;
     }
-} // end lcass DayEntry
+} // end lcass 
