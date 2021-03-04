@@ -23,12 +23,12 @@ public class JsonMatch {
     * * => -1 (not found)
     * * =>  3 (found at index 3)
     *
-    * Returns the index in the ArrayList where the integer record is found in the column   */
+    * Returns the index in the ArrayList where the int record is found in the column   */
     static public int getJsonIndex (ArrayList<JSONObject> json, String columnName, int item) {
         
         int pos = -1;  
         for (int i=0; i < json.size(); i++) {
-            if (  ((Integer)json.get(i).get(columnName)) == item) {
+            if (json.get(i).get(columnName).equals(item)) {
                 pos = i;
             }
         }           
