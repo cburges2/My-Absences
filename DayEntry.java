@@ -109,7 +109,6 @@ public class DayEntry extends Application {
         
         // Define Panes
         BorderPane bPane = new BorderPane();
-        
         HBox topDatePane = new HBox();
         HBox hBoxB = new HBox();
         
@@ -168,7 +167,7 @@ public class DayEntry extends Application {
         cboRepeat.setValue(1);
         cboRepeat.setPrefWidth(55);
         
-        // *** ADD Fields ***
+        // *** ADD Fields to GridPane ***
         // Absence Type
         GridPane.setConstraints(lblType,1,5);
         GridPane.setColumnSpan(lblType, 2);
@@ -192,7 +191,7 @@ public class DayEntry extends Application {
         GridPane.setConstraints(ckbSubmitted, 1, 9);
         formGPane.getChildren().add(ckbSubmitted);   
         
-        // add the repeat entry fields for an empty form
+        // add the repeat entry fields  for an empty form
         addToggleFields(); 
         
         // text field for notes 
