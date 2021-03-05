@@ -34,8 +34,6 @@ public class ListReport extends Application {
     SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");
     SimpleDateFormat formatCal = new SimpleDateFormat("MM/dd/yyyy");
 
-    /* Declare fields and buttons to be displayed */
-
     @Override
     public void start(Stage primaryStage) throws Exception {
 
