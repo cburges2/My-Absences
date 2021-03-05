@@ -19,12 +19,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ComboBox;
 
 //Begin Class Main
@@ -44,8 +41,7 @@ public class MyAbsences extends Application {
     static String year = FORMAT_YEAR.format(Calendar.getInstance().getTime()); // current year
     
     // Create Window Objects
-    static ListReport dataWindow = new ListReport();           // create ListReport object
-    static SetupForm setupWindow = new SetupForm();            // create SetupForm object
+    static ListReport listWindow = new ListReport();           // create ListReport object
     static BalancesForm balanceWindow = new BalancesForm();    // create BalanceForm object
            
     @Override
@@ -87,6 +83,7 @@ public class MyAbsences extends Application {
                String btnText = btnsTop[btnNumber].getText();
                if (btnText.equals("Setup")) {
                     try {
+                        SetupForm setupWindow = new SetupForm(year);            // create SetupForm object
                         setupWindow.start(null);            // start secondary stage
                     } catch (Exception ex) {
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
@@ -101,7 +98,7 @@ public class MyAbsences extends Application {
                }
                if (btnText.equals("List View")) {
                     try {
-                        dataWindow.start(null);            // start secondary stage
+                        listWindow.start(null);            // start secondary stage
                     } catch (Exception ex) {
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -141,7 +138,7 @@ public class MyAbsences extends Application {
             try {
                 app.start(primaryStage);
             } catch (Exception exit) {
-                
+                // handle the error
             }
         });
         
