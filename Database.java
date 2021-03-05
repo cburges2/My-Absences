@@ -428,7 +428,8 @@ import org.json.simple.JSONObject;
             conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
             //Execute query
-            String sql = "Select Absence_ID, Absence_type,color,absence_id, accrual_rate from Absence_Types " +
+            String sql = "Select Absence_ID, Absence_type,color,absence_id, " +
+                  "accrual_rate, max_accrual from Absence_Types " +
                   "order by Absence_type ASC";
 
             stmt = conn.createStatement();
@@ -439,7 +440,8 @@ import org.json.simple.JSONObject;
                 record.put("Absence_ID",rs.getInt("Absence_ID"));
                 record.put("Absence_Type",rs.getString("Absence_Type"));
                 record.put("Color",rs.getString("Color"));
-                record.put("accrual_Rate",rs.getDouble("Accrual_Rate"));
+                record.put("Accrual_Rate",rs.getDouble("Accrual_Rate"));
+                record.put("Max_Accrual",rs.getDouble("Max_Accrual"));
                 result.add(record);
             }
 
@@ -483,7 +485,7 @@ import org.json.simple.JSONObject;
         conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
         
         //Execute query
-        String sql = "Select Date, Cal_Date, Warning_Name, t.Absence_Type,t.Color from Warnings as w " +
+        String sql = "Select Date, Cal_Date, Warning_Name, t.Absence_ID, t.Absence_Type,t.Color from Warnings as w " +
         "join absence_types as t " +
         "on t.absence_id = w.absence_id " +
         "Order by absence_type ASC"; 
@@ -496,6 +498,7 @@ import org.json.simple.JSONObject;
         while (rs.next()) {
             JSONObject record = new JSONObject();
             record.put((String)"Absence_Type",rs.getString("Absence_Type"));
+            record.put("Absence_ID",rs.getInt("Absence_ID"));
             record.put((String)"Warning_Name",rs.getString("Warning_Name"));
             record.put((String)"Color",rs.getString("Color"));
             record.put("Date",rs.getString("Date"));
