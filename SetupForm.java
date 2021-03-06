@@ -43,8 +43,8 @@ public class SetupForm extends Application {
     String[] absenceType = new String[6];
     String[] absenceColor = new String[6];
     String[] balanceType =  new String[6];
-    double[] accrualRate =  new double[6];
-    double[] maxAccrual =  new double[6];
+    String[] accrualRate =  new String[6];
+    String[] maxAccrual =  new String[6];
     String year = "";
     boolean prePopulated = false;
     String colors[] = new String[] {"Green","Red","Purple","Orange","Blue","Yellow"}; 
@@ -72,6 +72,7 @@ public class SetupForm extends Application {
     Button btnSetupExit = new Button("Exit");
     Button btnSetupUpdate = new Button("Update");
     Button btnSetupSave = new Button("Save");
+    Button btnDelete[] = new Button[6];
     
     GridPane gPane = new GridPane();
     
@@ -81,9 +82,12 @@ public class SetupForm extends Application {
     *          
     * Constructor gets data from db and determines the size of the data array for 
     * the pre-populated flag to populate the form with data already in the db for editing */
-    public SetupForm(String year) {
+    public SetupForm() {
         
-        this.year = year;
+    }
+    
+    @Override
+    public void start(Stage primaryStage) throws Exception {
         
         // get absenceType data from database
         absenceTypes = Database.getAbsenceTypes();  // Arraylist of JSONObject type data
@@ -97,24 +101,21 @@ public class SetupForm extends Application {
         // Get the refrence to existing absence IDs for updating the table
         for (int i = 0; i < typeSize; i++) {
             absenceID[i] = (Integer)absenceTypes.get(i).get("Absence_ID");
-        }
-    }   
-    
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+        }        
         
         /* Main pane */
         BorderPane bPane = new BorderPane();
         HBox topSetupPane = new HBox();
         topSetupPane.getStyleClass().add("formtop");
+        gPane = new GridPane();
         
+        bPane.setPadding(new Insets(5, 5, 5, 5));
         gPane.setAlignment(Pos.TOP_LEFT);
         gPane.setPadding(new Insets(5, 5, 5, 5));
-        bPane.setPadding(new Insets(5, 5, 5, 5));
+        gPane.setMinHeight(400);
         gPane.getStyleClass().add("setuppane");
         gPane.setHgap(20);
         gPane.setVgap(4);
-        //gPane.setPrefHeight(300);
                       
         HBox hBoxB = new HBox();
         Button btnExit = new Button("Exit");
@@ -141,7 +142,11 @@ public class SetupForm extends Application {
             cboBalanceType[i].getItems().add("Fixed Hours");
             cboBalanceType[i].getItems().add("Add-In Hours");
             cboBalanceType[i].setPrefWidth(55);
-        }         
+        }     
+        
+        for (int i = 0; i < 6; i++ ) {
+            btnDelete[i] = new Button("x");
+        }
         
         // Set Title in topPane
         topSetupPane.setAlignment(Pos.TOP_CENTER);
@@ -176,8 +181,7 @@ public class SetupForm extends Application {
         bPane.setCenter(gPane);
         bPane.setBottom(hBoxB);
         Scene listReportScene = new Scene(bPane); 
-        setupStage.setMaxHeight(600);
-        setupStage.setMinHeight(600);
+        setupStage.setMaxHeight(550);
         setupStage.setMinWidth(660);
         setupStage.setMaxWidth(660);
         listReportScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
@@ -188,7 +192,8 @@ public class SetupForm extends Application {
         // Save Button event Handler
         btnSetupSave.setOnAction(e-> {
             try {
-            //insertTypes();   
+            getValues(); 
+            insertAbsenceTypes();
             MyAbsences.refresh();
             setupStage.close(); 
             } catch (Exception save) {
@@ -199,13 +204,29 @@ public class SetupForm extends Application {
         // Update button handler
         btnSetupUpdate.setOnAction(e-> {
             try {
-                //updateTypes();
+                getValues();
+                updateAbsenceTypes();
                 setupStage.close(); 
                 MyAbsences.refresh();
             } catch (Exception update) {
                 
             }
         });   
+        
+        // Delete type button handler - delete an Absence_Type and refresh
+        for (int i = 0; i < 6; i++) {
+            final int num = i;
+            SetupForm app=new SetupForm();
+            btnDelete[i].setOnAction(e->{
+                try {
+                    deleteAbsenceType(num);
+                    app.start(primaryStage);            
+                    MyAbsences.refresh();
+                } catch(Exception ex) {
+                    
+                }
+            });      
+        }        
         
         // exit button handler
         btnSetupExit.setOnAction(e-> {
@@ -221,7 +242,7 @@ public class SetupForm extends Application {
             try {
                 rowCounter+=3;
                 typesCounter++;
-                if (prePopulated) {typesCounter--; rowCounter-=3;}       
+                if (prePopulated) {typeSize++; typesCounter--; rowCounter-=3;}      
                 addDefaultControls(typesCounter);
             } catch (Exception exit) {
                 
@@ -287,13 +308,15 @@ public class SetupForm extends Application {
             case "Purple":
                 color = "#c39ce6";
                 break;
+            case "Gray":
+                color = "#c4c1c0";
             default: 
 
         }
 
         BackgroundFill backgroundFill = new BackgroundFill(
             Color.valueOf(color),
-            new CornerRadii(1),
+            new CornerRadii(5),
             new Insets(1)
             );
 
@@ -331,8 +354,19 @@ public class SetupForm extends Application {
         // Color combobox
         cboAbsenceColor[num].setMinWidth(100);
         GridPane.setConstraints(cboAbsenceColor[num], 17, rowCounter);
-        GridPane.setColumnSpan(cboAbsenceColor[num], 5);
+        GridPane.setColumnSpan(cboAbsenceColor[num], 4);
         gPane.getChildren().add(cboAbsenceColor[num]);
+        // Add Delete Button for prePopulated form
+        if (prePopulated) {
+            GridPane.setConstraints(btnDelete[num], 21, rowCounter);
+            btnDelete[num].setMinWidth(25);
+            btnDelete[num].setMaxHeight(25);
+            btnDelete[num].setMinHeight(25);
+            btnDelete[num].setMaxWidth(25);
+            btnDelete[num].getStyleClass().add("btndelete");
+            GridPane.setColumnSpan(btnDelete[num], 4);  
+            gPane.getChildren().add(btnDelete[num]);
+        }
         // Balance Type label
         lblBalanceType[num] = new Label();
         lblBalanceType[num].setText("Balance Type");
@@ -341,6 +375,9 @@ public class SetupForm extends Application {
         gPane.getChildren().add(lblBalanceType[num]); 
         // Balance Type combobox
         cboBalanceType[num].setMinWidth(125);
+        String color = "Gray";
+        Background background = new Background(getBackgroundFill(color));
+        cboBalanceType[num].setBackground(background);
         GridPane.setConstraints(cboBalanceType[num], 5, rowCounter+1);
         GridPane.setColumnSpan(cboBalanceType[num], 5);
         gPane.getChildren().add(cboBalanceType[num]);        
@@ -374,7 +411,7 @@ public class SetupForm extends Application {
         tfAccrualRate[num] = new TextField();
         tfAccrualRate[num].setMaxWidth(50);
         GridPane.setConstraints(tfAccrualRate[num], 17, place);
-        GridPane.setColumnSpan(tfAccrualRate[num], 3);
+        GridPane.setColumnSpan(tfAccrualRate[num], 4);
         gPane.getChildren().add(tfAccrualRate[num]); 
         // Accrual Max label
         lblMaxAccrual[num] = new Label();
@@ -385,8 +422,8 @@ public class SetupForm extends Application {
         // Accrual Max textfield
         tfMaxAccrual[num] = new TextField();
         tfMaxAccrual[num].setMaxWidth(50);
-        GridPane.setConstraints(tfMaxAccrual[num], 23, place);
-        GridPane.setColumnSpan(tfMaxAccrual[num], 2);
+        GridPane.setConstraints(tfMaxAccrual[num], 22, place);
+        GridPane.setColumnSpan(tfMaxAccrual[num], 3);
         gPane.getChildren().add(tfMaxAccrual[num]);  
     }
     
@@ -436,27 +473,86 @@ public class SetupForm extends Application {
     private void getValues() {
 
         // Get the control values into the variable arrays
+        System.out.println("typesCounter + 1 is " + (typesCounter+1));
+        if (!prePopulated) {typeSize = typesCounter+1;}
         for (int i = 0; i < typeSize; i++) {               
             absenceType[i] = tfAbsenceType[i].getText();
+            System.out.println("AbsenceType["+i+"] is " + absenceType[i]);
             absenceColor[i] = cboAbsenceColor[i].getValue();
+            System.out.println("AbsenceColor["+i+"] is " + absenceColor[i]);
             String balType = cboBalanceType[i].getValue();
-            if (balType.equals("Accrued Hours")) {accrualRate[i] = Double.valueOf(tfAccrualRate[i].getText());}
-            if (balType.equals("Fixed Hours")) {accrualRate[i] = 0;}
-            if (balType.equals("Add-In Hours")) {accrualRate[i] = -1;}
-            maxAccrual[i] = Double.valueOf(tfMaxAccrual[i].getText());
+            if (balType.equals("Accrued Hours")) {accrualRate[i] = (tfAccrualRate[i].getText());}
+            if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
+            if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
+            System.out.println("Accrual Rate["+i+"] is " + accrualRate[i]);
+            String aMax = "";
+            try {
+                aMax = tfMaxAccrual[i].getText();
+            } catch(Exception ex) {
+                aMax = "";
+            } 
+            if (aMax.isEmpty()) {maxAccrual[i] = "0";}
+            else {maxAccrual[i] = tfMaxAccrual[i].getText();}
+            System.out.println("maxAccrual["+i+"] is " + maxAccrual[i]);
+            
+            // TODO - valididae these values for nulls
         }
     }
     
+    
     private void updateAbsenceTypes() {
+
+        int i = 0;
+        // update existing in Absence_Types
+        for (i = 0; i < typesCounter; i++) { 
+            System.out.println("Updating absence type " + i); 
+            String sql = "UPDATE Absence_Types " +
+                "SET Absence_Type = '" + absenceType[i] + "', Color = '" + absenceColor[i] + "', Accrual_Rate = '" + 
+                accrualRate[i] + "', Max_Accrual = '" + maxAccrual[i] + "' " +
+                "WHERE Absence_ID = '" + absenceID[i] + "'"; 
+            System.out.println(sql);
+            Database.SQLUpdate(sql);
+        }
         
-        
+        // insert newly added to Absence_Types
+        for (int a = i; a < typeSize; a++) { 
+            System.out.println("Inserting absence type " + a); 
+            String sql = "INSERT into Absence_Types (Absence_Type, Color, Accrual_Rate, Max_Accrual) " +
+                "VALUES ('" + absenceType[a] + "', '" + absenceColor[a] + "', '" + accrualRate[a] +
+                "', '" + maxAccrual[a] + "')"; 
+            System.out.println(sql);
+            Database.SQLUpdate(sql);
+        }      
     }
     
     private void insertAbsenceTypes() {
         
+        // insert to 
+        for (int i = 0; i < typeSize; i++) { 
+            System.out.println("Inserting absence type " + i); 
+            String sql = "INSERT into Absence_Types (Absence_Type, Color, Accrual_Rate, Max_Accrual) " +
+                "VALUES ('" + absenceType[i] + "', '" + absenceColor[i] + "', '" + accrualRate[i] +
+                "', '" + maxAccrual[i] + "')"; 
+            System.out.println(sql);
+            Database.SQLUpdate(sql);
+        }   
         
     }
     
-    
+    private void deleteAbsenceType(int i) {
+        
+        
+        String sql = "DELETE from absences " + 
+        "WHERE Absence_ID = '" + absenceID[i] + "'";
+        Database.SQLUpdate(sql);
+        
+        sql = "DELETE from Starting_Balances " + 
+        "WHERE Absence_ID = '" + absenceID[i] + "'";
+        Database.SQLUpdate(sql);
+        
+        sql = "DELETE from Absence_Types " + 
+        "WHERE Absence_ID = '" + absenceID[i] + "'";
+        Database.SQLUpdate(sql);
+    }    
     
 } //End Subclass SetupForm
