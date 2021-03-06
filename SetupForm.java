@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventType;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,10 +15,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.json.simple.JSONObject;
@@ -49,12 +52,14 @@ public class SetupForm extends Application {
     int rowCounter = 1;
     int typesCounter = 0;
     int typeSize = 0;
+    
     // controls
     TextField[] tfAbsenceType = new TextField[6];   // up to 6 absence types (names)
     static ComboBox<String> cboAbsenceColor[] = new ComboBox[6];
     static ComboBox<String>[] cboBalanceType = new ComboBox[6];
     TextField[] tfAccrualRate = new TextField[6];
     TextField tfMaxAccrual[] = new TextField[6];
+    
     // labels
     Label[] lblAbsenceName = new Label[6];
     Label[] lblColor = new Label[6];
@@ -72,8 +77,10 @@ public class SetupForm extends Application {
     
     /* Constructor
     *
-    *
-    *                   */
+    * year - the year in the calendar
+    *          
+    * Constructor gets data from db and determines the size of the data array for 
+    * the pre-populated flag to populate the form with data already in the db for editing */
     public SetupForm(String year) {
         
         this.year = year;
@@ -86,6 +93,11 @@ public class SetupForm extends Application {
             System.out.println("Form is PrePopulated");
             prePopulated = true;
         }    
+        
+        // Get the refrence to existing absence IDs for updating the table
+        for (int i = 0; i < typeSize; i++) {
+            absenceID[i] = (Integer)absenceTypes.get(i).get("Absence_ID");
+        }
     }   
     
     @Override
@@ -93,13 +105,13 @@ public class SetupForm extends Application {
         
         /* Main pane */
         BorderPane bPane = new BorderPane();
-        
         HBox topSetupPane = new HBox();
+        topSetupPane.getStyleClass().add("formtop");
         
         gPane.setAlignment(Pos.TOP_LEFT);
         gPane.setPadding(new Insets(5, 5, 5, 5));
         bPane.setPadding(new Insets(5, 5, 5, 5));
-        gPane.getStyleClass().add("summaryreport");
+        gPane.getStyleClass().add("setuppane");
         gPane.setHgap(20);
         gPane.setVgap(4);
         //gPane.setPrefHeight(300);
@@ -113,7 +125,7 @@ public class SetupForm extends Application {
         
 
         // **** Form Fields *****
-        // comboboxes for colors  - add color options
+        // comboboxes for colors - add color options
         for (int i = 0; i < 6; i++ ) {
             cboAbsenceColor[i] = new ComboBox();
             for (int c = 0; c < 6; c++) {    // add each color
@@ -122,7 +134,6 @@ public class SetupForm extends Application {
             }
         }    
         
-        //cboBalanceType[0].getItems().add("Accrued Hours");
         // Balance Type combo boxes - add options
         for (int i = 0; i < 6; i++ ) {
             cboBalanceType[i] = new ComboBox();
@@ -145,11 +156,11 @@ public class SetupForm extends Application {
             addDefaultControls(0);
         }
         
+        // if there is data in the db table, put it in the form controls for editing
         if (prePopulated) {
             putValues();
         }
         
-
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
             hBoxB.getChildren().addAll(btnSetupUpdate,btnSetupExit);
@@ -174,7 +185,7 @@ public class SetupForm extends Application {
         setupStage.setScene(listReportScene);
         setupStage.show();   
         
-           // ** Button Event Handlers **
+        // Save Button event Handler
         btnSetupSave.setOnAction(e-> {
             try {
             //insertTypes();   
@@ -185,6 +196,7 @@ public class SetupForm extends Application {
             }
         });
         
+        // Update button handler
         btnSetupUpdate.setOnAction(e-> {
             try {
                 //updateTypes();
@@ -195,6 +207,7 @@ public class SetupForm extends Application {
             }
         });   
         
+        // exit button handler
         btnSetupExit.setOnAction(e-> {
             try {
                 setupStage.close(); 
@@ -203,17 +216,19 @@ public class SetupForm extends Application {
             }
         });
         
+        // Add another type (+) button handler
         btnAddType.setOnAction(e-> {
             try {
                 rowCounter+=3;
                 typesCounter++;
+                if (prePopulated) {typesCounter--; rowCounter-=3;}       
                 addDefaultControls(typesCounter);
             } catch (Exception exit) {
                 
             }
         });        
         
-        // Type Combobox Handler
+        // Type Combobox Handler - add in new controls for accrued types
         for (int i = 0; i < 6; i++) {
             final int num = i;
             final String type = cboBalanceType[i].getValue(); // get type from combo box
@@ -232,9 +247,65 @@ public class SetupForm extends Application {
                 }
             });      
         }
+        
+        // Color Combobox Handler - change color of comboBox and Type
+        for (int i = 0; i < 6; i++) {
+            final int num = i;
+            
+            cboAbsenceColor[i].setOnAction((ActionEvent e)->{
+                try {
+                        String color = cboAbsenceColor[num].getValue();
+                        Background background = new Background(getBackgroundFill(color));
+                        cboAbsenceColor[num].setBackground(background);
+                        tfAbsenceType[num].setBackground(background);
+                } catch(Exception ex) {
+                
+                }
+            });      
+        }        
     
     } // end start
     
+    private BackgroundFill getBackgroundFill(String color) {
+        
+        switch(color) {
+            case "Red":
+                color = "#f0a99e";
+                break;
+            case "Orange":
+                color = "#f0c49e";
+                break;
+            case "Blue":
+                color = "#9cbce6";
+                break;
+            case "Yellow":
+                color = "#e2e69c";
+                break;
+            case "Green":
+                color = "#9de69c";
+                break;
+            case "Purple":
+                color = "#c39ce6";
+                break;
+            default: 
+
+        }
+
+        BackgroundFill backgroundFill = new BackgroundFill(
+            Color.valueOf(color),
+            new CornerRadii(1),
+            new Insets(1)
+            );
+
+        return backgroundFill;                    
+       
+    }
+    
+    /* private addDefaultControls
+     * 
+     * num - the number of the control group being added
+    *
+    * Adds the default control groups to the pane for each entry */
     private void addDefaultControls(int num) {
         
         // Type Label
@@ -258,7 +329,6 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(lblColor[num], 4);
         gPane.getChildren().add(lblColor[num]);  
         // Color combobox
-        //cboAbsenceColor[num] = new ComboBox();
         cboAbsenceColor[num].setMinWidth(100);
         GridPane.setConstraints(cboAbsenceColor[num], 17, rowCounter);
         GridPane.setColumnSpan(cboAbsenceColor[num], 5);
@@ -270,7 +340,6 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(lblBalanceType[num], 4);
         gPane.getChildren().add(lblBalanceType[num]); 
         // Balance Type combobox
-        //cboBalanceType[num] = new ComboBox();
         cboBalanceType[num].setMinWidth(125);
         GridPane.setConstraints(cboBalanceType[num], 5, rowCounter+1);
         GridPane.setColumnSpan(cboBalanceType[num], 5);
@@ -284,6 +353,13 @@ public class SetupForm extends Application {
         }
     }
     
+    /* private addAccruedControls
+    *
+    * num - the number of the control group in array being added (the absence type)
+    *
+    * This method adds the accrual rate and max accrual lables and textboxes
+    * to the pane for the specific absence type control group when combo box 
+    * is changed to "Accrued"      */
     private void addAccruedControls(int num) {
         
         int place = (num+1)*2;
@@ -322,6 +398,11 @@ public class SetupForm extends Application {
         gPane.getChildren().remove(tfMaxAccrual[num]);
     }
     
+    /* private putValues
+    *
+    * This puts the values from the database into the controls if setup has already
+    * been run.  Calls addDefaultControls and addAccruedControls as needed to add
+    * more controls for the data found in db. Allows user to edit existing data. */
     private void putValues() {
         
             // set data in the controls that was already saved 
@@ -330,6 +411,10 @@ public class SetupForm extends Application {
                 tfAbsenceType[i].setText((String)absenceTypes.get(i).get("Absence_Type"));
                 System.out.println("Absence Color " + i + " is " + (String)absenceTypes.get(i).get("Color"));
                 cboAbsenceColor[i].setValue((String)absenceTypes.get(i).get("Color"));
+                String color = cboAbsenceColor[i].getValue();
+                Background background = new Background(getBackgroundFill(color));
+                cboAbsenceColor[i].setBackground(background);  
+                tfAbsenceType[i].setBackground(background);
                 double arate = (Double)absenceTypes.get(i).get("Accrual_Rate");
                 if (arate > 0) {
                     addAccruedControls(i);
@@ -344,21 +429,34 @@ public class SetupForm extends Application {
             }            
     } // end putValues
     
+    /* private getValues
+    * 
+    * This method gets the values from the controls to variable arrays, to insert into
+    * or update the db table Absence_Types     */
     private void getValues() {
-    //            // set data in the controls that was already saved 
-//            for (int i = 0; i < typeSize; i++) {
-//                
-//                
-//                absenceID[i] = (Integer)absenceTypes.get(i).get("Absence_ID");
-//                absenceType[i] = 
-//                absenceColor[i] = 
-//                accrualRate[i] = 
-//                maxAccrual[i] = 
-//                double arate = 
-//                if (arate > 0) {balanceType[i] = "Accrued Hours";}
-//                if (arate = 0) {balanceType[i] = "Fixed Hours";}
-//                if (arate = -1) {balanceType[i] = "Add-In Hours";}
-//            }
+
+        // Get the control values into the variable arrays
+        for (int i = 0; i < typeSize; i++) {               
+            absenceType[i] = tfAbsenceType[i].getText();
+            absenceColor[i] = cboAbsenceColor[i].getValue();
+            String balType = cboBalanceType[i].getValue();
+            if (balType.equals("Accrued Hours")) {accrualRate[i] = Double.valueOf(tfAccrualRate[i].getText());}
+            if (balType.equals("Fixed Hours")) {accrualRate[i] = 0;}
+            if (balType.equals("Add-In Hours")) {accrualRate[i] = -1;}
+            maxAccrual[i] = Double.valueOf(tfMaxAccrual[i].getText());
+        }
     }
+    
+    private void updateAbsenceTypes() {
+        
+        
+    }
+    
+    private void insertAbsenceTypes() {
+        
+        
+    }
+    
+    
     
 } //End Subclass SetupForm
