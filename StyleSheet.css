@@ -265,3 +265,9 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-border-color: Purple;
      -fx-border-insets: 0;
  }
+  .btndelete {
+     -fx-background-color:linear-gradient(pink, #e3280b); 
+     -fx-background-radius: 3 3 3 3; 
+     -fx-background-insets: 2, 2; -fx-padding: 1;
+     -fx-background-insets: 2, 2; -fx-padding: 1;
+ } 
