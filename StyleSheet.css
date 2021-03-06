@@ -127,7 +127,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-font-size: 20;
      -fx-text-fill: lightslategray;    
  }
- .dayformtop {
+ .formtop {
      -fx-background-color:white
  }
   .dayentry {
@@ -142,6 +142,9 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-font-weight: bold;
      -fx-text-fill: Black;
  }
+ .setuppane {
+     -fx-background-color:linear-gradient(white,lightgray);
+ } 
  .typegreen {
      -fx-text-fill: limegreen;
      -fx-font-weight: bold;
