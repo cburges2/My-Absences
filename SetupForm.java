@@ -11,7 +11,10 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -194,6 +197,7 @@ public class SetupForm extends Application {
             try {
             getValues(); 
             insertAbsenceTypes();
+            Warnings.removeWarning(0, "RUN_SETUP");
             MyAbsences.refresh();
             setupStage.close(); 
             } catch (Exception save) {
@@ -216,12 +220,27 @@ public class SetupForm extends Application {
         // Delete type button handler - delete an Absence_Type and refresh
         for (int i = 0; i < 6; i++) {
             final int num = i;
-            SetupForm app=new SetupForm();
             btnDelete[i].setOnAction(e->{
                 try {
-                    deleteAbsenceType(num);
-                    app.start(primaryStage);            
-                    MyAbsences.refresh();
+                    String absence_type = tfAbsenceType[num].getText();
+                    ButtonType cancel = new ButtonType("Cancel");
+                    ButtonType delete = new ButtonType("Delete");
+                    Alert a = new Alert(AlertType.WARNING, "Delete Absence Type", cancel, delete);
+                    a.setHeaderText("Do you really want to Delete " + absence_type + "?\n"
+                            + "This will delete all absences for " + absence_type + " on the Calendar,\n"
+                            + "as well as the " + absence_type + " starting balances!");
+                    a.setResizable(true);
+                    a.setContentText("Press Delete to confirm:");
+                    SetupForm app=new SetupForm();
+                    a.showAndWait().ifPresent(response -> {
+                        try {
+                            if (response == delete) {
+                                deleteAbsenceType(num);
+                                MyAbsences.refresh();
+                                app.start(primaryStage);
+                            } else if (response == cancel) {}
+                        } catch (Exception exit) {}     
+                    });
                 } catch(Exception ex) {
                     
                 }
@@ -359,10 +378,8 @@ public class SetupForm extends Application {
         // Add Delete Button for prePopulated form
         if (prePopulated) {
             GridPane.setConstraints(btnDelete[num], 21, rowCounter);
-            btnDelete[num].setMinWidth(25);
-            btnDelete[num].setMaxHeight(25);
-            btnDelete[num].setMinHeight(25);
-            btnDelete[num].setMaxWidth(25);
+            btnDelete[num].setMinSize(20, 20);
+            btnDelete[num].setMaxSize(20, 20);
             btnDelete[num].getStyleClass().add("btndelete");
             GridPane.setColumnSpan(btnDelete[num], 4);  
             gPane.getChildren().add(btnDelete[num]);
