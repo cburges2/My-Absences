@@ -6,6 +6,7 @@ package myabsences;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -72,7 +73,7 @@ public class TopPaneBuilder {
         
         /* Set warningVBox attributes */
         warningVBox.setMaxHeight(30);     
-        warningVBox.setSpacing(10);
+        warningVBox.setSpacing(0);
         warningVBox.setPadding(new Insets(5, 5, 0, 5));   // top, right, bottom, left
         warningVBox.getStyleClass().add("bpane");
         warningVBox.setAlignment(Pos.CENTER_LEFT);  // center the children in the pane  
@@ -113,9 +114,22 @@ public class TopPaneBuilder {
         if (year.equals(thisYear)) {
             ArrayList<String> warnings = Warnings.getWarnings();
             for (int i = 0; i < warnings.size(); i++) {
-                Text warning = new Text(warnings.get(i));
+                String warningStr = warnings.get(i);
+                Text warning = new Text(warningStr);
                 warning.getStyleClass().add("txtwarning");   
                 warningVBox.getChildren().add(warning);
+                if (warningStr.contains("Setup")) {
+                    btnsTop[0].getStyleClass().add("btnwarntop");
+                    Platform.runLater(() -> {
+                        btnsTop[0].requestFocus();
+                    });    
+                }
+                if (warningStr.contains("Balances")) {
+                    btnsTop[1].getStyleClass().add("btnwarntop");
+                    Platform.runLater(() -> {
+                        btnsTop[1].requestFocus();// Set focus on Balances button
+                    });
+                }
             }
         }
         
