@@ -41,40 +41,25 @@ public class Warnings {
             // handle error
         }
         
-        if (warningName.equals("MAX ACCRUAL")) {
-            // check if there is a warning already for the absence_ID
-            if (JsonMatch.getJsonIndex(warnings,"Absence_ID",absenceID) == -1) {
-                String sql = "INSERT into WARNINGS (Warning_Name, Absence_ID, Date, Cal_Date) " +
-                             "VALUES ('" + warningName + "','" + absenceID + "', '" + dayDate + "', '" + calDate + "')";
-                Database.SQLUpdate(sql);    
-            } else {
-                String sql = "UPDATE WARNINGS " + "SET Date = '" + dayDate + "', Cal_Date = '" + calDate + "' " +
-                             "WHERE Absence_ID = " + absenceID + " and Warning_Name = '" +warningName + "'";
-                Database.SQLUpdate(sql);
-            }
+        boolean insert = false;            
+        // check if there is a warning already for the absence_ID/Warning_Type
+        if (warningName.equals("MAX ACCRUAL") && (JsonMatch.getJsonIndex(warnings,"Absence_ID",absenceID) == -1)) {
+            insert = true;
+        } else if (JsonMatch.getJsonIndex(warnings,"Warning_Name",warningName) == -1) {
+            insert = true;
         }
-    }
-    
-    /* static public addWarning
-    *
-    * warningName
-    *
-    * Example:
-    * addWarning(RUN_SETUP)
-    * ==> Adds the warning to the warning table with absenceID 0 for RUN_SETUP
-    *
-    * This method adds a warning to the table. If the warningName already exists in
-    * the table it will not add it again For RUN_SETUP and ENTER_BALANCES warnings */
-    static public void addWarning(String warningName) {
         
-        ArrayList<JSONObject> warnings =  Database.getWarnings();  // list of warnings 
-
-        if (JsonMatch.getJsonIndex(warnings,"Warning_Name",warningName) == -1) {
-            String sql = "INSERT into WARNINGS (Warning_Name, Absence_ID) " +
-                         "VALUES ('" + warningName + "','0')";
+        if (insert) { // insert
+            String sql = "INSERT into WARNINGS (Warning_Name, Absence_ID, Date, Cal_Date) " +
+                         "VALUES ('" + warningName + "','" + absenceID + "', '" + dayDate + "', '" + calDate + "')";
             Database.SQLUpdate(sql);    
+        } else {     // update
+            String sql = "UPDATE WARNINGS " + "SET Date = '" + dayDate + "', Cal_Date = '" + calDate + "' " +
+                         "WHERE Absence_ID = " + absenceID + " and Warning_Name = '" +warningName + "'";
+            Database.SQLUpdate(sql);
         }
-    }    
+        
+    } // end addWarning  
 
     /* static public getWarnings
     *
@@ -87,9 +72,9 @@ public class Warnings {
         
         ArrayList<String> warnMessages = new ArrayList<>();
         ArrayList<JSONObject> warnings =  Database.getWarnings();  // list of warnings
+        
 
         if (warnings.size() > 0) {
-            
             for (int i = 0; i < warnings.size(); i++) {
                 // Check for MAX_ACCRUAL warnings
                 if (((String)warnings.get(i).get("Warning_Name")).equals("MAX_ACCRUAL")) {
@@ -98,10 +83,10 @@ public class Warnings {
                     warnMessages.add(absenceType + " Max Accrual on " + calDate);
                 }
                 if (((String)warnings.get(i).get("Warning_Name")).equals("RUN_SETUP")) {
-                    warnMessages.add("Enter Starting Balances");
+                    warnMessages.add("Enter Setup to Define Absence Types");
                 }
                 if (((String)warnings.get(i).get("Warning_Name")).equals("ENTER_BALANCES")) {
-                    warnMessages.add("Enter Setup to Define Absence Types");
+                    warnMessages.add("Enter Starting Balances");
                 }
             }
         }
@@ -123,8 +108,10 @@ public class Warnings {
         ArrayList<JSONObject> warnings =  Database.getWarnings();  // list of warnings for Max Accurals reached.
 
         if (JsonMatch.getJsonIndex(warnings,"Absence_ID",absenceID) != -1) { 
-            String sql = "DELETE from WARNINGS where Absence_ID = '" + absenceID + "' and Warning_Name = '" + warningName + "'";
-            Database.SQLUpdate(sql);    
+            if (JsonMatch.getJsonIndex(warnings,"Warning_Name",warningName) != -1) {
+                String sql = "DELETE from WARNINGS where Absence_ID = '" + absenceID + "' and Warning_Name = '" + warningName + "'";
+                Database.SQLUpdate(sql); 
+            }    
         }        
         
     } // end removeWarning
