@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.geometry.Insets;
@@ -35,6 +36,7 @@ public class MyAbsences extends Application {
     static Button appStart = new Button();
     static ArrayList<String> years = new ArrayList<>(); // years with balances for combobox
     static String calcType = "Calculate All";
+    String todayStr = new String();
     
     // Set Static Current Year for initial calendar display
     final static SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
@@ -47,6 +49,12 @@ public class MyAbsences extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         
+        Date today = Calendar.getInstance().getTime();
+        SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");  
+        todayStr = formatDb.format(today); //note: todayStr will not show on past year calendars
+
+        checkData();    // Create a Warning if data entry is needed
+
         // **** Create Main Border Pane ****  
         BorderPane bPane = new BorderPane();             // Main Layout pane, Top, Middle, Bottom  
         
@@ -83,7 +91,7 @@ public class MyAbsences extends Application {
                String btnText = btnsTop[btnNumber].getText();
                if (btnText.equals("Setup")) {
                     try {
-                        SetupForm setupWindow = new SetupForm(year);            // create SetupForm object
+                        SetupForm setupWindow = new SetupForm();            // create SetupForm object
                         setupWindow.start(null);            // start secondary stage
                     } catch (Exception ex) {
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
@@ -191,5 +199,27 @@ public class MyAbsences extends Application {
         System.out.println("Restarting...");
         appStart.fire();
     };
+    
+    /* checkData
+     * Check if Setup has been run and if each absence type has a starting balance for this year */
+    public void checkData() {
+        
+        int numTypes = Database.getNumRows("Absence_Types");
+        System.out.println("There are " + numTypes + " Types");
+        
+        // Set a warning
+        if (numTypes == 0) {
+            Warnings.addWarning(0, todayStr, "RUN_SETUP");
+        } else {Warnings.removeWarning(0,"RUN_SETUP");}
+    
+        int startCount = Database.getStartBalanceCount(year);
+        System.out.println("There are " + startCount + " Balances");
+        
+        // Set a warning
+        if (numTypes != startCount) {
+            Warnings.addWarning(0, todayStr, "ENTER_BALANCES");
+        } else {Warnings.removeWarning(0,"ENTER_BALANCES");} 
+        
+    }   
     
 } //End Class MyAbsences
