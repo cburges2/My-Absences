@@ -36,49 +36,158 @@ import org.json.simple.JSONObject;
    * return the ArrayList of years ASC       */
    static public ArrayList<String> getYears() {
        
-    Connection conn = null;
-    Statement stmt = null;
-    ArrayList<String> years = new ArrayList<>();
-      
-    try{
-        Class.forName("org.sqlite.JDBC");    //Register JDBC driver
-        conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+        Connection conn = null;
+        Statement stmt = null;
+        ArrayList<String> years = new ArrayList<>();
 
-        //Execute query
-        String sql = "SELECT DISTINCT year FROM STARTING_BALANCES ORDER BY year ASC";   
-        stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
+        try{
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
-        // loop through the result set
-        while (rs.next()) {
-            years.add(rs.getString("Year"));
-        }
+            //Execute query
+            String sql = "SELECT DISTINCT year FROM STARTING_BALANCES ORDER BY year ASC";   
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
 
-        return years;
+            // loop through the result set
+            while (rs.next()) {
+                years.add(rs.getString("Year"));
+            }
 
-        }catch(SQLException se){
-           //Handle errors for JDBC
-           se.printStackTrace();
-        }catch(Exception e){
-           //Handle errors for Class.forName
-           e.printStackTrace();
-        }finally{
-           //finally block used to close resources
-           try{
-              if(stmt!=null)
-                 stmt.close();
-           }catch(SQLException se2){
-           }// nothing we can do
-           try{
-              if(conn!=null)
-                 conn.close();
-           }catch(SQLException se){
-              se.printStackTrace();
-           }//end finally try
-        }//end try */
+            return years;
 
-         return null;   // return null if error
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */
+
+             return null;   // return null if error
     }
+   
+   /* public getNumRows
+   *
+   * table - The table name to get the size for
+   * ==> The number of rows in the table (int)
+   *
+   * This method returns the number of rows ina table   */
+    static public int getNumRows(String table) {
+        
+        Connection conn = null;
+        Statement stmt = null;
+        int size = 0;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+
+            // Execute query
+            String sql = "select count(*) as SIZE " +
+                          "from " + table; 
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                size = rs.getInt("Size");
+            }
+
+            return size;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+        return 0;        
+   }
+    
+/* public getStartBalanceCount
+   *
+   * year - The year to get the balance count for
+   * ==> The number of starting balances for the year
+   *
+   * This method returns number of starting balances in the Starting_Balances tabel   */
+    static public int getStartBalanceCount(String year) {
+        
+        Connection conn = null;
+        Statement stmt = null;
+        int count = 0;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+
+            // Execute query
+            String sql = "select count(absence_id) as Start_Count " +
+                         "from Starting_Balances " + 
+                         "where year = '" + year + "'"; 
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                count = rs.getInt("Start_Count");
+            }
+
+            return count;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+        return 0;        
+   }    
     
     /* public getStartBalance 
    *
@@ -86,61 +195,61 @@ import org.json.simple.JSONObject;
    *
    *                                  */
     static public ArrayList<JSONObject> getStartBalances (String year) {
-    Connection conn = null;
-    Statement stmt = null;
+        Connection conn = null;
+        Statement stmt = null;
 
-    try{    
-        Class.forName("org.sqlite.JDBC");    //Register JDBC driver
-        conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
-        
-        //Execute query
-        String sql = "Select t.absence_type,b.Absence_ID,t.Accrual_RATE,t.COLOR,Max_Accrual, " +
-        "starting_balance from Starting_Balances as b " +
-        "join absence_types as t " +
-        "on t.absence_id = b.absence_id " +
-        "Where b.year = " + year + " Order by absence_type ASC"; 
-        
-        stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-         
-        ArrayList<JSONObject> result = new ArrayList<>();
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
-        while (rs.next()) {
-            JSONObject record = new JSONObject();
-            record.put((String)"Absence_Type",rs.getString("Absence_Type"));
-            record.put("Absence_ID",rs.getInt("Absence_ID"));
-            record.put("accrual_Rate",rs.getDouble("accrual_Rate"));
-            record.put((String)"Color",rs.getString("Color"));
-            record.put("Starting_Balance",rs.getDouble("Starting_Balance"));
-            record.put("Max_Accrual",rs.getDouble("MAX_ACCRUAL"));
-            result.add(record);
-        }
-               
-        return result;
+            //Execute query
+            String sql = "Select t.absence_type,b.Absence_ID,t.Accrual_RATE,t.COLOR,Max_Accrual, " +
+            "starting_balance from Starting_Balances as b " +
+            "join absence_types as t " +
+            "on t.absence_id = b.absence_id " +
+            "Where b.year = " + year + " Order by absence_type ASC"; 
 
-        }catch(SQLException se){
-           //Handle errors for JDBC
-           se.printStackTrace();
-        }catch(Exception e){
-           //Handle errors for Class.forName
-           e.printStackTrace();
-        }finally{
-           //finally block used to close resources
-           try{
-              if(stmt!=null)
-                 stmt.close();
-           }catch(SQLException se2){
-           }// nothing we can do
-           try{
-              if(conn!=null)
-                 conn.close();
-           }catch(SQLException se){
-              se.printStackTrace();
-           }//end finally try
-        }//end try */       
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
 
-       
-      return null;        
+            ArrayList<JSONObject> result = new ArrayList<>();
+
+            while (rs.next()) {
+                JSONObject record = new JSONObject();
+                record.put((String)"Absence_Type",rs.getString("Absence_Type"));
+                record.put("Absence_ID",rs.getInt("Absence_ID"));
+                record.put("accrual_Rate",rs.getDouble("accrual_Rate"));
+                record.put((String)"Color",rs.getString("Color"));
+                record.put("Starting_Balance",rs.getDouble("Starting_Balance"));
+                record.put("Max_Accrual",rs.getDouble("MAX_ACCRUAL"));
+                result.add(record);
+            }
+
+            return result;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+
+          return null;        
    }
    
    /* public getPastHours
@@ -150,65 +259,65 @@ import org.json.simple.JSONObject;
    *                         */
    static public ArrayList<JSONObject> getPastHours(String date, String year) {
        
-    Connection conn = null;
-    Statement stmt = null;
+        Connection conn = null;
+        Statement stmt = null;
 
-    try{    
-        Class.forName("org.sqlite.JDBC");    //Register JDBC driver
-        conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
-        
-        String thisYear = date.substring(0,4);
-        
-        // if year is not the current year, use 12/31 of the past year as date range
-        if (!thisYear.equals(year)) {
-            date = year + "-12-31";
-        }
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
-        // Execute query
-        String sql = "Select t.Absence_type,sum(Hours) as Past_Hours from Absences as a " +
-        "join absence_types as t " +
-        "on a.absence_id = t.absence_id " +
-        "where a.date BETWEEN '" + year + "-01-01' AND '" + date + "' ";
-        if (calcType.equals("Submitted Only")) {sql = sql + "and a.submitted = 1 ";} 
-        sql = sql + "Group by absence_type"; 
-        
-        stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
-        ArrayList<JSONObject> result = new ArrayList<>();
-  
-        while (rs.next()) {
-            JSONObject record = new JSONObject();
-            record.put("Absence_Type",rs.getString("Absence_Type"));
-            record.put("Past_Hours",rs.getDouble("Past_Hours"));
-            result.add(record);
-        }
-                      
-        return result;
+            String thisYear = date.substring(0,4);
 
-        }catch(SQLException se){
-           //Handle errors for JDBC
-           se.printStackTrace();
-        }catch(Exception e){
-           //Handle errors for Class.forName
-           e.printStackTrace();
-        }finally{
-           //finally block used to close resources
-           try{
-              if(stmt!=null)
-                 stmt.close();
-           }catch(SQLException se2){
-           }// nothing we can do
-           try{
-              if(conn!=null)
-                 conn.close();
-           }catch(SQLException se){
-              se.printStackTrace();
-           }//end finally try
-        }//end try */       
+            // if year is not the current year, use 12/31 of the past year as date range
+            if (!thisYear.equals(year)) {
+                date = year + "-12-31";
+            }
 
-       
-      return null; 
+            // Execute query
+            String sql = "Select t.Absence_type,sum(Hours) as Past_Hours from Absences as a " +
+            "join absence_types as t " +
+            "on a.absence_id = t.absence_id " +
+            "where a.date BETWEEN '" + year + "-01-01' AND '" + date + "' ";
+            if (calcType.equals("Submitted Only")) {sql = sql + "and a.submitted = 1 ";} 
+            sql = sql + "Group by absence_type"; 
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ArrayList<JSONObject> result = new ArrayList<>();
+
+            while (rs.next()) {
+                JSONObject record = new JSONObject();
+                record.put("Absence_Type",rs.getString("Absence_Type"));
+                record.put("Past_Hours",rs.getDouble("Past_Hours"));
+                result.add(record);
+            }
+
+            return result;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+
+          return null; 
        
    } // end getPastHours
    
@@ -219,71 +328,71 @@ import org.json.simple.JSONObject;
    *                         */
    static public ArrayList<JSONObject> getFutureHours(String startDate, String endDate, String year) {
 
-    Connection conn = null;
-    Statement stmt = null;
+        Connection conn = null;
+        Statement stmt = null;
 
-    try{    
-        Class.forName("org.sqlite.JDBC");    //Register JDBC driver
-        conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
-        
-        // increment today's date to tomorrow for future hours query
-        LocalDate date1 = LocalDate.parse(startDate);
-        LocalDate tomorrow = date1.plusDays(1); 
-        startDate = tomorrow.toString();
-        
-        // get current year from date to check if the calendar year is the current year
-        String thisYear = startDate.substring(0,4);
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
-        String sql = "Select t.Absence_type,sum(Hours)as Future_Hours from Absences as a " +
-        "join absence_types as t " +
-        "on a.absence_id = t.absence_id " +
-        "where a.date BETWEEN '" + startDate + "' AND '" + endDate + "' ";
-        if (calcType.equals("Submitted Only")) {sql = sql + "and a.submitted = 1 ";}         
-        sql = sql + "group by absence_type"; 
-        
-        
-        //Execute query
-        stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
-        ArrayList<JSONObject> result = new ArrayList<>();
-  
-        while (rs.next()) {
-            JSONObject record = new JSONObject();
-            record.put("Absence_Type",rs.getString("Absence_Type"));
-            double futureHrs = rs.getDouble("Future_Hours");
-            if (!thisYear.equals(year)) {
-                record.put("Future_Hours",0);
-            } else {
-                record.put("Future_Hours",futureHrs);
+            // increment today's date to tomorrow for future hours query
+            LocalDate date1 = LocalDate.parse(startDate);
+            LocalDate tomorrow = date1.plusDays(1); 
+            startDate = tomorrow.toString();
+
+            // get current year from date to check if the calendar year is the current year
+            String thisYear = startDate.substring(0,4);
+
+            String sql = "Select t.Absence_type,sum(Hours)as Future_Hours from Absences as a " +
+            "join absence_types as t " +
+            "on a.absence_id = t.absence_id " +
+            "where a.date BETWEEN '" + startDate + "' AND '" + endDate + "' ";
+            if (calcType.equals("Submitted Only")) {sql = sql + "and a.submitted = 1 ";}         
+            sql = sql + "group by absence_type"; 
+
+
+            //Execute query
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            ArrayList<JSONObject> result = new ArrayList<>();
+
+            while (rs.next()) {
+                JSONObject record = new JSONObject();
+                record.put("Absence_Type",rs.getString("Absence_Type"));
+                double futureHrs = rs.getDouble("Future_Hours");
+                if (!thisYear.equals(year)) {
+                    record.put("Future_Hours",0);
+                } else {
+                    record.put("Future_Hours",futureHrs);
+                }
+                result.add(record);
             }
-            result.add(record);
-        }
-              
-        return result;
 
-        }catch(SQLException se){
-           //Handle errors for JDBC
-           se.printStackTrace();
-        }catch(Exception e){
-           //Handle errors for Class.forName
-           e.printStackTrace();
-        }finally{
-           //finally block used to close resources
-           try{
-              if(stmt!=null)
-                 stmt.close();
-           }catch(SQLException se2){
-           }// nothing we can do
-           try{
-              if(conn!=null)
-                 conn.close();
-           }catch(SQLException se){
-              se.printStackTrace();
-           }//end finally try
-        }//end try */       
+            return result;
 
-      return null; 
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+          return null; 
        
    } // end getFutureHours
  
@@ -477,60 +586,62 @@ import org.json.simple.JSONObject;
    *
    *                                  */
     static public ArrayList<JSONObject> getWarnings() {
-    Connection conn = null;
-    Statement stmt = null;
+        Connection conn = null;
+        Statement stmt = null;
 
-    try{    
-        Class.forName("org.sqlite.JDBC");    //Register JDBC driver
-        conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
-        
-        //Execute query
-        String sql = "Select Date, Cal_Date, Warning_Name, t.Absence_ID, t.Absence_Type,t.Color from Warnings as w " +
-        "join absence_types as t " +
-        "on t.absence_id = w.absence_id " +
-        "Order by absence_type ASC"; 
-        
-        stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-         
-        ArrayList<JSONObject> result = new ArrayList<>();
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
-        while (rs.next()) {
-            JSONObject record = new JSONObject();
-            record.put((String)"Absence_Type",rs.getString("Absence_Type"));
-            record.put("Absence_ID",rs.getInt("Absence_ID"));
-            record.put((String)"Warning_Name",rs.getString("Warning_Name"));
-            record.put((String)"Color",rs.getString("Color"));
-            record.put("Date",rs.getString("Date"));
-            record.put("Cal_Date",rs.getString("Cal_Date"));
-            result.add(record);
-        }
-               
-        return result;
+            //Execute query
+            String sql = "Select t.Absence_ID, Date, Cal_Date, Warning_Name, t.Absence_Type,t.Color from Warnings as w " +
+            "join absence_types as t " +
+            "on t.absence_id = w.absence_id " + "UNION " +
+            "Select  Absence_ID, Date, cal_date, Warning_Name, 'None', 'None' from Warnings " +
+            "where absence_ID = 0 " +       
+            "Order by absence_type ASC"; 
 
-        }catch(SQLException se){
-           //Handle errors for JDBC
-           se.printStackTrace();
-        }catch(Exception e){
-           //Handle errors for Class.forName
-           e.printStackTrace();
-        }finally{
-           //finally block used to close resources
-           try{
-              if(stmt!=null)
-                 stmt.close();
-           }catch(SQLException se2){
-           }// nothing we can do
-           try{
-              if(conn!=null)
-                 conn.close();
-           }catch(SQLException se){
-              se.printStackTrace();
-           }//end finally try
-        }//end try */       
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
 
-       
-      return null;        
+            ArrayList<JSONObject> result = new ArrayList<>();
+
+            while (rs.next()) {
+                JSONObject record = new JSONObject();
+                record.put((String)"Absence_Type",rs.getString("Absence_Type"));
+                record.put("Absence_ID",rs.getInt("Absence_ID"));
+                record.put("Warning_Name",rs.getString("Warning_Name"));
+                record.put((String)"Color",rs.getString("Color"));
+                record.put("Date",rs.getString("Date"));
+                record.put("Cal_Date",rs.getString("Cal_Date"));
+                result.add(record);
+            }
+
+            return result;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+
+          return null;        
    } // end getWarnings
        
     /* SQLUpdate -> run a query to insert/delete/update with no data returned
@@ -551,7 +662,6 @@ import org.json.simple.JSONObject;
              conn = DriverManager.getConnection(DB_URL, USER, PASS);
 
              //Execute query
-             System.out.println("Executing Query...");
              String sql = query;        // set from queries loop
              
              stmt = conn.createStatement();
