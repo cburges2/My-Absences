@@ -67,7 +67,6 @@ public class SummaryReportBuilder {
         futureHours = Database.getFutureHours(todayStr, lastDate, year); 
         pastHours = Database.getPastHours(todayStr, year);    
         absences = Database.getAbsences(year);  
-        warnings = Database.getWarnings();
                
         // set the size and create the summary table array
         numRows = startBalances.size();      // One row for each absence type
