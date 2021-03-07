@@ -224,7 +224,7 @@ public class DayEntry extends Application {
         // **** set topDatePane attributes ****
         topDatePane.setAlignment(Pos.TOP_CENTER);
         topDatePane.setPadding(new Insets(5, 5, 5, 5));
-        topDatePane.getStyleClass().add("dayformtop");
+        topDatePane.getStyleClass().add("formtop");
         topDatePane.setPrefHeight(35);        
 
         // **** set formGPane attributes ****
