@@ -117,12 +117,10 @@ public class CalanderBuilder {
                                 dateString = " ";    // label buttons blank until the 1st of the month on row 3, else increment the date on buttons as month is built
                             } else {
                                date++;
-                               dateString = String.valueOf(date); 
+                               dateString = String.valueOf(date);   // else set the date number as the button text
                             }
                             // label buttons as blank after the last day of the month
-                            if (date > lastDay) {
-                                dateString=" ";
-                            }
+                            if (date > lastDay) {dateString=" ";}
                             // add the day button and force size
                             btnMonth[buildMonth][btnIter] = new Button(dateString); // create button in the array labled with day number
                             btnMonth[buildMonth][btnIter].setMaxSize(32,25);
