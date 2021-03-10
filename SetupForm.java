@@ -55,6 +55,7 @@ public class SetupForm extends Application {
     int rowCounter = 1;
     int typesCounter = 0;
     int typeSize = 0;
+    int editAdd = 0;
     
     // controls
     TextField[] tfAbsenceType = new TextField[6];   // up to 6 absence types (names)
@@ -78,13 +79,9 @@ public class SetupForm extends Application {
     Button btnDelete[] = new Button[6];
     
     GridPane gPane = new GridPane();
+    //BorderPane bPane = new BorderPane();
     
-    /* Constructor
-    *
-    * year - the year in the calendar
-    *          
-    * Constructor gets data from db and determines the size of the data array for 
-    * the pre-populated flag to populate the form with data already in the db for editing */
+    // empty constructor
     public SetupForm() {
         
     }
@@ -94,10 +91,8 @@ public class SetupForm extends Application {
         
         // get absenceType data from database
         absenceTypes = Database.getAbsenceTypes();  // Arraylist of JSONObject type data
-        System.out.println("types size is " + absenceTypes.size());
         typeSize = absenceTypes.size();
         if (typeSize > 0) {
-            System.out.println("Form is PrePopulated");
             prePopulated = true;
         }    
         
@@ -164,13 +159,9 @@ public class SetupForm extends Application {
             addDefaultControls(0);
         }
         
-        // if there is data in the db table, put it in the form controls for editing
-        if (prePopulated) {
-            putValues();
-        }
-        
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
+            putValues();
             hBoxB.getChildren().addAll(btnSetupUpdate,btnSetupExit);
             Platform.runLater(() -> {
                 btnSetupExit.requestFocus();  // Set focus on exit if prepopulated
@@ -183,13 +174,13 @@ public class SetupForm extends Application {
         bPane.setTop(topSetupPane);
         bPane.setCenter(gPane);
         bPane.setBottom(hBoxB);
-        Scene listReportScene = new Scene(bPane); 
+        Scene SetupScene = new Scene(bPane); 
+        SetupScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         setupStage.setMaxHeight(550);
-        setupStage.setMinWidth(660);
-        setupStage.setMaxWidth(660);
-        listReportScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
+        setupStage.setMinWidth(665);
+        setupStage.setMaxWidth(665);
         setupStage.setTitle("Setup");
-        setupStage.setScene(listReportScene);
+        setupStage.setScene(SetupScene);
         setupStage.show();   
         
         // Save Button event Handler
@@ -258,10 +249,15 @@ public class SetupForm extends Application {
         
         // Add another type (+) button handler
         btnAddType.setOnAction(e-> {
-            try {
-                rowCounter+=3;
-                typesCounter++;
-                if (prePopulated) {typeSize++; typesCounter--; rowCounter-=3;}      
+            try {   
+                if (prePopulated) {
+                    typeSize++;
+                    editAdd++;
+                }
+                 else {
+                    rowCounter+=3;
+                    typesCounter++; 
+                }
                 addDefaultControls(typesCounter);
             } catch (Exception exit) {
                 
@@ -399,11 +395,17 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(cboBalanceType[num], 5);
         gPane.getChildren().add(cboBalanceType[num]);        
         // Add the + button
-        if (num < 5) {
+        if (num < 5) {  // && !editAdd
             btnAddType.setMinWidth(10);
             GridPane.setConstraints(btnAddType, 1, rowCounter+2);
             GridPane.setColumnSpan(btnAddType, 8);
             gPane.getChildren().add(btnAddType);  
+        }
+        if (editAdd > 0) {
+            // set focus on new control group
+            tfAbsenceType[num].requestFocus();
+                rowCounter+=3;
+                typesCounter++; 
         }
     }
     
@@ -439,6 +441,7 @@ public class SetupForm extends Application {
         // Accrual Max textfield
         tfMaxAccrual[num] = new TextField();
         tfMaxAccrual[num].setMaxWidth(50);
+        tfMaxAccrual[num].setMinWidth(50);
         GridPane.setConstraints(tfMaxAccrual[num], 22, place);
         GridPane.setColumnSpan(tfMaxAccrual[num], 3);
         gPane.getChildren().add(tfMaxAccrual[num]);  
@@ -463,7 +466,6 @@ public class SetupForm extends Application {
             for (int i = 0; i < typeSize; i++) {
                 addDefaultControls(i);
                 tfAbsenceType[i].setText((String)absenceTypes.get(i).get("Absence_Type"));
-                System.out.println("Absence Color " + i + " is " + (String)absenceTypes.get(i).get("Color"));
                 cboAbsenceColor[i].setValue((String)absenceTypes.get(i).get("Color"));
                 String color = cboAbsenceColor[i].getValue();
                 Background background = new Background(getBackgroundFill(color));
@@ -490,18 +492,14 @@ public class SetupForm extends Application {
     private void getValues() {
 
         // Get the control values into the variable arrays
-        System.out.println("typesCounter + 1 is " + (typesCounter+1));
         if (!prePopulated) {typeSize = typesCounter+1;}
         for (int i = 0; i < typeSize; i++) {               
             absenceType[i] = tfAbsenceType[i].getText();
-            System.out.println("AbsenceType["+i+"] is " + absenceType[i]);
             absenceColor[i] = cboAbsenceColor[i].getValue();
-            System.out.println("AbsenceColor["+i+"] is " + absenceColor[i]);
             String balType = cboBalanceType[i].getValue();
             if (balType.equals("Accrued Hours")) {accrualRate[i] = (tfAccrualRate[i].getText());}
             if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
             if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
-            System.out.println("Accrual Rate["+i+"] is " + accrualRate[i]);
             String aMax = "";
             try {
                 aMax = tfMaxAccrual[i].getText();
@@ -510,63 +508,73 @@ public class SetupForm extends Application {
             } 
             if (aMax.isEmpty()) {maxAccrual[i] = "0";}
             else {maxAccrual[i] = tfMaxAccrual[i].getText();}
-            System.out.println("maxAccrual["+i+"] is " + maxAccrual[i]);
             
             // TODO - valididae these values for nulls
         }
     }
     
-    
+    /* private updateAbsenceTypes
+     *
+     *
+     * This method updates any changed data for existing absence types displayed
+     * and it inserts any new types that were added to the edit form 
+     * before pressing the update button    */
     private void updateAbsenceTypes() {
 
         int i = 0;
         // update existing in Absence_Types
-        for (i = 0; i < typesCounter; i++) { 
-            System.out.println("Updating absence type " + i); 
+        for (i = 0; i < (typesCounter-editAdd); i++) { 
             String sql = "UPDATE Absence_Types " +
                 "SET Absence_Type = '" + absenceType[i] + "', Color = '" + absenceColor[i] + "', Accrual_Rate = '" + 
                 accrualRate[i] + "', Max_Accrual = '" + maxAccrual[i] + "' " +
                 "WHERE Absence_ID = '" + absenceID[i] + "'"; 
-            System.out.println(sql);
             Database.SQLUpdate(sql);
         }
         
         // insert newly added to Absence_Types
         for (int a = i; a < typeSize; a++) { 
-            System.out.println("Inserting absence type " + a); 
             String sql = "INSERT into Absence_Types (Absence_Type, Color, Accrual_Rate, Max_Accrual) " +
                 "VALUES ('" + absenceType[a] + "', '" + absenceColor[a] + "', '" + accrualRate[a] +
                 "', '" + maxAccrual[a] + "')"; 
-            System.out.println(sql);
             Database.SQLUpdate(sql);
         }      
     }
     
+    /* private insert AbsenceType
+     *
+     *
+     * This method inserts only newly-added types into the absence_types table 
+     * when the form started as empty and was not pre populated */
     private void insertAbsenceTypes() {
         
         // insert to 
         for (int i = 0; i < typeSize; i++) { 
-            System.out.println("Inserting absence type " + i); 
             String sql = "INSERT into Absence_Types (Absence_Type, Color, Accrual_Rate, Max_Accrual) " +
                 "VALUES ('" + absenceType[i] + "', '" + absenceColor[i] + "', '" + accrualRate[i] +
                 "', '" + maxAccrual[i] + "')"; 
-            System.out.println(sql);
             Database.SQLUpdate(sql);
         }   
         
     }
     
+    /* private deleteAbsenceType
+     *
+     * i = the index of the absence ID to delete
+     *
+     * This method deletes an absence ID and its reference rows from all tables    */
     private void deleteAbsenceType(int i) {
         
-        
+        // Delete all absences in absences table associated with the type id
         String sql = "DELETE from absences " + 
         "WHERE Absence_ID = '" + absenceID[i] + "'";
         Database.SQLUpdate(sql);
         
+        // Delete all in starting_balances table associatesd with the type id
         sql = "DELETE from Starting_Balances " + 
         "WHERE Absence_ID = '" + absenceID[i] + "'";
         Database.SQLUpdate(sql);
         
+        // Delete the absence type for the id
         sql = "DELETE from Absence_Types " + 
         "WHERE Absence_ID = '" + absenceID[i] + "'";
         Database.SQLUpdate(sql);
