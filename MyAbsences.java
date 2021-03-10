@@ -44,8 +44,7 @@ public class MyAbsences extends Application {
     
     // Create Window Objects
     static ListReport listWindow = new ListReport();           // create ListReport object
-    static BalancesForm balanceWindow = new BalancesForm();    // create BalanceForm object
-           
+               
     @Override
     public void start(Stage primaryStage) throws Exception {
         
@@ -64,7 +63,7 @@ public class MyAbsences extends Application {
          
         // Build the Middle bPane -> Calander  
         CalanderBuilder calanderBuilder = new CalanderBuilder(year);
-        GridPane calander = calanderBuilder.buildCalander();       
+        GridPane calander = calanderBuilder.buildCalander();  
         
         //Build the Top bPane -> TopLineHBox
         TopPaneBuilder topPaneBuilder = new TopPaneBuilder(year);
@@ -92,14 +91,15 @@ public class MyAbsences extends Application {
                if (btnText.equals("Setup")) {
                     try {
                         SetupForm setupWindow = new SetupForm();            // create SetupForm object
-                        setupWindow.start(null);            // start secondary stage
+                        setupWindow.start(null);                            // start secondary stage
                     } catch (Exception ex) {
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
                }
                if (btnText.equals("Enter Balances")) {
                     try {
-                        balanceWindow.start(null);            // start secondary stage
+                        BalancesForm balanceWindow = new BalancesForm();    // create BalanceForm object
+                        balanceWindow.start(null);                          // start secondary stage
                     } catch (Exception ex) {
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -207,7 +207,7 @@ public class MyAbsences extends Application {
         int numTypes = Database.getNumRows("Absence_Types");
         System.out.println("There are " + numTypes + " Types");
         
-        // Set a warning
+        // Set a Setup warning
         if (numTypes == 0) {
             Warnings.addWarning(0, todayStr, "RUN_SETUP");
         } else {Warnings.removeWarning(0,"RUN_SETUP");}
@@ -215,8 +215,8 @@ public class MyAbsences extends Application {
         int startCount = Database.getStartBalanceCount(year);
         System.out.println("There are " + startCount + " Balances");
         
-        // Set a warning
-        if (numTypes != startCount) {
+        // Set a Enter Balances warning
+        if (numTypes > startCount) {
             Warnings.addWarning(0, todayStr, "ENTER_BALANCES");
         } else {Warnings.removeWarning(0,"ENTER_BALANCES");} 
         
