@@ -134,24 +134,23 @@ public class CalanderBuilder {
                             }
                             String toolTipText = ""; 
                             // Add Max Accrual warning to max accrual day if there is one
-                            for (int i = 0; i < warnings.size(); i++) {
-                                if (JsonMatch.getJsonIndex(warnings,"Date",buildDate) != -1) {
-                                    if (JsonMatch.getJsonIndex(warnings,"Warning_Name","MAX_ACCRUAL") != -1) {
-                                        String dateColor = ((String)warnings.get(i).get("Color")).toLowerCase();
-                                        String warnColor = "btnwarn" + dateColor;
-                                        btnMonth[buildMonth][btnIter].getStyleClass().add(warnColor);
-                                        String ttw = (String)warnings.get(i).get("Absence_Type") + " Max Accrual Date" + "\n";
-                                        // check if there is not an absence on date already to add to its tt
-                                        if (JsonMatch.getJsonIndex(absences,"Date",buildDate) == -1) {
-                                            Tooltip wtp = new Tooltip(ttw);   // create a new tooltip for day
-                                            wtp.getStyleClass().add("tt" + dateColor);
-                                            btnMonth[buildMonth][btnIter].setTooltip(wtp);
-                                        } else {
-                                            toolTipText = toolTipText + ttw;
-                                        }
+                            if (JsonMatch.getJsonIndex(warnings,"Date",buildDate) != -1) {
+                                if (JsonMatch.getJsonIndex(warnings,"Warning_Name","MAX_ACCRUAL") != -1) {
+                                    int absenceID = JsonMatch.getJsonInt(warnings, "Date", buildDate, "Absence_ID");
+                                    String dateColor  = JsonMatch.getJsonString(warnings, "Date", buildDate, "Color").toLowerCase();
+                                    String warnColor = "btnwarn" + dateColor;
+                                    btnMonth[buildMonth][btnIter].getStyleClass().add(warnColor);
+                                    String ttw = JsonMatch.getJsonString(warnings, "Date", buildDate, "Absence_Type") + " Max Accrual Date" + "\n";
+                                    // check if there is not an absence on date already to add to its tt
+                                    if (JsonMatch.getJsonIndex(absences,"Date",buildDate) == -1) {
+                                        Tooltip wtp = new Tooltip(ttw);   // create a new tooltip for day
+                                        wtp.getStyleClass().add("tt" + dateColor);
+                                        btnMonth[buildMonth][btnIter].setTooltip(wtp);
+                                    } else {
+                                        toolTipText = toolTipText + ttw;
                                     }
                                 }
-                            } 
+                            }
                             // Add Absence Data to the day for day coloring and tooltip
                             String color = JsonMatch.getJsonString(absences, "Date", buildDate, "Color");
                             if (JsonMatch.getJsonIndex(absences,"Date",buildDate) != -1) {   // check if the date is in absences              
