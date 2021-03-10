@@ -43,7 +43,7 @@ public class Warnings {
         
         boolean insert = false;            
         // check if there is a warning already for the absence_ID/Warning_Type
-        if (warningName.equals("MAX ACCRUAL") && (JsonMatch.getJsonIndex(warnings,"Absence_ID",absenceID) == -1)) {
+        if (warningName.equals("MAX_ACCRUAL") && (JsonMatch.getJsonIndex(warnings,"Absence_ID",absenceID) == -1)) {
             insert = true;
         } else if (JsonMatch.getJsonIndex(warnings,"Warning_Name",warningName) == -1) {
             insert = true;
@@ -73,14 +73,14 @@ public class Warnings {
         ArrayList<String> warnMessages = new ArrayList<>();
         ArrayList<JSONObject> warnings =  Database.getWarnings();  // list of warnings
         
-
         if (warnings.size() > 0) {
             for (int i = 0; i < warnings.size(); i++) {
                 // Check for MAX_ACCRUAL warnings
                 if (((String)warnings.get(i).get("Warning_Name")).equals("MAX_ACCRUAL")) {
                     String absenceType = (String)warnings.get(i).get("Absence_Type");
-                    String calDate = (String)warnings.get(i).get("Cal_Date");      
-                    warnMessages.add(absenceType + " Max Accrual on " + calDate);
+                    String calDate = (String)warnings.get(i).get("Cal_Date"); 
+                    String warnStr = absenceType + " Max Accrual on " + calDate;
+                    warnMessages.add(warnStr);
                 }
                 if (((String)warnings.get(i).get("Warning_Name")).equals("RUN_SETUP")) {
                     warnMessages.add("Enter Setup to Define Absence Types");
@@ -105,7 +105,7 @@ public class Warnings {
     * This method removes a warning from the warning table     */
     static public void removeWarning(int absenceID, String warningName) {
         
-        ArrayList<JSONObject> warnings =  Database.getWarnings();  // list of warnings for Max Accurals reached.
+        ArrayList<JSONObject> warnings = Database.getWarnings();  // list of warnings for Max Accurals reached.
 
         if (JsonMatch.getJsonIndex(warnings,"Absence_ID",absenceID) != -1) { 
             if (JsonMatch.getJsonIndex(warnings,"Warning_Name",warningName) != -1) {
