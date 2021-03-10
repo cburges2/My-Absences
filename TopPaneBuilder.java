@@ -16,9 +16,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import static myabsences.MyAbsences.cboYear;
-import static myabsences.MyAbsences.btnsTop;
-import org.json.simple.JSONObject;
+import static myabsences.MyAbsences.btnsTop; // buttons must be handled in main class
+import static myabsences.MyAbsences.cboYear; // pull in year from main class
 
 /**
  * TopPaneBuilder Class
@@ -115,6 +114,7 @@ public class TopPaneBuilder {
             ArrayList<String> warnings = Warnings.getWarnings();
             for (int i = 0; i < warnings.size(); i++) {
                 String warningStr = warnings.get(i);
+                System.out.println("found Warning " + warningStr);
                 Text warning = new Text(warningStr);
                 warning.getStyleClass().add("txtwarning");   
                 warningVBox.getChildren().add(warning);
