@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -137,11 +138,10 @@ public class BalancesForm extends Application {
 
         // determine what buttons to add to bottom hbox
         if (prePopulate) {
-            //putValues();
             hBoxB.getChildren().addAll(btnBalancesUpdate,btnBalancesExit);
-           // Platform.runLater(() -> {
-                //btnSetupExit.requestFocus();  // Set focus on exit if prepopulated
-            //});
+            Platform.runLater(() -> {
+                btnBalancesExit.requestFocus();  // Set focus on exit if prepopulated
+            });
         } else {
             hBoxB.getChildren().addAll(btnBalancesSave,btnBalancesExit);
         }       
@@ -211,6 +211,7 @@ public class BalancesForm extends Application {
             
             double arate = (Double)absenceTypes.get(i).get("Accrual_Rate");
             
+            // Do not add add-in types
             if (arate != -1) {
                 // add labels
                 GridPane.setConstraints(lblAbsenceName[i], 1, i); 
@@ -224,7 +225,7 @@ public class BalancesForm extends Application {
                 controlCount++;
             }
 
-            // add on date label and a datepicker
+            // add on date label and a datepicker for accrued types
             if (arate > 0 && !prePopulate) {
                 Label onDate = new Label("On Date: ");
                 GridPane.setConstraints(onDate, 9, i); 
@@ -232,7 +233,6 @@ public class BalancesForm extends Application {
                 gPane.getChildren().add(onDate);
                 datePicker[i] = new DatePicker();
                 datePicker[i].setMaxWidth(100);
-                //datePicker.setValue(LOCAL_DATE("2016-05-01"));
                 String janOne = "01/01/" + year; // current year
                 LocalDate date = LocalDate.parse(janOne,format);
                 datePicker[i].setValue(date);
@@ -244,6 +244,7 @@ public class BalancesForm extends Application {
                 controlCount++;
             }
         }
+        
         if (prePopulate) {putValues();}
     }
     
@@ -254,8 +255,12 @@ public class BalancesForm extends Application {
     private void putValues() {
         
         // set data in the controls that was already saved 
-        for (int i = 0; i < balancesSize; i++) {
-            tfTypeBalance[i].setText( String.valueOf(startBalances.get(i).get("Starting_Balance")) );
+        for (int i = 0; i < typeSize; i++) {
+            String absenceName = (String)absenceTypes.get(i).get("Absence_Type");
+            double balance = JsonMatch.getJsonDouble(startBalances,"Absence_Type",absenceName,"Starting_Balance");
+            if (balance != 0) {
+                tfTypeBalance[i].setText(String.valueOf(balance));
+            }           
         }       
         
     } // end putValues
