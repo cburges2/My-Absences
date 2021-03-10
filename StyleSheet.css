@@ -227,14 +227,14 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-border-width: 1.0;
      -fx-font-weight: bold;
      -fx-text-fill: Red;
-     -fx-border-color: Red;
+     -fx-border-color: Yellow;
      -fx-border-insets: 0;
  }
  .btnwarnorange{
      -fx-border-width: 1.0;
      -fx-font-weight: bold;
-     -fx-text-fill: Red;
-     -fx-border-color: Orange;
+     -fx-text-fill: Orange;
+     -fx-border-color: Yellow;
      -fx-border-insets: 0;
  }
  .btnwarngreen{
@@ -242,27 +242,27 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-font-weight: bold;
      -fx-text-fill: Green;
      -fx-border-color: Yellow;
-     
+     -fx-border-insets: 0;
  }
  .btnwarnblue{
      -fx-border-width: 1.0;
      -fx-font-weight: bold;
-     -fx-text-fill: Red;
-     -fx-border-color: Blue;
+     -fx-text-fill: Blue;
+     -fx-border-color: Yellow;
      -fx-border-insets: 0;
  }
  .btnwarnyellow{
       -fx-border-width: 1.0;
      -fx-font-weight: bold;
-     -fx-text-fill: Red;
+     -fx-text-fill: Yellow;
      -fx-border-color: Yellow;
      -fx-border-insets: 0;
  }
  .btnwarnpurple{
      -fx-border-width: 1.0;
      -fx-font-weight: bold;
-     -fx-text-fill: Red;
-     -fx-border-color: Purple;
+     -fx-text-fill: Purple;
+     -fx-border-color: Yellow;
      -fx-border-insets: 0;
  }
   .btndelete {
