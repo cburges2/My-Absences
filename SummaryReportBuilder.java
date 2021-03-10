@@ -242,17 +242,11 @@ public class SummaryReportBuilder {
                 }
             }
             numDays++;
-            String calDate = "";
             // Check if the totalHours are now more than the accrual Max
-            absenceID = JsonMatch.getJsonInt(startBalances,"Absence_Type",absenceType,"Absence_ID");
+
             String warningName = "MAX_ACCRUAL";
+            absenceID = JsonMatch.getJsonInt(startBalances,"Absence_Type",absenceType,"Absence_ID");
             if ((totalHours  > accrualMax) && numDays < warningLimit) {
-                try {
-                    Date date = formatDb.parse(dayDate);
-                    calDate = formatCal.format(date);    // use cal format date for creating the warning
-                } catch (ParseException de) {
-                    // handle error
-                }
                 // add or update the warning
                 Warnings.addWarning(absenceID, dayDate, warningName);
                 done = true;
