@@ -347,7 +347,6 @@ public class DayEntry extends Application {
         
         getValues();   // get current values from the controls
 
-        System.out.println("Adding " + dayDate);
         String sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes) " +
         "VALUES ('" + dayDate + "', '" + absenceID + "', '" + title + "', '" + decimalHours + "', '"
         + submitted + "', '" + notes + "')";       
@@ -362,7 +361,6 @@ public class DayEntry extends Application {
             String dayOfWeek = date1.getDayOfWeek().toString();
             dayDate = nextDay;
             if (!dayOfWeek.equals("SATURDAY") && !dayOfWeek.equals("SUNDAY")) {
-                System.out.println("Adding " + dayDate);
                 sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes) " +
                 "VALUES ('" + dayDate + "', '" + absenceID + "', '" + title + "', '" + decimalHours + "', '"
                 + submitted + "', '" + notes + "')"; 
@@ -400,8 +398,6 @@ public class DayEntry extends Application {
         + submitted + "', Notes = '" + notes + "' " +
         "WHERE Date = '" + dayDate + "'";
         
-        System.out.println(sql);
-        
         Database.SQLUpdate(sql);
         
     }
@@ -427,23 +423,15 @@ public class DayEntry extends Application {
     private void getValues() {
         
         title = tfTitle.getText();
-        System.out.println("title is " + title);                //TEST
         absenceType = (cboType.getValue());
-        System.out.println("Absence Type is " + absenceType);   //TEST
         absenceID = getAbsenceTypeID(absenceType);
-        System.out.println("Absence Type ID is " + absenceID);  //TEST
         hours = (int)cboHours.getValue();
-        System.out.println("Hours is " + hours);                //TEST
         minutes = (int)cboMinutes.getValue();
-        System.out.println("Minutes is " + minutes);            //TEST
         getHoursDecimal();   // sets decimalHours
         if (ckbSubmitted.isSelected()){submitted = 1;}
             else {submitted = 0;}
-        System.out.println("submitted is " + submitted);        //TEST
         notes = taNotes.getText();
-        System.out.println("Notes is " + notes);                //TEST
         repeatDays = (int)cboRepeat.getValue();
-        System.out.println("Repeat is " + repeatDays);          //TEST
                
         // TODO -> valdidate these before sending to DB
         
@@ -458,11 +446,6 @@ public class DayEntry extends Application {
         hours = (int)decimalHours;
         double fractional = decimalHours - hours;
         minutes = (int)Math.rint(fractional * 60.0);
-        
-        //test
-        System.out.println("Decimal Hours = " + decimalHours);
-        System.out.println("Hours = " + hours);
-        System.out.println("Minutes = " + minutes);
 
     } // End getHoursMin
     
