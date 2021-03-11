@@ -38,6 +38,7 @@ public class DayEntry extends Application {
     SimpleDateFormat formatCal = new SimpleDateFormat("EEEEEEE, MMMMMMMM dd, yyyy"); // date format for title
     JSONObject dayData;         // a specific absence day data
     ArrayList<JSONObject> typesData;
+    ArrayList<JSONObject> groupDates;  // Dates of a group of absences
     String dayDate = "";        // the db format date for the day
     String absenceType = "";    // the user's absence type name
     String color = "";          // the user's color for the absence type
@@ -46,11 +47,14 @@ public class DayEntry extends Application {
     int hours = 0;              // the hours portion for combobox
     int minutes = 0;            // the minutes portion for combobox
     int submitted = 0;          // submitted flag from db
-    boolean holdiay = false;    // flag for Holiday type
+    //boolean holdiay = false;    // flag for Holiday type
     String notes = "";          // the user's notes for the absence (if any)
+    String group = "";          // absence group for multiple edits
     int repeatDays = 0;         // Days to repeat the absence
     int absenceID = 0;          // the id of the absence type
     boolean prePopulated = false; // flag for day already having data on load
+    boolean inGroup = false;      // flag for day part of a group
+    
     // controls
     TextField tfTitle = new TextField();
     ComboBox<String> cboType = new ComboBox();
@@ -63,8 +67,9 @@ public class DayEntry extends Application {
     Label lblType = new Label("Absence Type:");
     Label lblHours = new Label("Hours");
     Label lblMinutes = new Label("Minutes");
-    Label lblRepeat = new Label("Repeat For ");
+    Label lblRepeat = new Label("Create Group for");
     Label lblRepeatDays = new Label("Days");
+    Label lblAbsenceGroup = new Label("");
     
     GridPane formGPane = new GridPane();
 
@@ -82,11 +87,12 @@ public class DayEntry extends Application {
         // Get absence data for the day and the absnece types
         dayData = Database.getAbsence(dayDate);  // single JSONObject of the day data
         typesData = Database.getAbsenceTypes();  // Arraylist of JSONObject type data
+        groupDates = Database.getAbsenceGroupDates(dayDate);    // ArrayList of Group Date JSONObjects
        
         // if there was data for the day set the variables to it
         if (((String)dayData.get("Absence_Type")) != null) {
-            prePopulated = true;
             
+            prePopulated = true;
             // Set variables from absence data
             absenceType = (String)dayData.get("Absence_Type");
             color = (String)dayData.get("Color");
@@ -94,7 +100,10 @@ public class DayEntry extends Application {
             decimalHours = (double)dayData.get("Hours");
             submitted = (int)dayData.get("Submitted");
             notes = (String)dayData.get("Notes");
-            absenceID = getAbsenceTypeID(absenceType);  
+            group = (String)dayData.get("Absence_Group");
+            absenceID = getAbsenceTypeID(absenceType);
+            
+            if (!group.isEmpty()) {inGroup = true;}
 
             // convert decimal hours from db to hours and minutes
             getHoursMinutes(); 
@@ -125,10 +134,6 @@ public class DayEntry extends Application {
         if (!title.isEmpty()) {tfTitle.setText(title);}
         GridPane.setConstraints(tfTitle, 1, 1);
         formGPane.getChildren().add(tfTitle);
-        
-        if (absenceType.equals("Company Holiday")) {
-            ckbSubmitted.setSelected(true);
-        }
         
         // combobox for type - add data from types date       
         for (int i = 0; i < typesData.size(); i++) {
@@ -210,10 +215,16 @@ public class DayEntry extends Application {
         Button dayEntryUpdate = new Button("Update");
         Button dayEntrySave = new Button("Save");     
         Button dayEntryDelete = new Button("Delete");
+        Button dayEntryUpdateGroup = new Button("Update Group");
+        Button dayEntryDeleteGroup = new Button("Delete Group");
         
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
-            hBoxB.getChildren().addAll(dayEntryDelete,dayEntryUpdate,dayEntryExit);
+            hBoxB.getChildren().add(dayEntryDelete);
+            if (inGroup) {hBoxB.getChildren().add(dayEntryDeleteGroup);}
+            hBoxB.getChildren().add(dayEntryUpdate);
+            if (inGroup) {hBoxB.getChildren().add(dayEntryUpdateGroup);} 
+            hBoxB.getChildren().add(dayEntryExit);
             Platform.runLater(() -> {
                 dayEntryExit.requestFocus();  // Set focus on exit if prepopulated
             });
@@ -282,6 +293,17 @@ public class DayEntry extends Application {
                 
             }
         });
+        
+        dayEntryUpdateGroup.setOnAction(e-> {
+            try {
+            updateAbsenceGroup();
+            dayEntryStage.close(); 
+            MyAbsences.refresh();
+            } catch (Exception update) {
+                
+            }
+        });
+
 
         dayEntryDelete.setOnAction(e-> {
             try {
@@ -291,7 +313,17 @@ public class DayEntry extends Application {
             } catch (Exception delete) {
                 
             }
-        });      
+        });    
+        
+        dayEntryDeleteGroup.setOnAction(e-> {
+            try {
+            deleteAbsenceGroup();
+            dayEntryStage.close(); 
+            MyAbsences.refresh();
+            } catch (Exception delete) {
+                
+            }
+        });  
         
         dayEntryExit.setOnAction(e-> {
             try {
@@ -337,7 +369,6 @@ public class DayEntry extends Application {
             GridPane.setConstraints(lblRepeatDays,3,10);
             formGPane.getChildren().add(lblRepeatDays);   
         }
-        
     }
     
     /* private insertAbsence
@@ -346,10 +377,11 @@ public class DayEntry extends Application {
     private void insertAbsence() {
         
         getValues();   // get current values from the controls
+        if (repeatDays > 1) {group = dayDate;}
 
-        String sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes) " +
+        String sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes, Absence_Group) " +
         "VALUES ('" + dayDate + "', '" + absenceID + "', '" + title + "', '" + decimalHours + "', '"
-        + submitted + "', '" + notes + "')";       
+        + submitted + "', '" + notes + "', '" + group + "')";       
         Database.SQLUpdate(sql);
         
         // Repeat Add Days
@@ -361,9 +393,9 @@ public class DayEntry extends Application {
             String dayOfWeek = date1.getDayOfWeek().toString();
             dayDate = nextDay;
             if (!dayOfWeek.equals("SATURDAY") && !dayOfWeek.equals("SUNDAY")) {
-                sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes) " +
+                sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes, Absence_Group) " +
                 "VALUES ('" + dayDate + "', '" + absenceID + "', '" + title + "', '" + decimalHours + "', '"
-                + submitted + "', '" + notes + "')"; 
+                + submitted + "', '" + notes + "', '" + group + "')";       
                 Database.SQLUpdate(sql);
                 i++;
             } 
@@ -397,9 +429,26 @@ public class DayEntry extends Application {
         "SET Title = '" + title + "', Absence_ID = '" + absenceID + "', Hours = '" + decimalHours + "', Submitted = '"
         + submitted + "', Notes = '" + notes + "' " +
         "WHERE Date = '" + dayDate + "'";
+        Database.SQLUpdate(sql);
+         
+    }
+    
+    /* private updateAbsenceGroup
+    *
+    * Updates the absences table with data from the form, for a group of absence dates 
+    * builds the update string and calls the database SQLUpdate method*/ 
+    private void updateAbsenceGroup() {
         
+        getValues();   // get current values from the controls
+        
+        String sql = "UPDATE absences " +
+        "SET Title = '" + title + "', Absence_ID = '" + absenceID + "', Hours = '" + decimalHours + "', Submitted = '"
+        + submitted + "', Notes = '" + notes + "' " +
+        "WHERE Absence_Group = '" + group + "' ";
         Database.SQLUpdate(sql);
         
+        // Repeat Add Days
+     
     }
 
     /* private deleteAbsence
@@ -415,7 +464,22 @@ public class DayEntry extends Application {
         
         Database.SQLUpdate(sql);
         
-    }    
+    }   
+    
+    /* private deleteAbsence
+    *
+    * Deletes the absence in the absences table for the dayDate  
+    * Builds the delete string and calls the Database SQLUpdate method */ 
+    private void deleteAbsenceGroup() {
+        
+        getValues();   // get current values from the controls
+        
+        String sql = "DELETE from absences " + 
+        "WHERE Absence_Group = '" + group + "'";
+        
+        Database.SQLUpdate(sql);
+        
+    }       
     
     /* private getValues
      *
