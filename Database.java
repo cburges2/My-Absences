@@ -410,7 +410,8 @@ import org.json.simple.JSONObject;
             conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
             //Execute query
-            String sql = "Select Date,t.Absence_type,t.color,Title,Hours,Submitted,Notes from Absences as a " +
+            String sql = "Select Date,t.Absence_type,t.color,Title,Hours,Submitted,Notes,Absence_Group " +
+            "from Absences as a " +
             "join absence_types as t " +
             "on a.absence_id = t.absence_id " +
             "where a.date = '" + date + "'"; 
@@ -428,6 +429,7 @@ import org.json.simple.JSONObject;
                 record.put("Hours",rs.getDouble("Hours"));
                 record.put("Submitted",rs.getInt("Submitted"));
                 record.put("Notes",rs.getString("Notes"));
+                record.put("Absence_Group",rs.getString("Absence_Group"));
             }
 
             return record;
@@ -456,7 +458,6 @@ import org.json.simple.JSONObject;
              return null;   // return null if error    
         
     }        
-
    
     /* getAbsences - get the absences for the current year to ArrayList of JSONObjects
      * called before running buildCalendar() method
@@ -472,7 +473,8 @@ import org.json.simple.JSONObject;
             conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
             //Execute query
-            String sql = "Select Date,t.Absence_type,t.color,Title,Hours,Submitted,Notes from Absences as a " +
+            String sql = "Select Date,t.Absence_type,t.color,Title,Hours,Submitted,Notes,Absence_Group " +
+            "from Absences as a " +
             "join absence_types as t " +
             "on a.absence_id = t.absence_id " +
             "where a.date BETWEEN '" + year + "-01-01' AND '" + year + "-12-31' " + 
@@ -492,6 +494,7 @@ import org.json.simple.JSONObject;
                 record.put("Hours",rs.getDouble("Hours"));
                 record.put("Submitted",rs.getInt("Submitted"));
                 record.put("Notes",rs.getString("Notes"));
+                record.put("Absence_Group",rs.getString("Absence_Group"));
                 result.add(record);
             }
 
