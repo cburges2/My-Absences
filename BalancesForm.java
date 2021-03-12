@@ -159,7 +159,7 @@ public class BalancesForm extends Application {
               MyAbsences.refresh();
               startBalanceStage.close(); 
             } catch (Exception save) {
-                
+                // TODO - handle error
             }
         });
         
@@ -188,7 +188,6 @@ public class BalancesForm extends Application {
             }
         });    
 
-     
         /* set panes in stage and show stage */
         bPane.setTop(topPane);
         bPane.setCenter(gPane);
@@ -203,7 +202,9 @@ public class BalancesForm extends Application {
         startBalanceStage.show();
     } 
     
-    
+    /* private addControls
+     *
+     * adds the controls to the gridpane    */
     private void addControls() {
         
         controlCount = 0;  // number of controls put in gridpane (no Add-In hours)
@@ -226,7 +227,7 @@ public class BalancesForm extends Application {
             }
 
             // add on date label and a datepicker for accrued types
-            if (arate > 0 && !prePopulate) {
+            if (arate > 0) {  //&& !prePopulate
                 Label onDate = new Label("On Date: ");
                 GridPane.setConstraints(onDate, 9, i); 
                 GridPane.setColumnSpan(onDate, 4);
@@ -278,9 +279,7 @@ public class BalancesForm extends Application {
             
             // calculate accrued from date else use entered value
             if (arate > 0) {
-                if (prePopulate) {
-                    startingBalances[i] = tfTypeBalance[i].getText(); 
-                } else {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
+                {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
             } else if (arate == -1) {
                 startingBalances[i] = "0";
             }
@@ -290,6 +289,16 @@ public class BalancesForm extends Application {
         }
     } // end getValues
     
+    /* private calcAccruedStart
+     *
+     * index - index in array of accrued type
+     * rate - Accural rate for the accured type
+     *
+     * Example: calcAccruedStart(1, 1.052) (date in control 1/2/21)
+     * ==> .526
+     *
+     * Returns the starting balance for an accurued type on Jan 1st based on a
+     * later balance at a later date, based on the accrual rate */
     private double calcAccruedStart(int index, double rate) {
         
         // get entered value for starting balance
@@ -306,8 +315,12 @@ public class BalancesForm extends Application {
         // get rate on Jan 1st
         double start = balanceValue - (rate * numDays);
         return start;
-    }
+    } // end method calcAccruedStart
     
+    /* private insertBalances
+     *
+    * Inserts the balances in the controls into the starting_Balances table
+    * when the form was not prepopulated*/
     private void insertBalances () {
         
         for (int i = 0; i < typeSize; i++) {  
@@ -316,35 +329,35 @@ public class BalancesForm extends Application {
             String sql = "INSERT into Starting_Balances (Year, Absence_ID, Starting_Balance) " +
             "VALUES ('" + year + "', '" + absenceID + "', '" + startingBalances[i] + "')"; 
             Database.SQLUpdate(sql);        
-        }        
-                
-    }
+        }         
+    }  // end method insert Balances
     
+    /* private updateBalances
+     *
+     * Updates the balances when form is prepopulated, and inserts any 
+     * new absence type balances that were added in settings and set in the control */
     private void updateBalances () {
  
         // update those existing in database
-        for (int i = 0; i < balancesSize; i++) {  
+        for (int i = 0; i < typeSize; i++) {  
             
             int absenceID = (Integer)absenceTypes.get(i).get("Absence_ID");
-            String sql = "UPDATE Starting_Balances " +
+            
+            if (JsonMatch.getJsonIndex(startBalances,"Absence_ID",absenceID) == -1 ) {
+                // absence ID not in balances - insert
+                System.out.println(absenceID + " is not in balances");
+                String sql = "INSERT into Starting_Balances (Year, Absence_ID, Starting_Balance) " +
+                    "VALUES ('" + year + "', '" + absenceID + "', '" + startingBalances[i] + "')"; 
+                Database.SQLUpdate(sql); 
+            } else {
+                // absence ID in blances - update
+                System.out.println(absenceID + " is in balances");
+                String sql = "UPDATE Starting_Balances " +
                 "SET Absence_ID = '" + absenceID + "', Starting_Balance = '" + startingBalances[i] +  "' " +
                 "WHERE Absence_ID = '" + absenceID + "' and Year = '" + year + "'"; 
-            Database.SQLUpdate(sql);        
+                Database.SQLUpdate(sql);
+            }   
         }
-        
-        // insert new abasenceTypes balance
-        if (typeSize > balancesSize) {
-            int diffSize = (typeSize - balancesSize);
-            for (int i = 0; i < diffSize; i++) {
-                int addIndex = (i + balancesSize);
-                int absenceID = (Integer)absenceTypes.get(addIndex).get("Absence_ID");
-                String sql = "INSERT into Starting_Balances (Year, Absence_ID, Starting_Balance) " +
-                    "VALUES ('" + year + "', '" + absenceID + "', '" + startingBalances[balancesSize + i] + "')"; 
-                Database.SQLUpdate(sql); 
-            } 
-        }
-        
-        
-    }
+    } // end method updateBalances
   
 } //End Subclass ListReport
