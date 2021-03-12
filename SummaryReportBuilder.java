@@ -4,6 +4,7 @@ package myabsences;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -169,35 +170,34 @@ public class SummaryReportBuilder {
             // get future hours for type
             double future_Hours = JsonMatch.getJsonDouble(futureHours,"Absence_Type",absenceType,"Future_Hours");
             summaryTable[row][3] = Double.toString(future_Hours);
-            accrualRate = (double)startBalances.get(row).get("accrual_Rate");
+            accrualRate = (double)startBalances.get(row).get("Accrual_Rate");
             String accrualType = getaccrualType(accrualRate);  // get the type - accrued, fixed, or not calculated. 
             // set accrued absence type data for summary table and check accrual max
-            if (accrualType.equals("Accrued")) { 
+            if (accrualType.equals("Accrued")) {
                 if (thisYear.equals(year)) {
                     accrualMax = (double)startBalances.get(row).get("Max_Accrual");
-                    accruedToday = calcAccruedToday(accrualRate); 
+                    accruedToday = calcAvailableToday(accrualRate, startBalance, past_Hours); 
                     if (accrualMax != 0) findMaxAccrual();   // set max warning for absence type if there is a max
                 } 
-                // if not found set to zero 
-                accruedToday = calcAccruedToday(accrualRate); 
+                accruedToday = calcAvailableToday(accrualRate, startBalance, past_Hours); 
                 summaryTable[row][4] = accruedToday;
-                summaryTable[row][5] = calcAccuredRemainingHours(past_Hours,future_Hours,startBalance,accrualRate);
+                summaryTable[row][5] = calcAccuredRemainingHours(past_Hours, future_Hours, startBalance,accrualRate);
             }          
             // fixed accrual - calc remaining balance (startbalance - (used + planned))           
             if (accrualType.equals("Fixed")) {
-                summaryTable[row][4] = "--";    // no accurred today for fixed hours, just show dashes   
-                summaryTable[row][5] = calcFixedRemainingHours(past_Hours,future_Hours,startBalance); 
+                summaryTable[row][4] = calcAvailableToday(startBalance,past_Hours);   
+                summaryTable[row][5] = calcFixedRemainingHours(past_Hours, future_Hours, startBalance); 
             }        
             // Holidays - not calculated
             if (accrualType.equals("Added")) {
                 summaryTable[row][1] = Double.toString(past_Hours + future_Hours);
-                summaryTable[row][4] =  "--";    // no accurred today for not calculated hours, just show dashes
+                summaryTable[row][4] = Double.toString(future_Hours);
                 summaryTable[row][5] = "--";     // no remaining balance, show just dashes
             }
         }
 
         // move array elements and add headers to top of summary Table
-        String[] headers = new String[]{"          "," Beginning Balance   ","Used  ","Planned ","Accrued To Date  ","Remaining     "};
+        String[] headers = new String[]{"          "," Beginning Balance   ","Used  ","Planned ","Available Today ","Remaining     "};
         for (int row = numRows; row > 0; row--) {
             for (int col = 0; col < numColumns; col++) {
                 summaryTable[row][col] = summaryTable[row-1][col]; // move exiting array up on element
@@ -291,33 +291,53 @@ public class SummaryReportBuilder {
         
         return breakDown;
     } // End getHoursBreakdown
+
+    /* private calcAvailableToday (fixed types)
+    *
+    * startBalance - The starting balance for the absence type
+    * pastHOurs - hours used in the past up to today for absence type
+    * 
+    * Example: calcAvailableToday (80, 8)  
+    * => 77
+    *
+    * Calulates hours today for fixed types - (start - used)  */
+    private String calcAvailableToday(double startBalance, double pastHours) {
+
+        double availableToday = 0;
+
+        availableToday = startBalance - pastHours;
+        
+        return Double.toString(availableToday); // return availible today
+        
+    } // End calcAccrruedToday 
     
-    /*private calcAccruedToday
+    /*private calcAvailableToday (accrued types)
     *
     * accrualRate - the absence type accrual rate
+    * startBalance - The starting balance for the absence type
+    * pastHOurs - hours used in the past up to today for absence type
     * 
-    * Example: calcAccruedToday (.526)  - with today's date March 2
-    * => 24
+    * Example: calcAvailableToday (.526, 94.5, 0)  
+    * => 131.32
     *
-    * Calulates hours accrued from the start of the year              */
-    private String calcAccruedToday(double accrualRate) {
+    * Calulates hours accrued from the start of the year + startbalance - used  */
+    private String calcAvailableToday(double accrualRate ,double startBalance, double pastHours) {
         
-        String startStr = "2021-01-01";
-        double duration1 = 0;
-
-        try {
-            Date date1 = formatDb.parse(startStr);
-            Date date2 = formatDb.parse(todayStr);
-            long diff = date2.getTime() - date1.getTime();
-            duration1 = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        double duration = 0;
+        double availableToday = 0;
         
-        double duration = duration1+1;   // include today
-        accruedNow = Math.round((duration) * accrualRate);
+        // calculate days from Jan 1st to date in control
+        int currentYear = Integer.parseInt(FORMAT_YEAR.format(Calendar.getInstance().getTime())); // current year
+	LocalDate dateBefore = LocalDate.of(currentYear, 1, 1);
+        LocalDate dateNow = LocalDate.now();
+	long daysBetween = ChronoUnit.DAYS.between(dateBefore, dateNow);
+        duration = (double)daysBetween;
         
-        return Double.toString(accruedNow);
+        duration = duration++;                  // include today
+        accruedNow = (duration * accrualRate);  // accured to today
+        availableToday = ((duration * accrualRate) + startBalance) - pastHours;
+        
+        return Double.toString(availableToday); // return availible today
         
     } // End calcAccrruedToday  
     
