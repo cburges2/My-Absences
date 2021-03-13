@@ -75,7 +75,7 @@ public class ListReport extends Application {
                         case 1:
                             label.setText((String)(absences.get(row-1).get("Absence_Type")));
                             String color = (String)absences.get(row-1).get("Color");
-                            String cssColor = "lbl" + color.toLowerCase();
+                            String cssColor = "type" + color.toLowerCase();
                             label.getStyleClass().add(cssColor);  
                             break;
                         case 2:
@@ -93,7 +93,7 @@ public class ListReport extends Application {
                             }
                             else if (submit == 0) {
                                 label.setText("    No");
-                                label.getStyleClass().add("lblred");
+                                label.getStyleClass().add("typered");
                             }
                             break;
                         case 5:
