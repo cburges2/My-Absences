@@ -10,32 +10,32 @@ Stylesheet for text and controls in MyAbsences classes
 }
 .ttgreen{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(greenyellow, limegreen);
+     -fx-background-color:linear-gradient(#9de69c, limegreen);
      -fx-text-fill: Black;
  }
  .ttpurple{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(violet, palevioletred);
+     -fx-background-color:linear-gradient(#c39ce6, palevioletred);
      -fx-text-fill: Black;
  }
  .ttorange{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(orange, orangered);
+     -fx-background-color:linear-gradient(#f0c49e, orangered);
      -fx-text-fill: White;
  }
 .ttblue{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(cyan, deepskyblue);
+     -fx-background-color:linear-gradient(#9cbce6, deepskyblue);
      -fx-text-fill: Black;
  }
  .ttyellow {
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(yellow, yellowgreen);
+     -fx-background-color:linear-gradient(#e2e69c, yellowgreen);
      -fx-text-fill: Black;     
  }
  .ttred {
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(pink, red);
+     -fx-background-color:linear-gradient(#f0a99e, red);
      -fx-text-fill: White;     
  }
  
@@ -43,37 +43,37 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-background-radius: 1 1 1 1;  
  } 
  .btndaygreen {
-     -fx-background-color:linear-gradient(greenyellow, limegreen);
+     -fx-background-color:linear-gradient(#9de69c, limegreen);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Green;
      -fx-border-width: .8;
  }
   .btndaypurple {
-     -fx-background-color:linear-gradient(violet, palevioletred);
+     -fx-background-color:linear-gradient(#c39ce6, violet);
      -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: Green;
+     -fx-border-color: purple;
      -fx-border-width: .8;
  }
  .btndayblue {
-     -fx-background-color:linear-gradient(cyan, deepskyblue);
+     -fx-background-color:linear-gradient(#8da5e3, deepskyblue);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Blue;
      -fx-border-width: .8;     
  }
  .btndayorange {
-     -fx-background-color:linear-gradient(orange, orangered);
+     -fx-background-color:linear-gradient(#f0c49e, darkorange);
      -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: Orange;
+     -fx-border-color: darkorange;
      -fx-border-width: .8;
  }
  .btndayred {
-     -fx-background-color:linear-gradient(pink, red);
+     -fx-background-color:linear-gradient(#f0a99e, #e34444);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Red;
      -fx-border-width: .8;     
  } 
  .btndayyellow {
-     -fx-background-color:linear-gradient(yellow, yellowgreen);
+     -fx-background-color:linear-gradient(#e2e69c, yellow);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Yellow;
      -fx-border-width: .8;     
@@ -150,11 +150,11 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-font-weight: bold;
  }
   .typepurple {
-     -fx-text-fill: violet;
+     -fx-text-fill: #b665db;
      -fx-font-weight: bold;
  }
  .typered {
-     -fx-text-fill: red; 
+     -fx-text-fill: #e64135; 
      -fx-font-weight: bold;
  }
  .typeyellow {
@@ -166,29 +166,33 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-font-weight: bold;
  }
  .typeblue {
-     -fx-text-fill: deepskyblue;
+     -fx-text-fill: #588cd6;
      -fx-font-weight: bold;
  }
   .lblgreen {
-     -fx-text-fill: limegreen;
+     -fx-text-fill: #9de69c;
  }
   .lblpurple {
-     -fx-text-fill: purple;
+     -fx-text-fill: #c39ce6;
  }
  .lblred {
-     -fx-text-fill: red; 
+     -fx-text-fill: #f0a99e; 
  }
  .lblyellow {
-     -fx-text-fill: yellow;
+     -fx-text-fill: #e2e69c;
  }
  .lblorange {
-     -fx-text-fill: orange;
+     -fx-text-fill: #f0c49e;
  }
  .lblblue {
-     -fx-text-fill: deepskyblue;
+     -fx-text-fill: #9cbce6;
  }
  .lbldata {
      -fx-text-fill: black;
+ }
+ .lblverify {
+     -fx-text-fill:#d93838;
+     -fx-font-weight: bold;
  }
  .txtwarning {
      -fx-font: 12px Tahoma;
@@ -197,27 +201,27 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-fill: white; 
  }
   .formgreen {
-     -fx-background-color:lightgreen;
+     -fx-background-color:#9de69c;
      -fx-background-radius: 1 1 1 1; 
  }
   .formpurple {
-     -fx-background-color:violet;
+     -fx-background-color:#c39ce6;
      -fx-background-radius: 1 1 1 1; 
  }
  .formblue {
-     -fx-background-color:lightblue;
+     -fx-background-color:#9cbce6;
      -fx-background-radius: 1 1 1 1;  
  }
  .formorange {
-     -fx-background-color:orange;
+     -fx-background-color:#f0c49e;
      -fx-background-radius: 1 1 1 1; 
  }
  .formred {
-     -fx-background-color:pink;
+     -fx-background-color:#f0a99e;
      -fx-background-radius: 1 1 1 1;   
  } 
  .formyellow {
-     -fx-background-color:#d6cf06;
+     -fx-background-color:#e2e69c;
      -fx-background-radius: 1 1 1 1;    
  }
 .underline {
@@ -266,7 +270,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-border-insets: 0;
  }
   .btndelete {
-     -fx-background-color:linear-gradient(pink, #e3280b); 
+     -fx-background-color:linear-gradient(#f0a99e, #e3280b); 
      -fx-font-weight: bold;
      -fx-background-radius: 3 3 3 3; 
      -fx-background-insets: 2, 2; -fx-padding: 1;
