@@ -6,7 +6,6 @@ package myabsences;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -39,6 +38,8 @@ public class DayEntry extends Application {
     JSONObject dayData;         // a specific absence day data
     ArrayList<JSONObject> typesData;
     ArrayList<JSONObject> groupDates;  // Dates of a group of absences
+    ArrayList<JSONObject> stats;
+    Validate validate = new Validate();
     String dayDate = "";        // the db format date for the day
     String absenceType = "";    // the user's absence type name
     String color = "";          // the user's color for the absence type
@@ -54,6 +55,8 @@ public class DayEntry extends Application {
     int absenceID = 0;          // the id of the absence type
     boolean prePopulated = false; // flag for day already having data on load
     boolean inGroup = false;      // flag for day part of a group
+    double currentAvailable = 0.0; // used for verification that hours are available
+    boolean validated = false;     // needs to be set true to insert or update data
     
     // controls
     TextField tfTitle = new TextField();
@@ -70,6 +73,14 @@ public class DayEntry extends Application {
     Label lblRepeat = new Label("Create Group for");
     Label lblRepeatDays = new Label("Days");
     Label lblAbsenceGroup = new Label("");
+    Label lblHoursAvailable = new Label("");
+    // buttons
+    Button dayEntryExit = new Button("Exit");
+    Button dayEntryUpdate = new Button("Update Day");
+    Button dayEntrySave = new Button("Save");     
+    Button dayEntryDelete = new Button("Delete Day");
+    Button dayEntryUpdateGroup = new Button("Update Group");
+    Button dayEntryDeleteGroup = new Button("Delete Group");
     
     GridPane formGPane = new GridPane();
 
@@ -80,14 +91,14 @@ public class DayEntry extends Application {
     * This constructor sets the dayDate of the absence, and gets the day data for the day if there is any
     * it sets the class variables for the form data that was saved in the absences table for the day 
     * it converts the saved decimal hours data to days and minutes*/
-    public DayEntry (String dDate) {
+    public DayEntry (String dDate, ArrayList<JSONObject> statistics) {
         
         this.dayDate = dDate;
        
         // Get absence data for the day and the absnece types
         dayData = Database.getAbsence(dayDate);  // single JSONObject of the day data
         typesData = Database.getAbsenceTypes();  // Arraylist of JSONObject type data
-        groupDates = Database.getAbsenceGroupDates(dayDate);    // ArrayList of Group Date JSONObjects
+        stats = statistics;
        
         // if there was data for the day set the variables to it
         if (((String)dayData.get("Absence_Type")) != null) {
@@ -102,11 +113,13 @@ public class DayEntry extends Application {
             notes = (String)dayData.get("Notes");
             group = (String)dayData.get("Absence_Group");
             absenceID = getAbsenceTypeID(absenceType);
+            currentAvailable = Double.parseDouble(JsonMatch.getJsonString(stats,"Absence_Type",absenceType,"Available_Hours"));
+            lblHoursAvailable.setText(JsonMatch.getJsonString(stats,"Absence_Type",absenceType,"Available_DayHours")+"Available");
             
             if (!group.isEmpty()) {inGroup = true;}
 
             // convert decimal hours from db to hours and minutes
-            getHoursMinutes(); 
+            getHoursMinutes();  
         }
     }
     
@@ -130,10 +143,8 @@ public class DayEntry extends Application {
         // **** Form Fields *****
         
         // text field for absence title
-        GridPane.setColumnSpan(tfTitle,4);
+        GridPane.setColumnSpan(tfTitle,14);
         if (!title.isEmpty()) {tfTitle.setText(title);}
-        GridPane.setConstraints(tfTitle, 1, 1);
-        formGPane.getChildren().add(tfTitle);
         
         // combobox for type - add data from types date       
         for (int i = 0; i < typesData.size(); i++) {
@@ -141,7 +152,8 @@ public class DayEntry extends Application {
             cboType.getItems().add(aType); 
         }
         
-        if (!absenceType.isEmpty()) {cboType.setValue(absenceType);}
+        //if (!absenceType.isEmpty()) {cboType.setValue(absenceType);}
+        cboType.setValue(absenceType);
 
         // combobox for hours 
         for (int i = 0; i < 9; i++) {
@@ -171,59 +183,74 @@ public class DayEntry extends Application {
         }
         cboRepeat.setValue(1);
         cboRepeat.setPrefWidth(55);
+
+        // Set Button attributes
+        dayEntryUpdateGroup.setMaxHeight(22);
+        dayEntryUpdateGroup.setMinHeight(22);
+        dayEntryDeleteGroup.setMaxHeight(22);
+        dayEntryDeleteGroup.setMinHeight(22);
         
         // *** ADD Fields to GridPane ***
-        // Absence Type
-        GridPane.setConstraints(lblType,1,5);
-        GridPane.setColumnSpan(lblType, 2);
+        // title
+        GridPane.setConstraints(tfTitle, 1, 1);
+        GridPane.setColumnSpan(tfTitle, 10);
+        formGPane.getChildren().add(tfTitle);
+        // Absence Type label
+        GridPane.setConstraints(lblType, 1, 2);
+        GridPane.setColumnSpan(lblType, 3);
         formGPane.getChildren().add(lblType);
-        GridPane.setConstraints(cboType, 3, 5);
-        GridPane.setColumnSpan(cboType, 2);
+        // absence type combobox
+        GridPane.setConstraints(cboType, 4, 2);
+        GridPane.setColumnSpan(cboType, 7);
         formGPane.getChildren().add(cboType);    
-        // Hours
-        GridPane.setConstraints(lblHours, 2, 7);
+        // Hours combobox
+        GridPane.setConstraints(cboHours, 1, 3);
+        GridPane.setColumnSpan(cboHours, 3);
+        formGPane.getChildren().add(cboHours);    
+        // hours label
+        GridPane.setConstraints(lblHours, 3, 3);
+        GridPane.setColumnSpan(lblHours, 3);
         formGPane.getChildren().add(lblHours);        
-        GridPane.setConstraints(cboHours, 1, 7);
-        formGPane.getChildren().add(cboHours);
-        // Minutes
-        GridPane.setConstraints(lblMinutes, 4, 7);
+        // Minutes combobox
+        GridPane.setConstraints(cboMinutes, 4, 3);
+        GridPane.setColumnSpan(cboMinutes, 3);
+        formGPane.getChildren().add(cboMinutes);
+        // mintues label
+        GridPane.setConstraints(lblMinutes, 7, 3);
+        GridPane.setColumnSpan(lblMinutes, 3);
         formGPane.getChildren().add(lblMinutes);
-        GridPane.setConstraints(cboMinutes, 3, 4);
-        GridPane.setConstraints(cboMinutes, 3, 7);
-        formGPane.getChildren().add(cboMinutes); 
-        // Submitted
-        GridPane.setColumnSpan(ckbSubmitted, 2);
-        GridPane.setConstraints(ckbSubmitted, 1, 9);
+        // Submitted checkbox
+        GridPane.setConstraints(ckbSubmitted, 1, 5);
+        GridPane.setColumnSpan(ckbSubmitted, 8);
         formGPane.getChildren().add(ckbSubmitted);   
         
-        // add the repeat entry fields  for an empty form
-        addToggleFields(); 
+        if (!prePopulated) {addToggleFields();}  // add repeat day fields
+        if (inGroup) {addGroupButtons();}        // add group buttons      
         
-        // text field for notes 
+        // add label notes 
         Label lblNotes = new Label("Notes:");
-        GridPane.setConstraints(lblNotes, 1, 13);
+        GridPane.setConstraints(lblNotes, 1, 10);
+        GridPane.setColumnSpan(lblNotes, 2);
         formGPane.getChildren().add(lblNotes);
-        GridPane.setColumnSpan(taNotes,4);
+        // text field notes
+        GridPane.setConstraints(taNotes, 1, 11);
+        GridPane.setColumnSpan(taNotes,10);
         taNotes.setPrefWidth(300);
         taNotes.setPrefHeight(100);
         if (!notes.isEmpty()) {taNotes.setText(notes);}
-        GridPane.setConstraints(taNotes, 1, 14);
         formGPane.getChildren().add(taNotes);
         
-        // Create the Buttons
-        Button dayEntryExit = new Button("Exit");
-        Button dayEntryUpdate = new Button("Update");
-        Button dayEntrySave = new Button("Save");     
-        Button dayEntryDelete = new Button("Delete");
-        Button dayEntryUpdateGroup = new Button("Update Group");
-        Button dayEntryDeleteGroup = new Button("Delete Group");
+        // add label hours available
+        GridPane.setConstraints(lblHoursAvailable, 1, 12);
+        GridPane.setColumnSpan(lblHoursAvailable,10);
+        formGPane.getChildren().add(lblHoursAvailable);
         
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
             hBoxB.getChildren().add(dayEntryDelete);
-            if (inGroup) {hBoxB.getChildren().add(dayEntryDeleteGroup);}
+            //if (inGroup) {hBoxB.getChildren().add(dayEntryDeleteGroup);}
             hBoxB.getChildren().add(dayEntryUpdate);
-            if (inGroup) {hBoxB.getChildren().add(dayEntryUpdateGroup);} 
+            //if (inGroup) {hBoxB.getChildren().add(dayEntryUpdateGroup);} 
             hBoxB.getChildren().add(dayEntryExit);
             Platform.runLater(() -> {
                 dayEntryExit.requestFocus();  // Set focus on exit if prepopulated
@@ -264,10 +291,10 @@ public class DayEntry extends Application {
         bPane.setTop(topDatePane);
         bPane.setBottom(hBoxB);
         Scene dayFormScene = new Scene(bPane); 
-        dayEntryStage.setMaxHeight(600);
-        dayEntryStage.setMinHeight(500);
-        dayEntryStage.setMaxWidth(650);
-        dayEntryStage.setMinWidth(350);
+        dayEntryStage.setMaxHeight(450);
+        dayEntryStage.setMinHeight(450);
+        dayEntryStage.setMaxWidth(375);
+        dayEntryStage.setMinWidth(375);
         dayFormScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         dayEntryStage.setTitle("Day Hours Entry");
         dayEntryStage.setScene(dayFormScene);
@@ -276,9 +303,12 @@ public class DayEntry extends Application {
         // ** Button Event Handlers **
         dayEntrySave.setOnAction(e-> {
             try {
-            insertAbsence();   
-            MyAbsences.refresh();
-            dayEntryStage.close(); 
+                getValues();   // get current values from the controls
+                if (validateData()) {
+                    insertAbsence();   
+                    MyAbsences.refresh();
+                    dayEntryStage.close();
+                }
             } catch (Exception save) {
                 
             }
@@ -286,9 +316,12 @@ public class DayEntry extends Application {
         
         dayEntryUpdate.setOnAction(e-> {
             try {
-            updateAbsence();
-            dayEntryStage.close(); 
-            MyAbsences.refresh();
+                getValues();   // get current values from the controls
+                if (validateData()) {
+                    updateAbsence();
+                    dayEntryStage.close(); 
+                    MyAbsences.refresh();
+                }
             } catch (Exception update) {
                 
             }
@@ -296,14 +329,16 @@ public class DayEntry extends Application {
         
         dayEntryUpdateGroup.setOnAction(e-> {
             try {
-            updateAbsenceGroup();
-            dayEntryStage.close(); 
-            MyAbsences.refresh();
+                getValues();   // get current values from the controls
+                if (validateData()) {
+                    updateAbsenceGroup();
+                    dayEntryStage.close(); 
+                    MyAbsences.refresh();
+                }
             } catch (Exception update) {
                 
             }
         });
-
 
         dayEntryDelete.setOnAction(e-> {
             try {
@@ -336,6 +371,7 @@ public class DayEntry extends Application {
         // Type Combobox Handler - Set background color of form to selected type
         cboType.setOnAction(e->{
             try {
+                lblType.getStyleClass().clear();
                 String type = cboType.getValue(); // get type from combo box
                 //int typePos = JsonMatch.getJsonIndex(typesData,"Absence_Type",type);
                 //String cboColor = (String)typesData.get(typePos).get("Color");
@@ -348,6 +384,12 @@ public class DayEntry extends Application {
                 formGPane.getStyleClass().add(css);
                 topDatePane.getStyleClass().clear();
                 topDatePane.getStyleClass().add(css);
+                // get stats for type changed to
+                String aHours = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_Hours");
+                String aDayH = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_DayHours");
+                currentAvailable = Double.parseDouble(aHours);
+                lblHoursAvailable.setText(aDayH + "Available");
+                System.out.println("Hours available: " + currentAvailable);
             }
             catch(Exception ex) {
             }
@@ -361,22 +403,38 @@ public class DayEntry extends Application {
     private void addToggleFields() {
         
         // Repeat 
-        if (!prePopulated) {
-            GridPane.setConstraints(lblRepeat,1,10);
-            formGPane.getChildren().add(lblRepeat);
-            GridPane.setConstraints(cboRepeat, 2, 10);
-            formGPane.getChildren().add(cboRepeat);  
-            GridPane.setConstraints(lblRepeatDays,3,10);
-            formGPane.getChildren().add(lblRepeatDays);   
-        }
+        GridPane.setConstraints(lblRepeat,1,6);
+        GridPane.setColumnSpan(lblRepeat, 3);
+        formGPane.getChildren().add(lblRepeat);
+        // combobox repeat
+        GridPane.setConstraints(cboRepeat, 4, 6);
+        GridPane.setColumnSpan(cboRepeat, 3);
+        formGPane.getChildren().add(cboRepeat);  
+        // label days
+        GridPane.setConstraints(lblRepeatDays,7,6);
+        GridPane.setColumnSpan(lblRepeatDays, 4);
+        formGPane.getChildren().add(lblRepeatDays);   
+
+    }
+    
+    private void addGroupButtons() {
+
+        // update group button
+        GridPane.setConstraints(dayEntryUpdateGroup,1,7);
+        GridPane.setColumnSpan(dayEntryUpdateGroup, 3);
+        formGPane.getChildren().add(dayEntryUpdateGroup);
+        // delete group button
+        GridPane.setConstraints(dayEntryDeleteGroup, 4, 7);
+        GridPane.setColumnSpan(dayEntryDeleteGroup, 3);
+        formGPane.getChildren().add(dayEntryDeleteGroup);          
+  
     }
     
     /* private insertAbsence
     *
     * Inserts the absence data from the controls into the database if it is a new entry   */ 
     private void insertAbsence() {
-        
-        getValues();   // get current values from the controls
+         
         if (repeatDays > 1) {group = dayDate;}
 
         String sql = "INSERT into absences (Date, Absence_ID, Title, Hours, Submitted, Notes, Absence_Group) " +
@@ -400,22 +458,7 @@ public class DayEntry extends Application {
                 i++;
             } 
         }
-    } // end insertAbsence
-
-    /* private addDay
-    *
-    * date - the date to add the days to
-    * days - how many days to add
-    * => the Date days number in the future
-    *
-    * Adds days to a data to get the new date days in the future   */     
-    private Date addDay(Date date, int days)
-    {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.DATE, days); //minus number would decrement the days
-        return cal.getTime();
-    }    
+    } // end insertAbsence 
     
     /* private updateAbsence
     *
@@ -423,13 +466,11 @@ public class DayEntry extends Application {
     * builds the update string and calls the database SQLUpdate method*/ 
     private void updateAbsence() {
         
-        getValues();   // get current values from the controls
-        
         String sql = "UPDATE absences " +
         "SET Title = '" + title + "', Absence_ID = '" + absenceID + "', Hours = '" + decimalHours + "', Submitted = '"
         + submitted + "', Notes = '" + notes + "' " +
         "WHERE Date = '" + dayDate + "'";
-        Database.SQLUpdate(sql);
+        if (validated) {Database.SQLUpdate(sql);}
          
     }
     
@@ -439,13 +480,11 @@ public class DayEntry extends Application {
     * builds the update string and calls the database SQLUpdate method*/ 
     private void updateAbsenceGroup() {
         
-        getValues();   // get current values from the controls
-        
         String sql = "UPDATE absences " +
         "SET Title = '" + title + "', Absence_ID = '" + absenceID + "', Hours = '" + decimalHours + "', Submitted = '"
         + submitted + "', Notes = '" + notes + "' " +
         "WHERE Absence_Group = '" + group + "' ";
-        Database.SQLUpdate(sql);
+        if (validated) {Database.SQLUpdate(sql);}
         
         // Repeat Add Days
      
@@ -485,21 +524,44 @@ public class DayEntry extends Application {
      *
      * Gets the values currently in the form controls to the class variables       */ 
     private void getValues() {
-        
+           
         title = tfTitle.getText();
         absenceType = (cboType.getValue());
         absenceID = getAbsenceTypeID(absenceType);
         hours = (int)cboHours.getValue();
         minutes = (int)cboMinutes.getValue();
-        getHoursDecimal();   // sets decimalHours
+        setHoursDecimal();   // sets decimalHours
         if (ckbSubmitted.isSelected()){submitted = 1;}
             else {submitted = 0;}
         notes = taNotes.getText();
         repeatDays = (int)cboRepeat.getValue();
-               
-        // TODO -> valdidate these before sending to DB
         
     }
+    
+    private boolean validateData () {
+        
+        validated = false;
+        
+        double hoursToValidate = decimalHours * (int)repeatDays;
+        if (Validate.notEmpty(absenceType)) {
+             if (Validate.availableHours(hoursToValidate,currentAvailable)) {
+               validated = true; 
+            } else {
+                lblHoursAvailable.getStyleClass().add("lblverify"); 
+                Platform.runLater(() -> {
+                    cboHours.requestFocus();  // Set focus on type if not chosen                
+                });                
+            }             
+        } else {   
+            Platform.runLater(() -> {
+                cboType.requestFocus();  // Set focus on type if not chosen                
+            });
+            lblType.getStyleClass().add("lblverify"); 
+        }       
+        
+        return validated;
+    }
+   
     
     /* private getHoursMin 
     *
@@ -514,11 +576,11 @@ public class DayEntry extends Application {
     } // End getHoursMin
     
     
-    /* private getHoursDecimal
+    /* private setHoursDecimal
     * 
     * Opposite of getHoursMinutes, coverts class variables hours and minutes*
     * to update the class variable decimalHours */
-    private void getHoursDecimal() {
+    private void setHoursDecimal() {
         
         // use flost for accuracy of mintue conversion
         float dblMinutes = Float.valueOf(minutes);
