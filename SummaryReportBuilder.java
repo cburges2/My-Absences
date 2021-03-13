@@ -1,14 +1,12 @@
 
 package myabsences;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -38,7 +36,8 @@ public class SummaryReportBuilder {
     ArrayList<JSONObject> pastHours;
     ArrayList<JSONObject> startBalances;
     ArrayList<JSONObject> absences;
-    ArrayList<JSONObject> warnings = new ArrayList();  // list of warnings for Max Accurals reached.
+    //ArrayList<JSONObject> warnings = new ArrayList();  // list of warnings for Max Accurals reached.
+    ArrayList<JSONObject> stats = new ArrayList<>();   // object to hold stats
     int daysInYear;    
     String lastDate;   // date of last day of this year
     SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
@@ -62,6 +61,8 @@ public class SummaryReportBuilder {
         this.year = year;   // Set class variable year from parameter
         
         lastDate = year + "-12-31";   // build string for last day of this year
+        
+        JSONObject stats = new JSONObject();
         
         // get the JSON object arrays from the database
         startBalances = Database.getStartBalances(year);                 
@@ -126,7 +127,7 @@ public class SummaryReportBuilder {
                     if (col == 0 && row > 0) absenceType = summaryTable[row][col]; // get the absence type for the row
                     Label label = new Label(" ");
                     if (col > 0 && row > 0 && !summaryTable[row][col].equals("--")) {
-                        label.setText(getHoursBreakdown(summaryTable[row][col])); // breakdown hours for display if hours
+                        label.setText(getHoursBreakdown(summaryTable[row][col])); // breakdown hours for display if hours     
                     }
                     else {label.setText(summaryTable[row][col]);}
                     if (row != 0) {toolTipText = summaryTable[row][col] + " Hours";} // set tt tp actual hours
@@ -160,7 +161,9 @@ public class SummaryReportBuilder {
         
         // iterate through the absence_types in Start Balances to get data from ArrayLists to build the summary table rows
         for (int row=0; row < numRows; row++) {
-            absenceType = (String)startBalances.get(row).get("Absence_Type");   
+            JSONObject record = new JSONObject();   // record of stats for dayform to get
+            absenceType = (String)startBalances.get(row).get("Absence_Type");
+            record.put("Absence_Type",absenceType);
             summaryTable[row][0] = absenceType;                   // set first table column to absenceType name
             // get start balance for type
             startBalance = (double)startBalances.get(row).get("Starting_Balance");
@@ -169,6 +172,7 @@ public class SummaryReportBuilder {
             summaryTable[row][2] = Double.toString(past_Hours);
             // get future hours for type
             double future_Hours = JsonMatch.getJsonDouble(futureHours,"Absence_Type",absenceType,"Future_Hours");
+            record.put("Future_Hours", future_Hours);
             summaryTable[row][3] = Double.toString(future_Hours);
             accrualRate = (double)startBalances.get(row).get("Accrual_Rate");
             String accrualType = getaccrualType(accrualRate);  // get the type - accrued, fixed, or not calculated. 
@@ -194,10 +198,14 @@ public class SummaryReportBuilder {
                 summaryTable[row][4] = Double.toString(future_Hours);
                 summaryTable[row][5] = "--";     // no remaining balance, show just dashes
             }
+            record.put("Available_DayHours",getHoursBreakdown(summaryTable[row][4]));
+            record.put("Available_Hours",summaryTable[row][4]);
+            record.put("Remaining_Hours",summaryTable[row][5]);
+            stats.add(record);   // add record to stats arraylist
         }
 
         // move array elements and add headers to top of summary Table
-        String[] headers = new String[]{"          "," Beginning Balance   ","Used  ","Planned ","Available Today ","Remaining     "};
+        String[] headers = new String[]{"","Beginning Balance","Used      ","Planned   ","Available Today","Remaining "};
         for (int row = numRows; row > 0; row--) {
             for (int col = 0; col < numColumns; col++) {
                 summaryTable[row][col] = summaryTable[row-1][col]; // move exiting array up on element
@@ -284,7 +292,7 @@ public class SummaryReportBuilder {
         String breakDown = "";
         if ((int)weeks != 0) {breakDown = (int)weeks + " Weeks ";}      
         if ((int)days != 0) {breakDown = breakDown + (int)days + " Days ";}
-        if ((int)hours != 0) {breakDown = breakDown + (int)hours + " Hours ";}
+        if ((int)hours != 0) {breakDown = breakDown + (int)hours + " Hrs ";}
         if ((int)min != 0) {breakDown = breakDown + (int)min + " Min ";}
         
         if (h.equals("0")) {breakDown = "0";}
@@ -392,6 +400,13 @@ public class SummaryReportBuilder {
 
     } // End calcAccuredRemainingHours
     
+    /* public getStats
+    *
+    * Returns the stats arraylist for DayForm parameter in MyAbsences  */
+    public ArrayList<JSONObject> getStats() {
+        
+        return stats;
+    }
     
     /* private leapYear
     *
