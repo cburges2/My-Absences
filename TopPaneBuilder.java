@@ -114,7 +114,6 @@ public class TopPaneBuilder {
             ArrayList<String> warnings = Warnings.getWarnings();
             for (int i = 0; i < warnings.size(); i++) {
                 String warningStr = warnings.get(i);
-                System.out.println("found Warning " + warningStr);
                 Text warning = new Text(warningStr);
                 warning.getStyleClass().add("txtwarning");   
                 warningVBox.getChildren().add(warning);
@@ -124,7 +123,7 @@ public class TopPaneBuilder {
                         btnsTop[0].requestFocus();
                     });    
                 }
-                if (warningStr.contains("Balances")) {
+                if (warningStr.contains("Balances") || warningStr.contains("zero")) {
                     btnsTop[1].getStyleClass().add("btnwarntop");
                     Platform.runLater(() -> {
                         btnsTop[1].requestFocus();// Set focus on Balances button
