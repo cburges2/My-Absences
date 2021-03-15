@@ -29,8 +29,8 @@ import javafx.scene.control.ComboBox;
 public class MyAbsences extends Application {
     
     // variables
-    static ComboBox<String> cboYear = new ComboBox(); // year combo
-    static ComboBox<String> cboCalcType = new ComboBox();
+    static ComboBox<String> cboYear = new ComboBox<>(); // year combo
+    static ComboBox<String> cboCalcType = new ComboBox<>();
     static Button[][] btnMonth = new Button[12][42];  // days in month button array (month, day)
     static Button[] btnsTop = new Button[4];           // top pane navigattion buttons
     static Button appStart = new Button();
@@ -52,7 +52,7 @@ public class MyAbsences extends Application {
         SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");  
         todayStr = formatDb.format(today); //note: todayStr will not show on past year calendars
 
-        checkData();    // Create a Warning if data entry is needed
+        Validate.checkData(todayStr, year);    // Create a Warning if data entry is needed
 
         // **** Create Main Border Pane ****  
         BorderPane bPane = new BorderPane();             // Main Layout pane, Top, Middle, Bottom  
@@ -199,27 +199,5 @@ public class MyAbsences extends Application {
         System.out.println("Restarting...");
         appStart.fire();
     };
-    
-    /* checkData
-     * Check if Setup has been run and if each absence type has a starting balance for this year */
-    public void checkData() {
-        
-        int numTypes = Database.getNumRows("Absence_Types");
-        System.out.println("There are " + numTypes + " Types");
-        
-        // Set a Setup warning
-        if (numTypes == 0) {
-            Warnings.addWarning(0, todayStr, "RUN_SETUP");
-        } else {Warnings.removeWarning(0,"RUN_SETUP");}
-    
-        int startCount = Database.getStartBalanceCount(year);
-        System.out.println("There are " + startCount + " Balances");
-        
-        // Set a Enter Balances warning
-        if (numTypes > startCount) {
-            Warnings.addWarning(0, todayStr, "ENTER_BALANCES");
-        } else {Warnings.removeWarning(0,"ENTER_BALANCES");} 
-        
-    }   
     
 } //End Class MyAbsences
