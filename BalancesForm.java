@@ -37,7 +37,7 @@ public class BalancesForm extends Application {
     SimpleDateFormat formatDp = new SimpleDateFormat("M/d/yyyy");  // date picker format
     
     DateTimeFormatter format = DateTimeFormatter.ofPattern("d/M/yyyy");
-  
+    
     /* Instantiate new stage object */
     static Stage startBalanceStage = new Stage();
     ArrayList<JSONObject> absenceTypes = new ArrayList<>();
@@ -59,7 +59,7 @@ public class BalancesForm extends Application {
     Label[] lblAbsenceName = new Label[6];
     
     // buttons
-    Button btnBalancesExit = new Button("Exit");
+    Button btnBalancesCancel = new Button("Cancel");
     Button btnBalancesUpdate = new Button("Update");
     Button btnBalancesSave = new Button("Save");
 
@@ -138,12 +138,12 @@ public class BalancesForm extends Application {
 
         // determine what buttons to add to bottom hbox
         if (prePopulate) {
-            hBoxB.getChildren().addAll(btnBalancesUpdate,btnBalancesExit);
+            hBoxB.getChildren().addAll(btnBalancesUpdate,btnBalancesCancel);
             Platform.runLater(() -> {
-                btnBalancesExit.requestFocus();  // Set focus on exit if prepopulated
+                btnBalancesCancel.requestFocus();  // Set focus on cancel if prepopulated
             });
         } else {
-            hBoxB.getChildren().addAll(btnBalancesSave,btnBalancesExit);
+            hBoxB.getChildren().addAll(btnBalancesSave,btnBalancesCancel);
         }       
         
         addControls();
@@ -153,11 +153,12 @@ public class BalancesForm extends Application {
         // Save Button event Handler
         btnBalancesSave.setOnAction(e-> {
             try {
-              getValues(); 
-              insertBalances();
-              Warnings.removeWarning(0, "ENTER_BALANCES");
-              MyAbsences.refresh();
-              startBalanceStage.close(); 
+              if (getValues()) {
+                insertBalances();
+                Warnings.removeWarning(0, "ENTER_BALANCES");
+                MyAbsences.refresh();
+                startBalanceStage.close();                  
+              } 
             } catch (Exception save) {
                 // TODO - handle error
             }
@@ -170,20 +171,21 @@ public class BalancesForm extends Application {
         // Update button handler
         btnBalancesUpdate.setOnAction(e-> {
             try {
-                getValues();
-                updateBalances();
-                startBalanceStage.close(); 
-                MyAbsences.refresh();
+                if (getValues()) {
+                    updateBalances();
+                    startBalanceStage.close(); 
+                    MyAbsences.refresh();
+                }
             } catch (Exception update) {
                 
             }
         });  
         
-        // exit button handler
-        btnBalancesExit.setOnAction(e-> {
+        // cancel button handler
+        btnBalancesCancel.setOnAction(e-> {
             try {
                 startBalanceStage.close(); 
-            } catch (Exception exit) {
+            } catch (Exception cancel) {
                 
             }
         });    
@@ -259,34 +261,51 @@ public class BalancesForm extends Application {
         for (int i = 0; i < typeSize; i++) {
             String absenceName = (String)absenceTypes.get(i).get("Absence_Type");
             double balance = JsonMatch.getJsonDouble(startBalances,"Absence_Type",absenceName,"Starting_Balance");
-            if (balance != 0) {
-                tfTypeBalance[i].setText(String.valueOf(balance));
-            }           
+            tfTypeBalance[i].setText(String.valueOf(balance));        
         }       
         
     } // end putValues
     
     /* private getValues
+    *
+    * ==> true if validated
     * 
     * This method gets the values from the controls to variable arrays, to insert into
     * or update the db table Starting_Balances     */
-    private void getValues() {
+    private boolean getValues() {
+        
+        boolean validated = false;
         
         // Get the control values into the variable arrays
-        for (int i = 0; i < typeSize; i++) {            
+        for (int i = 0; i < typeSize; i++) {  
             
             double arate = (Double)absenceTypes.get(i).get("Accrual_Rate");
+
+            // validate if not a holiday
+            if (arate != -1) {
             
-            // calculate accrued from date else use entered value
-            if (arate > 0) {
-                {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
+                if (Validate.notEmpty((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText())) {
+
+                    if (Validate.isPosDecimal((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText())) {
+                       // calculate accrued from date else use entered value
+                       if (arate > 0) {
+                           {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
+                       } else {startingBalances[i] = tfTypeBalance[i].getText();}
+                       validated = true;                   
+                    } else {
+                        validated = false;    // failed for not number
+                    }
+                } else {
+                    validated = false;   // failed for empty
+                }
             } else if (arate == -1) {
                 startingBalances[i] = "0";
+                validated = true;
             }
-            else {startingBalances[i] = tfTypeBalance[i].getText();}
-            
-            // TODO - valididae these values for nulls
         }
+        
+        return validated;
+
     } // end getValues
     
     /* private calcAccruedStart
@@ -345,13 +364,11 @@ public class BalancesForm extends Application {
             
             if (JsonMatch.getJsonIndex(startBalances,"Absence_ID",absenceID) == -1 ) {
                 // absence ID not in balances - insert
-                System.out.println(absenceID + " is not in balances");
                 String sql = "INSERT into Starting_Balances (Year, Absence_ID, Starting_Balance) " +
                     "VALUES ('" + year + "', '" + absenceID + "', '" + startingBalances[i] + "')"; 
                 Database.SQLUpdate(sql); 
             } else {
                 // absence ID in blances - update
-                System.out.println(absenceID + " is in balances");
                 String sql = "UPDATE Starting_Balances " +
                 "SET Absence_ID = '" + absenceID + "', Starting_Balance = '" + startingBalances[i] +  "' " +
                 "WHERE Absence_ID = '" + absenceID + "' and Year = '" + year + "'"; 
