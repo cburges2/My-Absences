@@ -10,13 +10,13 @@ Stylesheet for text and controls in MyAbsences classes
 }
 .ttgreen{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(#9de69c, limegreen);
-     -fx-text-fill: Black;
+     -fx-background-color:linear-gradient(#9de69c, #32a632);
+     -fx-text-fill: White;
  }
  .ttpurple{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(#c39ce6, palevioletred);
-     -fx-text-fill: Black;
+     -fx-background-color:linear-gradient(violet, #c39ce6);
+     -fx-text-fill: White;
  }
  .ttorange{
      -fx-background-radius: 7 7 7 7;
@@ -25,12 +25,12 @@ Stylesheet for text and controls in MyAbsences classes
  }
 .ttblue{
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(#9cbce6, deepskyblue);
-     -fx-text-fill: Black;
+     -fx-background-color:linear-gradient(deepskyblue, #9cbce6);
+     -fx-text-fill: White;
  }
  .ttyellow {
      -fx-background-radius: 7 7 7 7;
-     -fx-background-color:linear-gradient(#e2e69c, yellowgreen);
+     -fx-background-color:linear-gradient(#f0ec24, #d9d621);
      -fx-text-fill: Black;     
  }
  .ttred {
@@ -43,19 +43,19 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-background-radius: 1 1 1 1;  
  } 
  .btndaygreen {
-     -fx-background-color:linear-gradient(#9de69c, limegreen);
+     -fx-background-color:linear-gradient(#9de69c, #32a632);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Green;
      -fx-border-width: .8;
  }
   .btndaypurple {
-     -fx-background-color:linear-gradient(#c39ce6, violet);
+     -fx-background-color:linear-gradient(violet,#c39ce6);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: purple;
      -fx-border-width: .8;
  }
  .btndayblue {
-     -fx-background-color:linear-gradient(#8da5e3, deepskyblue);
+     -fx-background-color:linear-gradient(deepskyblue,#8da5e3);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Blue;
      -fx-border-width: .8;     
@@ -73,7 +73,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-border-width: .8;     
  } 
  .btndayyellow {
-     -fx-background-color:linear-gradient(#e2e69c, yellow);
+     -fx-background-color:linear-gradient(#f0ec24, #d9d621);
      -fx-background-radius: 1 1 1 1; 
      -fx-border-color: Yellow;
      -fx-border-width: .8;     
@@ -146,7 +146,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-background-color:linear-gradient(white,lightgray);
  } 
  .typegreen {
-     -fx-text-fill: limegreen;
+     -fx-text-fill: #32a632;
      -fx-font-weight: bold;
  }
   .typepurple {
@@ -158,7 +158,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-font-weight: bold;
  }
  .typeyellow {
-     -fx-text-fill: #d6cf06;
+     -fx-text-fill: #d4d000;
      -fx-font-weight: bold;
  }
  .typeorange {
