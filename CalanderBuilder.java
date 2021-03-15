@@ -41,8 +41,8 @@ public class CalanderBuilder {
     int buildMonth = 0;       // The month being built in calander gpane (Jan = 0)     
     String calMonth = "";     // Two digit String value of calander month value (jan = 01)
     int btnIter = 0;          // incrementor for the button number in a month in the button 2d array 
-    ArrayList<JSONObject> absences = new ArrayList();
-    ArrayList<JSONObject> warnings = new ArrayList();
+    ArrayList<JSONObject> absences = new ArrayList<>();
+    ArrayList<JSONObject> warnings = new ArrayList<>();
     String buildDate;         // the date we are building in the month calendar
     
     /* Constructor
@@ -136,7 +136,6 @@ public class CalanderBuilder {
                             // Add Max Accrual warning to max accrual day if there is one
                             if (JsonMatch.getJsonIndex(warnings,"Date",buildDate) != -1) {
                                 if (JsonMatch.getJsonIndex(warnings,"Warning_Name","MAX_ACCRUAL") != -1) {
-                                    int absenceID = JsonMatch.getJsonInt(warnings, "Date", buildDate, "Absence_ID");
                                     String dateColor  = JsonMatch.getJsonString(warnings, "Date", buildDate, "Color").toLowerCase();
                                     String warnColor = "btnwarn" + dateColor;
                                     btnMonth[buildMonth][btnIter].getStyleClass().add(warnColor);
