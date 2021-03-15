@@ -27,7 +27,7 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author Christopher
+ * @author Christopher Burgess
  */
 //Begin Subclass DayEntry
 public class DayEntry extends Application {
@@ -56,16 +56,16 @@ public class DayEntry extends Application {
     boolean prePopulated = false; // flag for day already having data on load
     boolean inGroup = false;      // flag for day part of a group
     double currentAvailable = 0.0; // used for verification that hours are available
-    boolean validated = false;     // needs to be set true to insert or update data
     
     // controls
     TextField tfTitle = new TextField();
-    ComboBox<String> cboType = new ComboBox();
+    ComboBox<String> cboType = new ComboBox<>();
     ComboBox cboHours = new ComboBox();
     ComboBox cboMinutes = new ComboBox();
     TextArea taNotes = new TextArea();
     CheckBox ckbSubmitted = new CheckBox("Submitted");
     ComboBox cboRepeat = new ComboBox();
+    
     // labels
     Label lblType = new Label("Absence Type:");
     Label lblHours = new Label("Hours");
@@ -75,7 +75,8 @@ public class DayEntry extends Application {
     Label lblAbsenceGroup = new Label("");
     Label lblHoursAvailable = new Label("");
     // buttons
-    Button dayEntryExit = new Button("Exit");
+    
+    Button dayEntryCancel = new Button("Cancel");
     Button dayEntryUpdate = new Button("Update Day");
     Button dayEntrySave = new Button("Save");     
     Button dayEntryDelete = new Button("Delete Day");
@@ -118,8 +119,7 @@ public class DayEntry extends Application {
             
             if (!group.isEmpty()) {inGroup = true;}
 
-            // convert decimal hours from db to hours and minutes
-            getHoursMinutes();  
+            getHoursMinutes();  // convert decimal hours from db to hours and minutes
         }
     }
     
@@ -140,22 +140,22 @@ public class DayEntry extends Application {
         titleDate.getStyleClass().add("daytitle");  
         topDatePane.getChildren().add(titleDate);
         
-        // **** Form Fields *****
+        // **** Set Form Fields *****
         
-        // text field for absence title
+        // set text field for absence title
         GridPane.setColumnSpan(tfTitle,14);
         if (!title.isEmpty()) {tfTitle.setText(title);}
         
-        // combobox for type - add data from types date       
+        // set combobox for type - add data from types date       
         for (int i = 0; i < typesData.size(); i++) {
             String aType = (String)typesData.get(i).get("Absence_Type");
             cboType.getItems().add(aType); 
         }
         
-        //if (!absenceType.isEmpty()) {cboType.setValue(absenceType);}
+        // set absenceType in the combobox
         cboType.setValue(absenceType);
 
-        // combobox for hours 
+        // set combobox for hours 
         for (int i = 0; i < 9; i++) {
             cboHours.getItems().add(i);
         }
@@ -163,28 +163,28 @@ public class DayEntry extends Application {
         else {cboHours.setValue(8);}    // set default to a full day's hours 
         cboHours.setPrefWidth(25);
 
-        // combobox for minutes  
+        // set combobox for minutes  
         for (int i = 0; i < 60; i+=5) {    // add in 5 minute increments 
             cboMinutes.getItems().add(i);
         }
         cboMinutes.setValue(minutes);
         cboMinutes.setPrefWidth(55);
         
-        // checkbox for submitted
+        // set checkbox for submitted
         if (submitted == 1) {
             ckbSubmitted.setSelected(true);
         } else {
             ckbSubmitted.setSelected(false);
         }
         
-        // combobox for repeat days
+        // set combobox for repeat days
         for (int i = 0; i < 20; i++) {    // add in 5 minute increments 
             cboRepeat.getItems().add(i+1);
         }
         cboRepeat.setValue(1);
         cboRepeat.setPrefWidth(55);
 
-        // Set Button attributes
+        // Set Group Button attributes
         dayEntryUpdateGroup.setMaxHeight(22);
         dayEntryUpdateGroup.setMinHeight(22);
         dayEntryDeleteGroup.setMaxHeight(22);
@@ -224,6 +224,7 @@ public class DayEntry extends Application {
         GridPane.setColumnSpan(ckbSubmitted, 8);
         formGPane.getChildren().add(ckbSubmitted);   
         
+        // add optional fields
         if (!prePopulated) {addToggleFields();}  // add repeat day fields
         if (inGroup) {addGroupButtons();}        // add group buttons      
         
@@ -247,16 +248,12 @@ public class DayEntry extends Application {
         
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
-            hBoxB.getChildren().add(dayEntryDelete);
-            //if (inGroup) {hBoxB.getChildren().add(dayEntryDeleteGroup);}
-            hBoxB.getChildren().add(dayEntryUpdate);
-            //if (inGroup) {hBoxB.getChildren().add(dayEntryUpdateGroup);} 
-            hBoxB.getChildren().add(dayEntryExit);
+            hBoxB.getChildren().addAll(dayEntryDelete,dayEntryUpdate,dayEntryCancel);
             Platform.runLater(() -> {
-                dayEntryExit.requestFocus();  // Set focus on exit if prepopulated
+                dayEntryCancel.requestFocus();  // Set focus on cancel if prepopulated
             });
         } else {
-            hBoxB.getChildren().addAll(dayEntrySave,dayEntryExit);
+            hBoxB.getChildren().addAll(dayEntrySave,dayEntryCancel);
         }
         
         // **** set topDatePane attributes ****
@@ -282,8 +279,8 @@ public class DayEntry extends Application {
         // **** set hBoxB (bottom button Pane) attributes ****
         hBoxB.setAlignment(Pos.CENTER);
         hBoxB.setSpacing(20);
-        dayEntryExit.setMaxWidth(50);
-        HBox.setMargin(dayEntryExit, new Insets(5, 5, 5, 5));
+        dayEntryCancel.setMaxWidth(60);
+        HBox.setMargin(dayEntryCancel, new Insets(5, 5, 5, 5));
         
         
         /**** set panes in stage and show stage ****/
@@ -360,10 +357,10 @@ public class DayEntry extends Application {
             }
         });  
         
-        dayEntryExit.setOnAction(e-> {
+        dayEntryCancel.setOnAction(e-> {
             try {
             dayEntryStage.close(); 
-            } catch (Exception exit) {
+            } catch (Exception cancel) {
                 
             }
         });
@@ -373,8 +370,6 @@ public class DayEntry extends Application {
             try {
                 lblType.getStyleClass().clear();
                 String type = cboType.getValue(); // get type from combo box
-                //int typePos = JsonMatch.getJsonIndex(typesData,"Absence_Type",type);
-                //String cboColor = (String)typesData.get(typePos).get("Color");
                 String cboColor = JsonMatch.getJsonString(typesData,"Absence_Type",type,"Color");
                 double aRate = JsonMatch.getJsonDouble(typesData,"Absence_Type",type,"Accrual_Rate");
                 if (aRate == -1) {ckbSubmitted.setSelected(true);}
@@ -392,6 +387,7 @@ public class DayEntry extends Application {
                 System.out.println("Hours available: " + currentAvailable);
             }
             catch(Exception ex) {
+                // catch
             }
         });
         
@@ -415,8 +411,11 @@ public class DayEntry extends Application {
         GridPane.setColumnSpan(lblRepeatDays, 4);
         formGPane.getChildren().add(lblRepeatDays);   
 
-    }
+    } // end addToggleFields
     
+    /* addGroupButtons()
+    *
+    * This method adds the fields for update and delete group to a group day */      
     private void addGroupButtons() {
 
         // update group button
@@ -428,7 +427,7 @@ public class DayEntry extends Application {
         GridPane.setColumnSpan(dayEntryDeleteGroup, 3);
         formGPane.getChildren().add(dayEntryDeleteGroup);          
   
-    }
+    } // end addGroupButtons
     
     /* private insertAbsence
     *
@@ -470,9 +469,9 @@ public class DayEntry extends Application {
         "SET Title = '" + title + "', Absence_ID = '" + absenceID + "', Hours = '" + decimalHours + "', Submitted = '"
         + submitted + "', Notes = '" + notes + "' " +
         "WHERE Date = '" + dayDate + "'";
-        if (validated) {Database.SQLUpdate(sql);}
+        Database.SQLUpdate(sql);
          
-    }
+    } // end updateAbsence
     
     /* private updateAbsenceGroup
     *
@@ -484,11 +483,9 @@ public class DayEntry extends Application {
         "SET Title = '" + title + "', Absence_ID = '" + absenceID + "', Hours = '" + decimalHours + "', Submitted = '"
         + submitted + "', Notes = '" + notes + "' " +
         "WHERE Absence_Group = '" + group + "' ";
-        if (validated) {Database.SQLUpdate(sql);}
-        
-        // Repeat Add Days
+        Database.SQLUpdate(sql);
      
-    }
+    } // end updateAbsenceGroup
 
     /* private deleteAbsence
     *
@@ -503,7 +500,7 @@ public class DayEntry extends Application {
         
         Database.SQLUpdate(sql);
         
-    }   
+    }   // end deleteAbsences
     
     /* private deleteAbsence
     *
@@ -518,7 +515,7 @@ public class DayEntry extends Application {
         
         Database.SQLUpdate(sql);
         
-    }       
+    } // end deleteAbsenceGroup
     
     /* private getValues
      *
@@ -536,14 +533,21 @@ public class DayEntry extends Application {
         notes = taNotes.getText();
         repeatDays = (int)cboRepeat.getValue();
         
-    }
+    } // end getValues
     
+    /* private validateData
+    *
+    * ==> true if data from controls is validated
+    *
+    * The method validates that an absence type name was selected from the combobox, 
+    * and that the hours selected are avaialble for the absence type. 
+    * Checked in event handlers for update, save and insert */
     private boolean validateData () {
         
-        validated = false;
+        boolean validated = false;
         
         double hoursToValidate = decimalHours * (int)repeatDays;
-        if (Validate.notEmpty(absenceType)) {
+        if (Validate.notEmpty("Absence Type", absenceType)) {
              if (Validate.availableHours(hoursToValidate,currentAvailable)) {
                validated = true; 
             } else {
@@ -558,9 +562,9 @@ public class DayEntry extends Application {
             });
             lblType.getStyleClass().add("lblverify"); 
         }       
-        
         return validated;
-    }
+        
+    } // end validateData
    
     
     /* private getHoursMin 
@@ -574,8 +578,7 @@ public class DayEntry extends Application {
         minutes = (int)Math.rint(fractional * 60.0);
 
     } // End getHoursMin
-    
-    
+
     /* private setHoursDecimal
     * 
     * Opposite of getHoursMinutes, coverts class variables hours and minutes*
@@ -609,4 +612,4 @@ public class DayEntry extends Application {
         
         return ID;
     }
-} // end lcass 
+} // end class DayEntry 
