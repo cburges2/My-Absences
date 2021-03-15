@@ -80,6 +80,60 @@ import org.json.simple.JSONObject;
              return null;   // return null if error
     }
    
+   /* public getAbsenceID
+   *
+   * absenceID - The type name to get the ID for
+   * ==> The absnce ID for the type name
+   *
+   * This method returns the absenceID from type name   */
+    static public int getAbsenceID(String absenceType) {
+        
+        Connection conn = null;
+        Statement stmt = null;
+        int id = 0;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+
+            // Execute query
+            String sql = "select Absence_ID from Absence_Types " +
+                          "where Absence_Type = '" + absenceType + "'"; 
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                id = rs.getInt("Absence_ID");
+            }
+
+            return id;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               se.printStackTrace();
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               e.printStackTrace();
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  se.printStackTrace();
+               }//end finally try
+            }//end try */       
+
+        return 0;        
+   }   
+   
    /* public getNumRows
    *
    * table - The table name to get the size for
@@ -203,7 +257,7 @@ import org.json.simple.JSONObject;
             conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
             //Execute query
-            String sql = "Select t.absence_type,b.Absence_ID,t.Accrual_RATE,t.COLOR,Max_Accrual, " +
+            String sql = "Select t.absence_type,b.Absence_ID,t.Accrual_Rate,t.Color,Max_Accrual, " +
             "starting_balance from Starting_Balances as b " +
             "join absence_types as t " +
             "on t.absence_id = b.absence_id " +
@@ -218,10 +272,10 @@ import org.json.simple.JSONObject;
                 JSONObject record = new JSONObject();
                 record.put((String)"Absence_Type",rs.getString("Absence_Type"));
                 record.put("Absence_ID",rs.getInt("Absence_ID"));
-                record.put("accrual_Rate",rs.getDouble("accrual_Rate"));
+                record.put("Accrual_Rate",rs.getDouble("Accrual_Rate"));
                 record.put((String)"Color",rs.getString("Color"));
+                record.put("Max_Accrual",rs.getDouble("Max_Accrual"));
                 record.put("Starting_Balance",rs.getDouble("Starting_Balance"));
-                record.put("Max_Accrual",rs.getDouble("MAX_ACCRUAL"));
                 result.add(record);
             }
 
