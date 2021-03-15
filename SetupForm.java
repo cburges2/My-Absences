@@ -5,16 +5,14 @@ package myabsences;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -42,47 +40,50 @@ public class SetupForm extends Application {
     SimpleDateFormat formatCal = new SimpleDateFormat("MM/dd/yyyy");
     ArrayList<JSONObject> absenceTypes = new ArrayList<>();
     // form field variables (up to 6 types)
-    int[] absenceID = new int[6];
+    int[] absenceID = new int[6];       // absence IDs from the types table
     String[] absenceType = new String[6];
     String[] absenceColor = new String[6];
     String[] balanceType =  new String[6];
     String[] accrualRate =  new String[6];
     String[] maxAccrual =  new String[6];
-    String year = "";
-    boolean prePopulated = false;
+    int year = 0;
+    boolean prePopulated = false;   // true if data in db at form launch
     String colors[] = new String[] {"Green","Red","Purple","Orange","Blue","Yellow"}; 
     Text setupTitle = new Text("Setup");
-    int rowCounter = 1;
-    int typesCounter = 0;
-    int typeSize = 0;
-    int editAdd = 0;
+    int rowCounter = 1;     // counts the rows for control positioning
+    int typesCounter = 0;   // counts types added for control row positioning
+    int typeSize = 0;       // number of types in the db table
+    int editAdd = 0;        // number of types added when in edit mode
     
-    // controls
+    // create textfield and combobox controls
     TextField[] tfAbsenceType = new TextField[6];   // up to 6 absence types (names)
-    static ComboBox<String> cboAbsenceColor[] = new ComboBox[6];
+    static ComboBox<String>[] cboAbsenceColor = new ComboBox[6];
     static ComboBox<String>[] cboBalanceType = new ComboBox[6];
     TextField[] tfAccrualRate = new TextField[6];
     TextField tfMaxAccrual[] = new TextField[6];
     
-    // labels
+    // create labels
     Label[] lblAbsenceName = new Label[6];
     Label[] lblColor = new Label[6];
     Label[] lblBalanceType = new Label[6];
     Label[] lblAccrualRate = new Label[6];
     Label[] lblMaxAccrual = new Label[6];
     
-    // buttons
+    // create buttons
     Button btnAddType = new Button("+");   // button to add another Type
-    Button btnSetupExit = new Button("Exit");
+    Button btnSetupCancel = new Button("Cancel");
     Button btnSetupUpdate = new Button("Update");
     Button btnSetupSave = new Button("Save");
     Button btnDelete[] = new Button[6];
     
     GridPane gPane = new GridPane();
-    //BorderPane bPane = new BorderPane();
     
-    // empty constructor
+    /* empty constructor */
     public SetupForm() {
+        
+        // Set Current Year for balances insert/update
+        final SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
+        year = Integer.parseInt(FORMAT_YEAR.format(Calendar.getInstance().getTime())); // current year
         
     }
     
@@ -116,34 +117,45 @@ public class SetupForm extends Application {
         gPane.setVgap(4);
                       
         HBox hBoxB = new HBox();
-        Button btnExit = new Button("Exit");
+        Button btnCancel = new Button("Cancel");
         hBoxB.setAlignment(Pos.CENTER);
         hBoxB.setSpacing(50);
-        HBox.setMargin(btnExit, new Insets(5, 5, 5, 5));
+        HBox.setMargin(btnCancel, new Insets(5, 5, 5, 5));
         hBoxB.setPrefHeight(35);
-        
-
-        // **** Form Fields *****
-        // comboboxes for colors - add color options
+       
+        // **** Set Form Fields *****
+        // set comboboxes for colors - add color options
         for (int i = 0; i < 6; i++ ) {
-            cboAbsenceColor[i] = new ComboBox();
+            cboAbsenceColor[i] = new ComboBox<>();
             for (int c = 0; c < 6; c++) {    // add each color
                 cboAbsenceColor[i].getItems().add(colors[c]);
                 cboAbsenceColor[i].setPrefWidth(55);
             }
         }    
         
-        // Balance Type combo boxes - add options
+        // set Balance Type combo boxes - add options
         for (int i = 0; i < 6; i++ ) {
-            cboBalanceType[i] = new ComboBox();
+            cboBalanceType[i] = new ComboBox<>();
             cboBalanceType[i].getItems().add("Accrued Hours");
             cboBalanceType[i].getItems().add("Fixed Hours");
             cboBalanceType[i].getItems().add("Add-In Hours");
             cboBalanceType[i].setPrefWidth(55);
         }     
         
+        // set delete buttons
         for (int i = 0; i < 6; i++ ) {
             btnDelete[i] = new Button("x");
+        }
+        
+        // set control values to empty (avoid nulls)
+        for (int i = 0; i < 6; i++ ) {
+            tfAbsenceType[i] = new TextField("");
+            cboAbsenceColor[i].setValue("");
+            cboBalanceType[i].setValue(""); 
+            tfAccrualRate[i] = new TextField("");
+            tfMaxAccrual[i] = new TextField("");
+            tfMaxAccrual[i].setText("0");
+            cboBalanceType[i].setValue("");            
         }
         
         // Set Title in topPane
@@ -154,7 +166,7 @@ public class SetupForm extends Application {
         setupTitle.getStyleClass().add("daytitle"); 
         topSetupPane.getChildren().add(setupTitle);
         
-        // ***** Set first set of default Controls in the Gridpane ****
+        // ******* Set first set of empty default Controls in the Gridpane ******
         if (!prePopulated) {
             addDefaultControls(0);
         }
@@ -162,12 +174,12 @@ public class SetupForm extends Application {
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
             putValues();
-            hBoxB.getChildren().addAll(btnSetupUpdate,btnSetupExit);
+            hBoxB.getChildren().addAll(btnSetupUpdate,btnSetupCancel);
             Platform.runLater(() -> {
-                btnSetupExit.requestFocus();  // Set focus on exit if prepopulated
+                btnSetupCancel.requestFocus();  // Set focus on cancel if prepopulated
             });
         } else {
-            hBoxB.getChildren().addAll(btnSetupSave,btnSetupExit);
+            hBoxB.getChildren().addAll(btnSetupSave,btnSetupCancel);
         }
         
         /* set panes in stage and show stage */
@@ -186,11 +198,12 @@ public class SetupForm extends Application {
         // Save Button event Handler
         btnSetupSave.setOnAction(e-> {
             try {
-            getValues(); 
-            insertAbsenceTypes();
-            Warnings.removeWarning(0, "RUN_SETUP");
-            MyAbsences.refresh();
-            setupStage.close(); 
+                if (getValues()) { 
+                    insertAbsenceTypes();
+                    Warnings.removeWarning(0, "RUN_SETUP");
+                    MyAbsences.refresh();
+                    setupStage.close(); 
+                }
             } catch (Exception save) {
                 
             }
@@ -199,10 +212,11 @@ public class SetupForm extends Application {
         // Update button handler
         btnSetupUpdate.setOnAction(e-> {
             try {
-                getValues();
-                updateAbsenceTypes();
-                setupStage.close(); 
-                MyAbsences.refresh();
+                if (getValues()) {
+                    updateAbsenceTypes();
+                    setupStage.close(); 
+                    MyAbsences.refresh();
+                }
             } catch (Exception update) {
                 
             }
@@ -213,36 +227,24 @@ public class SetupForm extends Application {
             final int num = i;
             btnDelete[i].setOnAction(e->{
                 try {
-                    String absence_type = tfAbsenceType[num].getText();
-                    ButtonType cancel = new ButtonType("Cancel");
-                    ButtonType delete = new ButtonType("Delete");
-                    Alert a = new Alert(AlertType.WARNING, "Delete Absence Type", cancel, delete);
-                    a.setHeaderText("Do you really want to Delete " + absence_type + "?\n"
-                            + "This will delete all absences for " + absence_type + " on the Calendar,\n"
-                            + "as well as the " + absence_type + " starting balances!");
-                    a.setResizable(true);
-                    a.setContentText("Press Delete to confirm:");
                     SetupForm app=new SetupForm();
-                    a.showAndWait().ifPresent(response -> {
-                        try {
-                            if (response == delete) {
-                                deleteAbsenceType(num);
-                                MyAbsences.refresh();
-                                app.start(primaryStage);
-                            } else if (response == cancel) {}
-                        } catch (Exception exit) {}     
-                    });
+                    String absence_type = tfAbsenceType[num].getText();
+                    if (Validate.confirmDeleteType(absence_type)) {
+                         deleteAbsenceType(num);
+                         MyAbsences.refresh();
+                         app.start(primaryStage);
+                     } else {}
                 } catch(Exception ex) {
-                    
+                    // catch
                 }
             });      
         }        
         
-        // exit button handler
-        btnSetupExit.setOnAction(e-> {
+        // Cancel button handler
+        btnSetupCancel.setOnAction(e-> {
             try {
                 setupStage.close(); 
-            } catch (Exception exit) {
+            } catch (Exception cancel) {
                 
             }
         });
@@ -259,7 +261,7 @@ public class SetupForm extends Application {
                     typesCounter++; 
                 }
                 addDefaultControls(typesCounter);
-            } catch (Exception exit) {
+            } catch (Exception cancel) {
                 
             }
         });        
@@ -287,7 +289,6 @@ public class SetupForm extends Application {
         // Color Combobox Handler - change color of comboBox and Type
         for (int i = 0; i < 6; i++) {
             final int num = i;
-            
             cboAbsenceColor[i].setOnAction((ActionEvent e)->{
                 try {
                         String color = cboAbsenceColor[num].getValue();
@@ -302,6 +303,12 @@ public class SetupForm extends Application {
     
     } // end start
     
+    /* private getBackgroundFill
+    *
+    * color - the color name to change the background to
+    * ==> a BackgroundFill object set to the color
+    *
+    * This method returns a BackgroundFill object for a color */
     private BackgroundFill getBackgroundFill(String color) {
         
         switch(color) {
@@ -337,7 +344,7 @@ public class SetupForm extends Application {
 
         return backgroundFill;                    
        
-    }
+    } // end getBackgroundFill
     
     /* private addDefaultControls
      * 
@@ -355,7 +362,6 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(lblAbsenceName[num], 4);
         gPane.getChildren().add(lblAbsenceName[num]);    
         // Type textfield
-        tfAbsenceType[num] = new TextField();
         tfAbsenceType[num].setMaxWidth(150);
         GridPane.setConstraints(tfAbsenceType[num], 5, rowCounter);
         GridPane.setColumnSpan(tfAbsenceType[num], 8);
@@ -395,19 +401,19 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(cboBalanceType[num], 5);
         gPane.getChildren().add(cboBalanceType[num]);        
         // Add the + button
-        if (num < 5) {  // && !editAdd
+        if (num < 5) {   // 6 is max number of types
             btnAddType.setMinWidth(10);
             GridPane.setConstraints(btnAddType, 1, rowCounter+2);
             GridPane.setColumnSpan(btnAddType, 8);
             gPane.getChildren().add(btnAddType);  
         }
-        if (editAdd > 0) {
+        if (editAdd > 0) {  // types added during edit mode
             // set focus on new control group
             tfAbsenceType[num].requestFocus();
                 rowCounter+=3;
                 typesCounter++; 
         }
-    }
+    } // end addDefaultControls
     
     /* private addAccruedControls
     *
@@ -427,7 +433,6 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(lblAccrualRate[num], 4);
         gPane.getChildren().add(lblAccrualRate[num]);  
         // Accrual Rate textfield
-        tfAccrualRate[num] = new TextField();
         tfAccrualRate[num].setMaxWidth(50);
         GridPane.setConstraints(tfAccrualRate[num], 17, place);
         GridPane.setColumnSpan(tfAccrualRate[num], 4);
@@ -439,21 +444,26 @@ public class SetupForm extends Application {
         GridPane.setColumnSpan(lblMaxAccrual[num], 4);
         gPane.getChildren().add(lblMaxAccrual[num]);  
         // Accrual Max textfield
-        tfMaxAccrual[num] = new TextField();
         tfMaxAccrual[num].setMaxWidth(50);
         tfMaxAccrual[num].setMinWidth(50);
         GridPane.setConstraints(tfMaxAccrual[num], 22, place);
         GridPane.setColumnSpan(tfMaxAccrual[num], 3);
         gPane.getChildren().add(tfMaxAccrual[num]);  
-    }
+        
+    } // end add accrued controls
     
+    /* private removeAccruedControls
+    *
+    * num - the number of the control group to remove accrued controls for
+    *
+    * This removed the accured controls when balance type is switched away from "Accrued"    */
     private void removeAccruedControls(int num) {
         
         gPane.getChildren().remove(lblAccrualRate[num]);
         gPane.getChildren().remove(tfAccrualRate[num]); 
         gPane.getChildren().remove(lblMaxAccrual[num]); 
         gPane.getChildren().remove(tfMaxAccrual[num]);
-    }
+    } // end removeAccruedControls
     
     /* private putValues
     *
@@ -478,40 +488,80 @@ public class SetupForm extends Application {
                     tfAccrualRate[i].setText( Double.toString((Double)absenceTypes.get(i).get("Accrual_Rate")) );
                     tfMaxAccrual[i].setText ( Double.toString((Double)absenceTypes.get(i).get("Max_Accrual"))  );
                 }
-                if (arate == 0) {cboBalanceType[i].setValue("Fixed Hours");}
-                if (arate == -1) {cboBalanceType[i].setValue("Add-In Hours");}
+                if (arate == 0) {
+                    cboBalanceType[i].setValue("Fixed Hours");
+                    tfMaxAccrual[i].setText("0");
+                }
+                if (arate == -1) {
+                    cboBalanceType[i].setValue("Add-In Hours");
+                    tfMaxAccrual[i].setText("0");
+                }
                 rowCounter+=3;
                 typesCounter++;
             }            
     } // end putValues
     
     /* private getValues
+    *
+    * ==> valided flag for all data validated and ready
     * 
     * This method gets the values from the controls to variable arrays, to insert into
-    * or update the db table Absence_Types     */
-    private void getValues() {
-
-        // Get the control values into the variable arrays
+    * or update the db table Absence_Types if all fields pass verification.    */
+    private boolean getValues() {
+        
+        boolean validated = false;
+       
         if (!prePopulated) {typeSize = typesCounter+1;}
-        for (int i = 0; i < typeSize; i++) {               
-            absenceType[i] = tfAbsenceType[i].getText();
-            absenceColor[i] = cboAbsenceColor[i].getValue();
-            String balType = cboBalanceType[i].getValue();
-            if (balType.equals("Accrued Hours")) {accrualRate[i] = (tfAccrualRate[i].getText());}
-            if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
-            if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
-            String aMax = "";
-            try {
-                aMax = tfMaxAccrual[i].getText();
-            } catch(Exception ex) {
-                aMax = "";
-            } 
-            if (aMax.isEmpty()) {maxAccrual[i] = "0";}
-            else {maxAccrual[i] = tfMaxAccrual[i].getText();}
-            
-            // TODO - valididae these values for nulls
-        }
-    }
+        for (int i = 0; i < typeSize; i++) { 
+            // Get and Valididae the values 
+            int num = i+1;
+            if (Validate.notEmpty("Absence Name " + num, tfAbsenceType[i].getText())) {
+                absenceType[i] = tfAbsenceType[i].getText();
+                lblAbsenceName[i].setTextFill(Color.BLACK);
+                if (Validate.notEmpty("Display Color " + num,cboAbsenceColor[i].getValue())) {
+                    absenceColor[i] = cboAbsenceColor[i].getValue();
+                    lblColor[i].setTextFill(Color.BLACK);
+                    if (Validate.notEmpty("Balance Type " + num,cboBalanceType[i].getValue())) {
+                        lblBalanceType[i].setTextFill(Color.BLACK);
+                        String balType = cboBalanceType[i].getValue();
+                        if (balType.equals("Accrued Hours")) {accrualRate[i] = (tfAccrualRate[i].getText());}
+                        if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
+                        if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
+                        if (Validate.notEmpty("Accrual Rate " + num,accrualRate[i])) {
+                            if (balType.equals("Accrued Hours")) {
+                                if (Validate.isPosDecimal("Max Accrual " + num,tfMaxAccrual[i].getText())) {
+                                    lblMaxAccrual[i].setTextFill(Color.BLACK);                                     
+                                    maxAccrual[i] = tfMaxAccrual[i].getText();
+                                    validated = true;                      // **** all validations passed ****
+                                } else {         // max failed **
+                                   validated = false;
+                                   lblMaxAccrual[i].setTextFill(Color.RED);
+                                } 
+                            } else {    // no max accrual to check 
+                                validated = true;                // **** all but accrued validations passed ****
+                                maxAccrual[i] = "0";
+                            }
+                        } else {        // rate failed
+                            validated = false;
+                            lblAccrualRate[i].setTextFill(Color.RED);
+                        } 
+                      } else {      // Balance failed
+                         validated = false;
+                         lblBalanceType[i].setTextFill(Color.RED); 
+                    }   
+                 } else {           // color failed
+                     validated = false;
+                     lblColor[i].setTextFill(Color.RED);
+                 } 
+            } else {    // name failed       
+                validated = false;
+                lblAbsenceName[i].setTextFill(Color.RED);
+            }
+        }    
+        
+        return validated;
+        
+    } // end getValues
     
     /* private updateAbsenceTypes
      *
@@ -529,6 +579,14 @@ public class SetupForm extends Application {
                 accrualRate[i] + "', Max_Accrual = '" + maxAccrual[i] + "' " +
                 "WHERE Absence_ID = '" + absenceID[i] + "'"; 
             Database.SQLUpdate(sql);
+
+            // update a zero balance to Starting_Balances for changed to Add-In types
+            if (accrualRate[i].equals("-1")) {
+                sql = "UPDATE Starting_Balances " +
+                "SET Absence_ID = '" + absenceID[i] + "', Starting_Balance = '" + 0 +  "' " +
+                "WHERE Absence_ID = '" + absenceID[i] + "' and Year = '" + year + "'"; 
+                Database.SQLUpdate(sql);
+            }            
         }
         
         // insert newly added to Absence_Types
@@ -537,8 +595,16 @@ public class SetupForm extends Application {
                 "VALUES ('" + absenceType[a] + "', '" + absenceColor[a] + "', '" + accrualRate[a] +
                 "', '" + maxAccrual[a] + "')"; 
             Database.SQLUpdate(sql);
+            
+            // Insert a zero balance to Starting_Balances for new Add-In type
+            if (accrualRate[i].equals("-1")) {
+                int absID = Database.getAbsenceID(absenceType[a]);
+                sql = "INSERT into Starting_Balances (Year, Absence_ID, Starting_Balance) " +
+                    "VALUES ('" + year + "', '" + absID + "', '" + 0 + "')"; 
+                Database.SQLUpdate(sql);     
+            }
         }      
-    }
+    } // end updateAbsenceTypes
     
     /* private insert AbsenceType
      *
@@ -553,9 +619,16 @@ public class SetupForm extends Application {
                 "VALUES ('" + absenceType[i] + "', '" + absenceColor[i] + "', '" + accrualRate[i] +
                 "', '" + maxAccrual[i] + "')"; 
             Database.SQLUpdate(sql);
-        }   
-        
-    }
+            
+            // Insert a zero balance to Starting_Balances for new Add-In type
+            if (accrualRate[i].equals("-1")) {
+                int absID = Database.getAbsenceID(absenceType[i]);
+                sql = "INSERT into Starting_Balances (Year, Absence_ID, Starting_Balance) " +
+                    "VALUES ('" + year + "', '" + absID + "', '" + 0 + "')"; 
+                Database.SQLUpdate(sql);     
+            }
+        }        
+    } // end insertAbsenceTypes
     
     /* private deleteAbsenceType
      *
@@ -578,6 +651,7 @@ public class SetupForm extends Application {
         sql = "DELETE from Absence_Types " + 
         "WHERE Absence_ID = '" + absenceID[i] + "'";
         Database.SQLUpdate(sql);
-    }    
+        
+    }   // end deleteAbsenceType 
     
 } //End Subclass SetupForm
