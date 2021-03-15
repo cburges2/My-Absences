@@ -88,6 +88,10 @@ public class Warnings {
                 if (((String)warnings.get(i).get("Warning_Name")).equals("ENTER_BALANCES")) {
                     warnMessages.add("Enter Starting Balances");
                 }
+                if (((String)warnings.get(i).get("Warning_Name")).equals("ZERO_BALANCE")) {
+                    String absenceType = (String)warnings.get(i).get("Absence_Type");
+                    warnMessages.add(absenceType + " has a zero balance!");
+                }
             }
         }
         return warnMessages; 
