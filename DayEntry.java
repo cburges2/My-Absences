@@ -18,6 +18,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -55,7 +56,8 @@ public class DayEntry extends Application {
     int absenceID = 0;          // the id of the absence type
     boolean prePopulated = false; // flag for day already having data on load
     boolean inGroup = false;      // flag for day part of a group
-    double currentAvailable = 0.0; // used for verification that hours are available
+    double currentAvailable = 0.0; // used for verification that hours are available now
+    double currentRemaining = 0.0; // used for verification that hours are available by year end
     
     // controls
     TextField tfTitle = new TextField();
@@ -114,8 +116,8 @@ public class DayEntry extends Application {
             notes = (String)dayData.get("Notes");
             group = (String)dayData.get("Absence_Group");
             absenceID = getAbsenceTypeID(absenceType);
-            currentAvailable = Double.parseDouble(JsonMatch.getJsonString(stats,"Absence_Type",absenceType,"Available_Hours"));
-            lblHoursAvailable.setText(JsonMatch.getJsonString(stats,"Absence_Type",absenceType,"Available_DayHours")+"Available");
+            currentAvailable = Double.parseDouble(JsonMatch.getJsonString(stats,"Absence_Type",absenceType,"Remaining_Hours"));
+            lblHoursAvailable.setText(JsonMatch.getJsonString(stats,"Absence_Type",absenceType,"Remaining_DayHours")+"Can be Planned");
             
             if (!group.isEmpty()) {inGroup = true;}
 
@@ -176,6 +178,10 @@ public class DayEntry extends Application {
         } else {
             ckbSubmitted.setSelected(false);
         }
+        Tooltip ttsubmit = new Tooltip("Check this box if time\n has been submitted "
+                + "and approved");
+        ttsubmit.getStyleClass().add("ttgray");
+        ckbSubmitted.setTooltip(ttsubmit);
         
         // set combobox for repeat days
         for (int i = 0; i < 20; i++) {    // add in 5 minute increments 
@@ -183,12 +189,23 @@ public class DayEntry extends Application {
         }
         cboRepeat.setValue(1);
         cboRepeat.setPrefWidth(55);
-
+        Tooltip ttrepeat = new Tooltip("This creates repeating days for this type " +
+        "and hours entered.");
+        ttrepeat.getStyleClass().add("ttgray");
+        lblRepeat.setTooltip(ttrepeat);
+        
         // Set Group Button attributes
         dayEntryUpdateGroup.setMaxHeight(22);
         dayEntryUpdateGroup.setMinHeight(22);
+        Tooltip updtGrouptt = new Tooltip("Updates all days that are part of this group\n " +
+        "with the type and hours entered");
+        updtGrouptt.getStyleClass().add("ttgray");
+        dayEntryUpdateGroup.setTooltip(updtGrouptt);
         dayEntryDeleteGroup.setMaxHeight(22);
         dayEntryDeleteGroup.setMinHeight(22);
+        Tooltip delGrouptt = new Tooltip("Deletes all days that are part of this group");
+        delGrouptt.getStyleClass().add("ttgray");
+        dayEntryDeleteGroup.setTooltip(delGrouptt);        
         
         // *** ADD Fields to GridPane ***
         // title
@@ -248,6 +265,7 @@ public class DayEntry extends Application {
         
         // determine what buttons to add to bottom hbox
         if (prePopulated) {
+            setRemainingHours();  // set remaining hours for prepopulated type
             hBoxB.getChildren().addAll(dayEntryDelete,dayEntryUpdate,dayEntryCancel);
             Platform.runLater(() -> {
                 dayEntryCancel.requestFocus();  // Set focus on cancel if prepopulated
@@ -379,17 +397,45 @@ public class DayEntry extends Application {
                 formGPane.getStyleClass().add(css);
                 topDatePane.getStyleClass().clear();
                 topDatePane.getStyleClass().add(css);
-                // get stats for type changed to
-                String aHours = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_Hours");
-                String aDayH = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_DayHours");
-                currentAvailable = Double.parseDouble(aHours);
-                lblHoursAvailable.setText(aDayH + "Available");
-                System.out.println("Hours available: " + currentAvailable);
+                setRemainingHours();
+//                if (aRate >= 0) {
+//                    String rHours = JsonMatch.getJsonString(stats,"Absence_Type",type,"Remaining_Hours");
+//                    String rDayH = JsonMatch.getJsonString(stats,"Absence_Type",type,"Remaining_DayHours"); 
+//                    lblHoursAvailable.setText(rDayH + "Can be Planned");
+//                    currentRemaining = Double.parseDouble(rHours);
+//                } else {
+//                    //String aHours = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_Hours");
+//                    //String aDayH = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_DayHours");                    
+//                    lblHoursAvailable.setText("");  // no remaining to show for Add-In types
+//                    //currentAvailable = Double.parseDouble(aHours);
+//                }
+//                //currentAvailable = Double.parseDouble(aHours);
+//                //if (aRate != -1) {lblHoursAvailable.setText(rDayH + "Can be Planned");
+//                //} else {lblHoursAvailable.setText("");}   // no hours Remaining reporting on Add-In type
             }
             catch(Exception ex) {
                 // catch
             }
         });
+        
+    }
+    
+    private void setRemainingHours() {
+        
+        if (JsonMatch.getJsonDouble(typesData,"Absence_Type",cboType.getValue(),"Accrual_Rate") >= 0) {
+           String rHours = JsonMatch.getJsonString(stats,"Absence_Type",cboType.getValue(),"Remaining_Hours");
+           String rDayH = JsonMatch.getJsonString(stats,"Absence_Type",cboType.getValue(),"Remaining_DayHours"); 
+           lblHoursAvailable.setText(rDayH + "Can be Planned");
+           currentRemaining = Double.parseDouble(rHours);
+       } else {
+           //String aHours = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_Hours");
+           //String aDayH = JsonMatch.getJsonString(stats,"Absence_Type",type,"Available_DayHours");                    
+           lblHoursAvailable.setText("");  // no remaining to show for Add-In types
+           //currentAvailable = Double.parseDouble(aHours);
+       }
+       //currentAvailable = Double.parseDouble(aHours);
+       //if (aRate != -1) {lblHoursAvailable.setText(rDayH + "Can be Planned");
+       //} else {lblHoursAvailable.setText("");}   // no hours Remaining reporting on Add-In type       
         
     }
  
@@ -441,7 +487,7 @@ public class DayEntry extends Application {
         + submitted + "', '" + notes + "', '" + group + "')";       
         Database.SQLUpdate(sql);
         
-        // Repeat Add Days
+        // Repeat insert for Add Days
         int i = 0;
         while (i < repeatDays-1) {
             // increment date
@@ -545,10 +591,12 @@ public class DayEntry extends Application {
     private boolean validateData () {
         
         boolean validated = false;
+        double aRate = JsonMatch.getJsonDouble(typesData,"Absence_Type",cboType.getValue(),"Accrual_Rate");
         
         double hoursToValidate = decimalHours * (int)repeatDays;
+        if (aRate == -1) {hoursToValidate = 0;}  // Don't validate Add-In hours
         if (Validate.notEmpty("Absence Type", absenceType)) {
-             if (Validate.availableHours(hoursToValidate,currentAvailable)) {
+             if (Validate.availableHours(hoursToValidate,currentRemaining)) {
                validated = true; 
             } else {
                 lblHoursAvailable.getStyleClass().add("lblverify"); 
