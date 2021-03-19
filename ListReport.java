@@ -43,7 +43,7 @@ public class ListReport extends Application {
         ScrollPane scrollpane = new ScrollPane();
         
         gPane.setAlignment(Pos.TOP_LEFT);
-        gPane.setPadding(new Insets(5, 5, 5, 5));
+        gPane.setPadding(new Insets(5, 25, 5, 25));
         bPane.setPadding(new Insets(5, 5, 5, 5));
         gPane.getStyleClass().add("summaryreport");
         gPane.setHgap(20);
@@ -125,7 +125,7 @@ public class ListReport extends Application {
         bPane.setBottom(hBoxB);
         Scene listReportScene = new Scene(bPane); 
         reportStage.setMaxHeight(700);
-        reportStage.setMaxWidth(650);
+        reportStage.setMaxWidth(750);
         listReportScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         reportStage.setTitle("List View Report");
         reportStage.setScene(listReportScene);
