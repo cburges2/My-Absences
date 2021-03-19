@@ -18,7 +18,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
-import static myabsences.MyAbsences.btnMonth;
 import org.json.simple.JSONObject;
 
 /**
@@ -44,6 +43,7 @@ public class CalanderBuilder {
     ArrayList<JSONObject> absences = new ArrayList<>();
     ArrayList<JSONObject> warnings = new ArrayList<>();
     String buildDate;         // the date we are building in the month calendar
+    static Button[][] btnMonth = new Button[12][42];  // days in month button array (month, day)
     
     /* Constructor
     * year sets the current year being viewed in the calendar
@@ -123,8 +123,8 @@ public class CalanderBuilder {
                             if (date > lastDay) {dateString=" ";}
                             // add the day button and force size
                             btnMonth[buildMonth][btnIter] = new Button(dateString); // create button in the array labled with day number
-                            btnMonth[buildMonth][btnIter].setMaxSize(32,25);
-                            btnMonth[buildMonth][btnIter].setMinSize(32,25);
+                            btnMonth[buildMonth][btnIter].setMaxSize(34,25);
+                            btnMonth[buildMonth][btnIter].setMinSize(34,25);
                             // build the date string for the day being added
                             String calDate = dateString;
                             if (calDate.length() == 1 && !calDate.equals(" ")) {calDate = "0" + calDate;}
@@ -353,7 +353,15 @@ public class CalanderBuilder {
         
         return hrsMin;
 
-    } // End getHoursMin     
+    } // End getHoursMin   
+    
+    /* public getButtons
+    *
+    * Returns the buttons 2D array for the calander days  */
+    public Button[][] getBtnMonth() {
+        
+        return btnMonth;
+        
+    }    
+    
 }
-
-
