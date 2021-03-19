@@ -59,15 +59,19 @@ public class MyAbsences extends Application {
         
         // Build the Bottom gPane -> Summary Report
         SummaryReportBuilder summaryReportBuilder = new SummaryReportBuilder(year);
-        GridPane bottomReport = summaryReportBuilder.buildReport();        
+        GridPane bottomReport = summaryReportBuilder.buildReport();   
+        cboCalcType = summaryReportBuilder.getCboCalcType();   // get the calc combobox
          
         // Build the Middle bPane -> Calander  
         CalanderBuilder calanderBuilder = new CalanderBuilder(year);
         GridPane calander = calanderBuilder.buildCalander();  
+        btnMonth = calanderBuilder.getBtnMonth();               // get the calander buttons
         
         //Build the Top bPane -> TopLineHBox
         TopPaneBuilder topPaneBuilder = new TopPaneBuilder(year);
         HBox topPane = topPaneBuilder.buildTopPane();   
+        cboYear = topPaneBuilder.getCboYear();
+        btnsTop = topPaneBuilder.getBtnsTop();
         
         /*** Set BorderPane attributes ***/  
         BorderPane.setAlignment(bottomReport,Pos.CENTER);
