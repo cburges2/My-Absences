@@ -38,7 +38,16 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-background-color:linear-gradient(#f0a99e, red);
      -fx-text-fill: White;     
  }
- 
+  .ttgray {
+     -fx-background-color:linear-gradient(white,lightgray);
+     -fx-background-radius: 7 7 7 7;
+     -fx-text-fill: Black;
+ }
+ .ttmain {
+     -fx-background-radius: 7 7 7 7;
+     -fx-background-color:linear-gradient(#f0a99e, red);
+     -fx-text-fill: White;        
+ }
  .btnday{
      -fx-background-radius: 1 1 1 1;  
  } 
@@ -130,7 +139,7 @@ Stylesheet for text and controls in MyAbsences classes
  .formtop {
      -fx-background-color:white
  }
-  .dayentry {
+ .dayentry {
      -fx-background-color:linear-gradient(white,lightgray); 
  }
  .summaryreport {
@@ -169,10 +178,10 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-text-fill: #588cd6;
      -fx-font-weight: bold;
  }
-  .lblgreen {
+ .lblgreen {
      -fx-text-fill: #9de69c;
  }
-  .lblpurple {
+ .lblpurple {
      -fx-text-fill: #c39ce6;
  }
  .lblred {
