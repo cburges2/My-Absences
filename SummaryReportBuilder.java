@@ -9,10 +9,10 @@ import java.util.Calendar;
 import java.util.Date;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
-import static myabsences.MyAbsences.cboCalcType;
 import static myabsences.MyAbsences.calcType;
 import org.json.simple.JSONObject;
 
@@ -36,7 +36,6 @@ public class SummaryReportBuilder {
     ArrayList<JSONObject> pastHours;
     ArrayList<JSONObject> startBalances;
     ArrayList<JSONObject> absences;
-    //ArrayList<JSONObject> warnings = new ArrayList();  // list of warnings for Max Accurals reached.
     ArrayList<JSONObject> stats = new ArrayList<>();   // object to hold stats
     int daysInYear;    
     String lastDate;   // date of last day of this year
@@ -49,6 +48,7 @@ public class SummaryReportBuilder {
     double accruedNow = 0;
     String absenceType = "";
     int absenceID = 0;
+    static ComboBox<String> cboCalcType = new ComboBox<>();
     
     /* SummaryReportBuilder Constructer
     *
@@ -61,8 +61,6 @@ public class SummaryReportBuilder {
         this.year = year;   // Set class variable year from parameter
         
         lastDate = year + "-12-31";   // build string for last day of this year
-        
-        JSONObject stats = new JSONObject();
         
         // get the JSON object arrays from the database
         startBalances = Database.getStartBalances(year);                 
@@ -95,8 +93,8 @@ public class SummaryReportBuilder {
     public final GridPane buildReport () {
 
         /* Set bottomReport Attributes */ 
-        bottomReport.setPrefHeight(50); 
-        bottomReport.setMaxWidth(978);
+        bottomReport.setMinHeight(114);
+        bottomReport.setMaxWidth(1034); // 979
         bottomReport.setAlignment(Pos.CENTER);
         bottomReport.getStyleClass().add("summaryreport");   //
         GridPane.setMargin(bottomReport, new Insets(10,0,10,0));   // top, right, bottom, left
@@ -112,26 +110,34 @@ public class SummaryReportBuilder {
         }
         cboCalcType.setPadding(new Insets(-5,0,-5,0)); // shrink height
         cboCalcType.setValue(calcType);
+        Tooltip calcType = new Tooltip("Calculate all hours or submitted hours only");
+        calcType.getStyleClass().add("ttgray");
+        cboCalcType.setTooltip(calcType);
 
         // add the summaryTable array to the gridpane, while breaking down hours and adding colors and hours tooltips
-        bottomReport.setHgap(50);    // Add space between columns
+        bottomReport.setHgap(40);    // Add space between columns
         bottomReport.setVgap(-2);    // Reduce space between rows
         String toolTipText = " ";
-        absenceType = "";
         for (int row = 0; row < numRows+1; row++) {
             for (int col = 0; col < numColumns; col++) {
                     if (col == 0 && row == 0) {
                         GridPane.setConstraints(cboCalcType, col, row);
                         bottomReport.getChildren().add(cboCalcType);
                     }
-                    if (col == 0 && row > 0) absenceType = summaryTable[row][col]; // get the absence type for the row
                     Label label = new Label(" ");
+                    if (col == 0 && row > 0) {      // add tooltip to type name showing balance type
+                        String typett = getAccrualType((Double)startBalances.get(row-1).get("Accrual_Rate"));
+                        Tooltip type = new Tooltip(typett);
+                        label.setTooltip(type);
+                        String cssColor = "tt" + ((String)startBalances.get(row-1).get("Color")).toLowerCase();
+                        type.getStyleClass().add(cssColor);
+                    } 
                     if (col > 0 && row > 0 && !summaryTable[row][col].equals("--")) {
                         label.setText(getHoursBreakdown(summaryTable[row][col])); // breakdown hours for display if hours     
                     }
                     else {label.setText(summaryTable[row][col]);}
                     if (row != 0) {toolTipText = summaryTable[row][col] + " Hours";} // set tt tp actual hours
-                    if (row == 0) { label.getStyleClass().add("summaryheader"); }    // style headers 
+                    if (row == 0) {label.getStyleClass().add("summaryheader");}      // style headers 
                     Tooltip ltp = new Tooltip(toolTipText);
                     if (row > 0 && col == 0) {                  // absence type column color by type
                         String cssColor = "type" + ((String)startBalances.get(row-1).get("Color")).toLowerCase();
@@ -163,7 +169,6 @@ public class SummaryReportBuilder {
         for (int row=0; row < numRows; row++) {
             JSONObject record = new JSONObject();   // record of stats for dayform to get
             absenceType = (String)startBalances.get(row).get("Absence_Type");
-            record.put("Absence_Type",absenceType);
             summaryTable[row][0] = absenceType;                   // set first table column to absenceType name
             // get start balance for type
             startBalance = (double)startBalances.get(row).get("Starting_Balance");
@@ -172,10 +177,9 @@ public class SummaryReportBuilder {
             summaryTable[row][2] = Double.toString(past_Hours);
             // get future hours for type
             double future_Hours = JsonMatch.getJsonDouble(futureHours,"Absence_Type",absenceType,"Future_Hours");
-            record.put("Future_Hours", future_Hours);
             summaryTable[row][3] = Double.toString(future_Hours);
             accrualRate = (double)startBalances.get(row).get("Accrual_Rate");
-            String accrualType = getaccrualType(accrualRate);  // get the type - accrued, fixed, or not calculated. 
+            String accrualType = getAccrualType(accrualRate);  // get the type - accrued, fixed, or not calculated. 
             // set accrued absence type data for summary table and check accrual max
             if (accrualType.equals("Accrued")) {
                 if (thisYear.equals(year)) {
@@ -184,28 +188,34 @@ public class SummaryReportBuilder {
                     if (accrualMax != 0) findMaxAccrual();   // set max warning for absence type if there is a max
                 } 
                 accruedToday = calcAvailableToday(accrualRate, startBalance, past_Hours); 
-                summaryTable[row][4] = accruedToday;
+                if (thisYear.equals(year)) {summaryTable[row][4] = accruedToday;} else {summaryTable[row][4] = "0";}
                 summaryTable[row][5] = calcAccuredRemainingHours(past_Hours, future_Hours, startBalance,accrualRate);
             }          
             // fixed accrual - calc remaining balance (startbalance - (used + planned))           
             if (accrualType.equals("Fixed")) {
-                summaryTable[row][4] = calcAvailableToday(startBalance,past_Hours);   
+                if (thisYear.equals(year)) {summaryTable[row][4] = calcAvailableToday(startBalance,past_Hours);}
+                else {summaryTable[row][4] = "0";}
                 summaryTable[row][5] = calcFixedRemainingHours(past_Hours, future_Hours, startBalance); 
             }        
             // Holidays - not calculated
             if (accrualType.equals("Added")) {
                 summaryTable[row][1] = Double.toString(past_Hours + future_Hours);
-                summaryTable[row][4] = Double.toString(future_Hours);
-                summaryTable[row][5] = "--";     // no remaining balance, show just dashes
+                if (thisYear.equals(year)) {summaryTable[row][4] = Double.toString(future_Hours);}
+                else {summaryTable[row][4] = "0";}
+                summaryTable[row][5] = "0 ";     // no remaining balance, show use zero
             }
+            // add data to a JSON record object and then add the record to stats array
+            record.put("Absence_Type",absenceType);
+            record.put("Future_Hours", future_Hours);
             record.put("Available_DayHours",getHoursBreakdown(summaryTable[row][4]));
             record.put("Available_Hours",summaryTable[row][4]);
             record.put("Remaining_Hours",summaryTable[row][5]);
+            record.put("Remaining_DayHours",getHoursBreakdown(summaryTable[row][5]));
             stats.add(record);   // add record to stats arraylist
         }
 
         // move array elements and add headers to top of summary Table
-        String[] headers = new String[]{"","Beginning Balance","Used      ","Planned   ","Available Today","Remaining "};
+        String[] headers = new String[]{"","Beginning Balance      ","Used                   ","Planned                ","Available Today        ","Remaining              "};
         for (int row = numRows; row > 0; row--) {
             for (int col = 0; col < numColumns; col++) {
                 summaryTable[row][col] = summaryTable[row-1][col]; // move exiting array up on element
@@ -293,7 +303,7 @@ public class SummaryReportBuilder {
         if ((int)weeks != 0) {breakDown = (int)weeks + " Weeks ";}      
         if ((int)days != 0) {breakDown = breakDown + (int)days + " Days ";}
         if ((int)hours != 0) {breakDown = breakDown + (int)hours + " Hrs ";}
-        if ((int)min != 0) {breakDown = breakDown + (int)min + " Min ";}
+        if ((int)min != 0) {breakDown = breakDown + (int)min + " Min";}
         
         if (h.equals("0")) {breakDown = "0";}
         
@@ -358,7 +368,7 @@ public class SummaryReportBuilder {
     * => "Fixed"
     *
     * Returns the accrualType for the absence type in Absence_Types table       */
-    private String getaccrualType(double accrualType) {
+    private String getAccrualType(double accrualType) {
         
         String aType = "";
         
@@ -402,7 +412,7 @@ public class SummaryReportBuilder {
     
     /* public getStats
     *
-    * Returns the stats arraylist for DayForm parameter in MyAbsences  */
+    * Returns the stats arraylist of JSONOjects for DayForm parameter used in MyAbsences  */
     public ArrayList<JSONObject> getStats() {
         
         return stats;
@@ -428,5 +438,11 @@ public class SummaryReportBuilder {
         
         return isLeap;
     } // End leapYear
+    
+    public ComboBox<String> getCboCalcType() {
+        
+        return cboCalcType;
+        
+    }
     
 } // end class summaryReportBuilder
