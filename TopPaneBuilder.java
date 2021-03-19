@@ -10,14 +10,14 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import static myabsences.MyAbsences.btnsTop; // buttons must be handled in main class
-import static myabsences.MyAbsences.cboYear; // pull in year from main class
 
 /**
  * TopPaneBuilder Class
@@ -28,7 +28,10 @@ public class TopPaneBuilder {
     
     HBox topLineHBox = new HBox();              // Top Title pane with year selector
     String year = "";   // calendar year
-    ArrayList<String> years = new ArrayList<>();     // years to put in ComboBox
+    ArrayList<String> years = new ArrayList<>();    // years to put in ComboBox
+    ComboBox<String> cboYear = new ComboBox<>();    // year combo
+    Button[] btnsTop = new Button[4];               // top pane navigattion buttons
+    Tooltip[] btnTip = new Tooltip[4];              // help tooltips for buttons
     
     /* public TopPaneBuilder - Constructor
     * 
@@ -98,16 +101,26 @@ public class TopPaneBuilder {
         buttonHBox.setSpacing(2);
         buttonHBox.getStyleClass().add("bpane");
        
-        // Create top left buttons
+        // Create top left buttons and help tooltips
         String[] navButtons = new String[]{"Setup","Enter Balances","List View","Exit"};
-        //Button[] btnsTop = new Button[navButtons.length];
         for (int numBtn=0; numBtn < navButtons.length; numBtn++) {
+            if (numBtn == 0)  {btnTip[numBtn] = new Tooltip("Setup\nDefine your abasence types");}
+            if (numBtn == 1)  {btnTip[numBtn] = new Tooltip("Enter Balances\nEnter this year's starting balances for your absence types");}
+            if (numBtn == 2)  {btnTip[numBtn] = new Tooltip("List View\nView all absences for the year in a list");}
+            if (numBtn == 3)  {btnTip[numBtn] = new Tooltip("Exit My Absences");}
+            btnTip[numBtn].getStyleClass().add("ttgray");
             btnsTop[numBtn] = new Button(navButtons[numBtn]); 
+            btnsTop[numBtn].setTooltip(btnTip[numBtn]);
             btnsTop[numBtn].getStyleClass().add(navButtons[numBtn]);
             btnsTop[numBtn].setPadding(new Insets(2, 6, 3, 6));   // top, right, bottom, left
             btnsTop[numBtn].setMinWidth(25);  // force buttons to be same size
             buttonHBox.getChildren().add(btnsTop[numBtn]); // add to the buttonHBox
         }
+        
+        // combobox help tooltip
+        Tooltip cboYearTip = new Tooltip("Choose Year for Calander");
+        cboYearTip.getStyleClass().add("ttgray");
+        cboYear.setTooltip(cboYearTip);
         
         // Put the warnings in the warningHBox if current year
         if (year.equals(thisYear)) {
@@ -158,6 +171,18 @@ public class TopPaneBuilder {
         
         return topLineHBox;
     
+    }
+    
+    public ComboBox<String> getCboYear() {
+        
+        return cboYear;
+        
+    }
+    
+    public Button[] getBtnsTop() {
+        
+        return btnsTop;
+        
     }
 }
 
