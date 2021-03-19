@@ -2,13 +2,13 @@
 package myabsences;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import javafx.scene.control.Alert;
 import static myabsences.MyAbsences.calcType;
 import org.json.simple.JSONObject;
 
@@ -22,12 +22,34 @@ import org.json.simple.JSONObject;
    static final String DB_URL = "jdbc:sqlite:c:/sqlite/MyAbsences.db";    
    static final String USER = "username";
    static final String PASS = "password";  
-   String sql = "";     // used for queries
    
    // Empty constructor
    public Database () {
 
    }
+   
+public static void createNewDatabase(String fileName) {
+
+        String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
+
+        try (Connection conn = DriverManager.getConnection(url)) {
+            if (conn != null) {
+                DatabaseMetaData meta = conn.getMetaData();
+                System.out.println("The driver name is " + meta.getDriverName());
+                System.out.println("A new database has been created.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        createNewDatabase("test.db");
+    }   
 
    /* public getYears
    *
@@ -54,14 +76,17 @@ import org.json.simple.JSONObject;
                 years.add(rs.getString("Year"));
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return years;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -73,7 +98,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */
 
@@ -108,14 +133,17 @@ import org.json.simple.JSONObject;
                 id = rs.getInt("Absence_ID");
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return id;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -127,7 +155,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -166,10 +194,10 @@ import org.json.simple.JSONObject;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -181,7 +209,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -217,14 +245,17 @@ import org.json.simple.JSONObject;
                 count = rs.getInt("Start_Count");
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return count;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -236,7 +267,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -279,14 +310,17 @@ import org.json.simple.JSONObject;
                 result.add(record);
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return result;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -298,7 +332,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -347,14 +381,17 @@ import org.json.simple.JSONObject;
                 result.add(record);
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return result;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -366,7 +403,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -423,14 +460,17 @@ import org.json.simple.JSONObject;
                 result.add(record);
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return result;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -442,7 +482,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -486,14 +526,17 @@ import org.json.simple.JSONObject;
                 record.put("Absence_Group",rs.getString("Absence_Group"));
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return record;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -505,7 +548,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */
 
@@ -552,14 +595,17 @@ import org.json.simple.JSONObject;
                 result.add(record);
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
             return result;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -571,7 +617,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */
 
@@ -610,15 +656,18 @@ import org.json.simple.JSONObject;
                 record.put("Max_Accrual",rs.getDouble("Max_Accrual"));
                 result.add(record);
             }
-
+            
+            rs.close();
+            stmt.close();
+            conn.close();
             return result;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               System.out.println("JDBC Error " + se);
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               System.out.println("Class.forName Error " + e);
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -630,7 +679,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */
             
@@ -678,10 +727,10 @@ import org.json.simple.JSONObject;
 
             }catch(SQLException se){
                //Handle errors for JDBC
-               se.printStackTrace();
+               ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               e.printStackTrace();
+               ErrorHandler.classForNameError(e);
             }finally{
                //finally block used to close resources
                try{
@@ -693,7 +742,7 @@ import org.json.simple.JSONObject;
                   if(conn!=null)
                      conn.close();
                }catch(SQLException se){
-                  se.printStackTrace();
+                  ErrorHandler.closeConnectionError(se);
                }//end finally try
             }//end try */       
 
@@ -725,23 +774,17 @@ import org.json.simple.JSONObject;
              stmt.executeUpdate(sql);//ResultSet rs = 
 
              success = true;
-             return success;
+             
+            stmt.close();
+            conn.close();
+            return success;
 
             }catch(SQLException se){
                 //Handle errors for JDBC
-                System.out.println("JDBC Error " + se);
-                String error = se.toString();
-                if (error.contains("SQLITE_CONSTRAINT_UNIQUE")) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Planned Day already contains an Absence!");
-                    alert.setHeaderText("Warning: Not all your absence days were saved");
-                    alert.setContentText("You were saving a repeating absence but there was " +
-                    "already an absence planned in that time period");
-                    alert.showAndWait();
-                }
+                ErrorHandler.JDBCError(se);
             }catch(Exception e){
                //Handle errors for Class.forName
-               System.out.println("Class.forName Error " + e);
+               ErrorHandler.classForNameError(e);
              }finally{
                 //finally block used to close resources
                 try{
@@ -753,7 +796,7 @@ import org.json.simple.JSONObject;
                    if(conn!=null)
                       conn.close();
                 }catch(SQLException se){
-                   se.printStackTrace();
+                   ErrorHandler.closeConnectionError(se);
                 }//end finally try
              }//end try
 
