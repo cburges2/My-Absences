@@ -18,21 +18,54 @@ public class ErrorHandler {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         
         if (error.contains("SQLITE_CONSTRAINT_UNIQUE")) {
-            alert.setTitle("Planned Day already contains an Absence!");
+            alert.setTitle("SQLITE_CONSTRAINT_UNIQUE");
             alert.setHeaderText("Warning: Not all your absence days were saved");
             alert.setContentText("You were saving a repeating absence but there was " +
             "already an absence planned in that time period");
             
         } else {
-            alert.setTitle("JDBC Error");
+            alert.setTitle(error);
             alert.setHeaderText("Warning: Database Error");
             alert.setContentText(error);
         }
         
         alert.showAndWait();
-}
+    }
+     
+    public static void classForNameError(Exception cfnError) {
+        
+        String error = cfnError.toString();
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        
+        if (error.contains("LinkageError")) {
+            alert.setTitle("LinkageError");
+            alert.setHeaderText("Warning: DB Linkage failed");
+            alert.setContentText("Unable to link to Database");
+        } else if (error.contains("ExceptionInInitializerError")) {
+            alert.setTitle("ExceptionInInitializerError");
+            alert.setHeaderText("Warning: DB could not be initialized");
+            alert.setContentText("Unable to initialize the Database");             
+        } else if (error.contains("ClassNotFoundException")) {
+            alert.setTitle("ClassNotFoundException");
+            alert.setHeaderText("Warning: DB class not found");
+            alert.setContentText("Unable to locate the class loader");             
+        } 
+        
+         alert.showAndWait();
+
+    }
     
-    
+    public static void closeConnectionError(Exception closeError) {
+        
+        String error = closeError.toString();
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        
+        alert.setTitle(error);
+        alert.setHeaderText("Warning: Error closing Database Connection");
+        alert.setContentText(error);
+        alert.showAndWait();
+        
+    }
     
     
     
