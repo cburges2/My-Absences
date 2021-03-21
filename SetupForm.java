@@ -16,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -130,6 +131,9 @@ public class SetupForm extends Application {
             for (int c = 0; c < 6; c++) {    // add each color
                 cboAbsenceColor[i].getItems().add(colors[c]);
                 cboAbsenceColor[i].setPrefWidth(55);
+                Tooltip clr = new Tooltip("Used for all displays of this type");
+                clr.getStyleClass().add("ttgray");
+                cboAbsenceColor[i].setTooltip(clr);
             }
         }    
         
@@ -140,20 +144,34 @@ public class SetupForm extends Application {
             cboBalanceType[i].getItems().add("Fixed Hours");
             cboBalanceType[i].getItems().add("Add-In Hours");
             cboBalanceType[i].setPrefWidth(55);
+            Tooltip bal = new Tooltip("Accrued: Hours accrue at a daily rate\n" +
+                "Fixed: Hours are fixed at a starting balance\n" +
+                "Add-In: Hours are added as they are put on the calander");
+            bal.getStyleClass().add("ttgray");
+            cboBalanceType[i].setTooltip(bal);
         }     
         
         // set delete buttons
         for (int i = 0; i < 6; i++ ) {
             btnDelete[i] = new Button("x");
+            Tooltip del = new Tooltip("Delete this Type\nand all its data");
+            del.getStyleClass().add("ttred");
+            btnDelete[i].setTooltip(del);
         }
         
-        // set control values to empty (avoid nulls)
+        // set control values to empty (avoid nulls) and help tips
         for (int i = 0; i < 6; i++ ) {
             tfAbsenceType[i] = new TextField("");
+            Tooltip type = new Tooltip("Enter a display name for this type");
+            type.getStyleClass().add("ttgray");
+            tfAbsenceType[i].setTooltip(type);            
             cboAbsenceColor[i].setValue("");
             cboBalanceType[i].setValue(""); 
             tfAccrualRate[i] = new TextField("");
             tfMaxAccrual[i] = new TextField("");
+            Tooltip max = new Tooltip("Enter number of hours where hours stop accruing\nZero for N/A");
+            max.getStyleClass().add("ttgray");
+            tfMaxAccrual[i].setTooltip(max);
             tfMaxAccrual[i].setText("0");
             cboBalanceType[i].setValue("");            
         }
