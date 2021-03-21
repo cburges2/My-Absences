@@ -167,10 +167,17 @@ public class CalanderBuilder {
                                     btnMonth[buildMonth][btnIter].getStyleClass().add("underline"); 
                                 }
                                 Tooltip btp = new Tooltip(toolTipText);
-                                String btnColor = "btnday" + color.toLowerCase();
-                                String ttColor = "tt" + color.toLowerCase();
-                                btnMonth[buildMonth][btnIter].getStyleClass().add(btnColor);
-                                btp.getStyleClass().add(ttColor);
+                                //String btnColor = "btnday" + color.toLowerCase();
+                                //String ttColor = "tt" + color.toLowerCase();
+                                //btnMonth[buildMonth][btnIter].getStyleClass().add(btnColor);
+                                String gradient = getButtonGradient(color);
+                                String btnStyle = "-fx-background-color: linear-gradient(" + gradient + ")"
+                                        + "; -fx-background-radius: 1 1 1 1; -fx-border-color: " + color + "; -fx-border-width: .8;";
+                                btnMonth[buildMonth][btnIter].setStyle(btnStyle);              // set background color
+                                //btp.getStyleClass().add(ttColor);
+                                String ttStyle = "-fx-background-color: linear-gradient(" + gradient + ")"
+                                        + "; -fx-background-radius: 7 7 7 7; -fx-text-fill: White;";
+                                btp.setStyle(ttStyle);              // set tt background
                                 btnMonth[buildMonth][btnIter].setTooltip(btp);  // set the tooltip text
                             } else { 
                                 btnMonth[buildMonth][btnIter].getStyleClass().add("btnday"); // else use default day styling 
@@ -363,5 +370,43 @@ public class CalanderBuilder {
         return btnMonth;
         
     }    
+    
+    /* private getButtonGradient
+    *
+    * colors - an array of colors to put on the button or tt
+    *
+    * This method sets the button gradient colors for the absence types with hours */
+    private String getButtonGradient(String colors) {
+        
+        String gradient = "";
+        //numColors = colors.size();
+        
+        //for(int i = 0; i < numColors; i++) {
+            //if (i < numColors) gradient += ","
+              switch (colors) {
+                case "Red": 
+                     gradient += "#f0a99e, #e34444,";
+                    break;
+                case "Blue":
+                    gradient += "deepskyblue,#8da5e3,";
+                    break;
+                case "Orange":
+                    gradient += "#f0c49e, darkorange,";
+                    break;
+               case "Purple":
+                    gradient += "violet,#c39ce6,";
+                    break;
+               case "Green":
+                    gradient += "#9de69c, #32a632,";
+                    break;
+                case "Yellow":
+                    gradient += "#f0ec24, #d9d621";
+                   break;
+            } 
+        //}
+        
+       return gradient; 
+       
+    }
     
 }
