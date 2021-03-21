@@ -8,6 +8,7 @@ Stylesheet for text and controls in MyAbsences classes
 .bpane{
       -fx-background-color:lightslategray;
 }
+
 .ttgreen{
      -fx-background-radius: 7 7 7 7;
      -fx-background-color:linear-gradient(#9de69c, #32a632);
@@ -51,42 +52,6 @@ Stylesheet for text and controls in MyAbsences classes
  .btnday{
      -fx-background-radius: 1 1 1 1;  
  } 
- .btndaygreen {
-     -fx-background-color:linear-gradient(#9de69c, #32a632);
-     -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: Green;
-     -fx-border-width: .8;
- }
-  .btndaypurple {
-     -fx-background-color:linear-gradient(violet,#c39ce6);
-     -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: purple;
-     -fx-border-width: .8;
- }
- .btndayblue {
-     -fx-background-color:linear-gradient(deepskyblue,#8da5e3);
-     -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: Blue;
-     -fx-border-width: .8;     
- }
- .btndayorange {
-     -fx-background-color:linear-gradient(#f0c49e, darkorange);
-     -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: darkorange;
-     -fx-border-width: .8;
- }
- .btndayred {
-     -fx-background-color:linear-gradient(#f0a99e, #e34444);
-     -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: Red;
-     -fx-border-width: .8;     
- } 
- .btndayyellow {
-     -fx-background-color:linear-gradient(#f0ec24, #d9d621);
-     -fx-background-radius: 1 1 1 1; 
-     -fx-border-color: Yellow;
-     -fx-border-width: .8;     
- }
   .btnweekend{
      -fx-background-radius: 1 1 1 1;
      -fx-text-fill: Grey;
