@@ -52,18 +52,23 @@ Stylesheet for text and controls in MyAbsences classes
  .btnday{
      -fx-background-radius: 1 1 1 1;  
  } 
-  .btnweekend{
+ .btnweekend{
      -fx-background-radius: 1 1 1 1;
      -fx-text-fill: Grey;
  }
-  .btntoday{
+ .btntoday{
      -fx-border-width: 1.0;
      -fx-font-weight: bold;
      -fx-text-fill: Blue;
      -fx-border-color: Blue;
      -fx-border-insets: 0;
  }
- 
+ .btnplus {
+     -fx-text-fill: Green;
+     -fx-font-weight: bold;
+     -fx-border-color: Green;
+     -fx-border-width: 1.2;
+ }
  .btnNav {
     -fx-border-color: transparent;
     -fx-background-radius: 7 7 7 7;
