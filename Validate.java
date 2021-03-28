@@ -19,29 +19,53 @@ public class Validate {
    
     /* public availableHours
     *
+    * fieldName - the field being validated
     * hours - the hours being scehduled
     * available - the hours available 
     *
     * ==> Returns true if hours are available 
     *
     * Validates that the the type has the available balance to cover the hours */  
-    public static boolean availableHours(double hours, double available) {
+    public static boolean availableHours(String fieldName, double hours, double available) {
 
-        System.out.println("Hours is " + hours + " available is " + available);
         if (hours > available) { 
-            System.out.println("Hours not available");
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Warning");
             alert.setHeaderText("Not enough Available Hours!");
             alert.setContentText("You are short by " + (hours - available) +" hours\n"
+                    + "For " + fieldName + "\n"
                     + "Please try again.");
             alert.showAndWait(); 
             return false;           
         } else {
-            System.out.println("Hours Available");
             return true;
         }
     }  // end availableHours   
+
+    /* public hoursInDay
+    *
+    * date - the day being validated
+    * hours - total hours planned for day being scehduled
+    * dayHours - the hours in a day
+    *
+    * ==> Returns true if hours are available 
+    *
+    * Validates that the the type has the available balance to cover the hours */  
+    public static boolean hoursInDay(String date, double hours, double dayHours) {
+
+        if (hours > dayHours) { 
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText("More than " + dayHours + " hours scheduled!");
+            alert.setContentText("You are over by " + (hours - dayHours) +" hours\n"
+                    + "For " + date + "\n"
+                    + "Please try again.");
+            alert.showAndWait(); 
+            return false;           
+        } else {
+            return true;
+        }
+    }  // end availableHours  
     
     /* public notEmpty
     *
@@ -69,13 +93,14 @@ public class Validate {
     *
     * fieldName - the name of the field being checked
     * decimal - the String in the field to be checked. 
+    * max - the max allowed decimal number
     *
-    * ==> Returns true if a decimal number 
+    * ==> Returns true if a decimal number
     *
-    * Validates that the string represents a positive decimal number */    
-    public static boolean isPosDecimal (String fieldName, String decimal) {
+    * Validates that the string represents a positive decimal number within Max  */    
+    public static boolean isPosDecimal (String fieldName, String decimal, double max) {
         
-        System.out.println(fieldName + " value " + decimal);
+        boolean pass = true;
         
         // check if string is a positive decimal number format
         if (!decimal.matches("^(0|[1-9]\\d*)?(\\.\\d+)?(?<=\\d)$")) {
@@ -86,11 +111,54 @@ public class Validate {
             alert.setContentText("Enter a number for " + fieldName + "\n"
                     + "Please try again.");
             alert.showAndWait(); 
-            return false;
-            
-        } else {return true;}
+            pass = false;
+        } else {
+            if (Double.valueOf(decimal) > max) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Warning");
+                alert.setHeaderText(fieldName + " is too big!");
+                alert.setContentText("Enter a number for " + fieldName + " less than " + max + "\n"
+                        + "Please try again.");
+                alert.showAndWait(); 
+                pass = false;            
+            }
+        }
+        
+        return pass;
+        
         
     } // end isPosDecimal
+
+    /* public confirmDeleteTypeHours
+    *
+    * absence_type - the type that user selected to delete the Type Hours for
+    * 
+    * ==> Returns true if user confirms delete from all days in the group
+    * ==> Returns false if user Cancels to delete only the type hours on the day
+    * 
+    * This method confirms that the user wants to delete the Type Hours from 
+    * all the days in the group, else only the single day hour will be deleted */    
+    public static boolean confirmDeleteTypeHours(String absence_type) {
+        
+        boolean delete = false;
+        
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Delete Absence Type Hours");
+        a.setHeaderText(absence_type + " hours are part of an Absence Group!\n"
+                + "Press CANCEL to delete the Type Hours from only the current day");
+        a.setResizable(true);
+        a.setContentText("Press OK Delete from All Days in the Group:");
+        Optional<ButtonType> result = a.showAndWait();
+        if(!result.isPresent()) {
+            delete = false;
+        } else if(result.get() == ButtonType.OK) {
+            delete = true;
+        } else if (result.get() == ButtonType.CANCEL) {
+            delete = false;
+        }
+        
+        return delete;
+        
+    } // end method confirmDeleteTypeHours
     
     /* public confirmDeleteType
     *
