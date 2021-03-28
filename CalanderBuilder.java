@@ -53,7 +53,7 @@ public class CalanderBuilder {
     public CalanderBuilder(String year) {
         
         this.year = year;
-        absences = Database.getAbsences(year);
+        absences = Database.getAllAbsences(year);
         warnings = Database.getWarnings();
         // Set Today's date as a string in db format            
         Date today = Calendar.getInstance().getTime();
@@ -150,15 +150,20 @@ public class CalanderBuilder {
                                     }
                                 }
                             }
-                            // Add Absence Data to the day for day coloring and tooltip
-                            String color = JsonMatch.getJsonString(absences, "Date", buildDate, "Color");
-                            if (JsonMatch.getJsonIndex(absences,"Date",buildDate) != -1) {   // check if the date is in absences              
-                                String absenceType = JsonMatch.getJsonString(absences, "Date", buildDate, "Absence_Type");
-                                toolTipText = toolTipText + absenceType + "\n";
+                            // Add Absence Data to the day for day coloring and tooltip 
+                            String color = JsonMatch.getJsonString(absences, "Date", buildDate, "Color");  // button border color is last color
+                            if (JsonMatch.getJsonIndex(absences,"Date",buildDate) != -1) {   // check if the date is in absences 
+                                ArrayList<JSONObject> dayAbsences = Database.getDayAbsence(buildDate);  // get all the absence type hours for the day
                                 toolTipText = toolTipText + JsonMatch.getJsonString(absences, "Date", buildDate, "Title") + "\n";
-                                double dblHours = JsonMatch.getJsonDouble(absences, "Date", buildDate, "Hours");
-                                String hoursMin = getHoursMinutes(dblHours);
-                                toolTipText = toolTipText + hoursMin + "\n"; 
+                                String[] colors = new String[dayAbsences.size()];   // array of colors for color gradient
+                                for (int i = 0; i < dayAbsences.size(); i++ ) {
+                                    String absenceType = (String)dayAbsences.get(i).get("Absence_Type");
+                                    toolTipText = toolTipText + absenceType + "\n";
+                                    double dblHours = (double)dayAbsences.get(i).get("Hours");
+                                    String hoursMin = getHoursMinutes(dblHours);
+                                    toolTipText = toolTipText + hoursMin + "\n"; 
+                                    colors[i] = (String)dayAbsences.get(i).get("Color");  // add the color to the array for gradient coloring
+                                }
                                 int submit = JsonMatch.getJsonInt(absences, "Date", buildDate, "Submitted");
                                 if (submit == 1) {   
                                     toolTipText = toolTipText + "Submitted";
@@ -167,20 +172,18 @@ public class CalanderBuilder {
                                     btnMonth[buildMonth][btnIter].getStyleClass().add("underline"); 
                                 }
                                 Tooltip btp = new Tooltip(toolTipText);
-                                //String btnColor = "btnday" + color.toLowerCase();
-                                //String ttColor = "tt" + color.toLowerCase();
-                                //btnMonth[buildMonth][btnIter].getStyleClass().add(btnColor);
-                                String gradient = getButtonGradient(color);
+                                String ttStyle = "";
+                                String gradient = getColorGradient(colors);
+
                                 String btnStyle = "-fx-background-color: linear-gradient(" + gradient + ")"
                                         + "; -fx-background-radius: 1 1 1 1; -fx-border-color: " + color + "; -fx-border-width: .8;";
                                 btnMonth[buildMonth][btnIter].setStyle(btnStyle);              // set background color
-                                //btp.getStyleClass().add(ttColor);
-                                String ttStyle = "-fx-background-color: linear-gradient(" + gradient + ")"
+                                ttStyle = "-fx-background-color: linear-gradient(" + gradient + ")"
                                         + "; -fx-background-radius: 7 7 7 7; -fx-text-fill: White;";
                                 btp.setStyle(ttStyle);              // set tt background
                                 btnMonth[buildMonth][btnIter].setTooltip(btp);  // set the tooltip text
                             } else { 
-                                btnMonth[buildMonth][btnIter].getStyleClass().add("btnday"); // else use default day styling 
+                                btnMonth[buildMonth][btnIter].getStyleClass().add("btnday"); // else use default day styling for empty days 
                             }  
                             if (buildDate.equals(todayStr)) {btnMonth[buildMonth][btnIter].getStyleClass().add("btntoday");} // Mark Today's date as bold blue Outline
                          
@@ -364,7 +367,8 @@ public class CalanderBuilder {
     
     /* public getButtons
     *
-    * Returns the buttons 2D array for the calander days  */
+    * Returns the buttons 2D array of calander days 
+    * used for button event handler in MyAbsences main class*/
     public Button[][] getBtnMonth() {
         
         return btnMonth;
@@ -375,38 +379,58 @@ public class CalanderBuilder {
     *
     * colors - an array of colors to put on the button or tt
     *
-    * This method sets the button gradient colors for the absence types with hours */
-    private String getButtonGradient(String colors) {
+    * This method sets the gradient colors for the absence types with hours */
+    private String getColorGradient(String[] colors) {
         
         String gradient = "";
-        //numColors = colors.size();
+        String gradient1 = "";
+        String gradient2 = "";
+        int numColors = colors.length;
         
-        //for(int i = 0; i < numColors; i++) {
-            //if (i < numColors) gradient += ","
-              switch (colors) {
+        for(int i = 0; i < numColors; i++) {
+              if (i < numColors && i > 0) {
+                  gradient += ",";
+                  gradient1 += ",";
+                  gradient2 += ",";
+              }
+              switch (colors[i]) {
                 case "Red": 
-                     gradient += "#f0a99e, #e34444,";
+                     gradient += "#f0a99e,#e34444";
+                     gradient1 += "#e34444";
+                     gradient2 += "#eb7b73";
                     break;
                 case "Blue":
-                    gradient += "deepskyblue,#8da5e3,";
+                    gradient += "deepskyblue,#8da5e3";
+                    gradient1 += "#8da5e3";
+                    gradient2 += "#7387eb"; 
                     break;
                 case "Orange":
-                    gradient += "#f0c49e, darkorange,";
+                    gradient += "#f0c49e,darkorange";
+                    gradient1 += "darkorange";
+                    gradient2 += "#e8944a";
                     break;
                case "Purple":
-                    gradient += "violet,#c39ce6,";
+                    gradient += "violet,#c39ce6";
+                    gradient1 += "#c39ce6";
+                    gradient2 += "#c39ce6"; 
                     break;
                case "Green":
-                    gradient += "#9de69c, #32a632,";
+                    gradient += "#9de69c,#32a632";
+                    gradient1 += "#32a632";
+                    gradient2 += "#50db25";
                     break;
                 case "Yellow":
-                    gradient += "#f0ec24, #d9d621";
+                    gradient += "#f0ec24,#d9d621";
+                    gradient1 += "#d9d621";
+                    gradient2 += "#e2e69c"; 
                    break;
             } 
-        //}
+        }
         
-       return gradient; 
+        // Use a single color gradient for a single color
+        if (numColors == 1) {return gradient;}
+        else {return gradient2;}  // use multi-color gradient for multi color
        
-    }
+    } // end getColorGradient
     
-}
+} // end DayEntry class
