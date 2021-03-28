@@ -286,7 +286,7 @@ public class BalancesForm extends Application {
             
                 if (Validate.notEmpty((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText())) {
 
-                    if (Validate.isPosDecimal((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText())) {
+                    if (Validate.isPosDecimal((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText(),500)) {
                        // calculate accrued from date else use entered value
                        if (arate > 0) {
                            {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
