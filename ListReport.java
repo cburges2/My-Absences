@@ -51,14 +51,16 @@ public class ListReport extends Application {
         gPane.setPrefHeight(600);
 
         // get absence data to arraylist
-        ArrayList<JSONObject> absences = Database.getAbsences(year); 
+        ArrayList<JSONObject> absences = Database.getAllAbsences(year); 
         
         int numRows = absences.size()+1;    // add in the header row
         int numCols = 6;  // number of column in report
         
         // Build the Gridpane report from absences arraylist
+        String lastDate = "";
         String[] headers = new String[] {"Date   ","Absence Type  ","Title   ","Time   ","Submitted","Notes     "};
         for (int row = 0; row < numRows; row++) {
+            boolean multiHours = false;
             for (int col = 0; col < numCols; col++) {  
                 Label label = new Label();
                 if (row == 0) {
@@ -66,11 +68,14 @@ public class ListReport extends Application {
                     label.getStyleClass().add("summaryheader");
                 }    
                 if (row > 0) {
+                    
                     switch (col) {  // build the column data for each row
                         case 0:
                             Date date = formatDb.parse((String)(absences.get(row-1).get("Date")));
                             String date2 = formatCal.format(date);
-                            label.setText(date2);
+                            if (!lastDate.equals(date2)) {label.setText(date2);}
+                            else {label.setText(" "); multiHours = true;}
+                            lastDate = date2;
                             break;
                         case 1:
                             label.setText((String)(absences.get(row-1).get("Absence_Type")));
@@ -79,7 +84,8 @@ public class ListReport extends Application {
                             label.getStyleClass().add(cssColor);  
                             break;
                         case 2:
-                            label.setText((String)(absences.get(row-1).get("Title")));
+                            if (!multiHours) {label.setText((String)(absences.get(row-1).get("Title")));}
+                            else {label.setText(" ");}
                             break;
                         case 3:
                             double hours = (double)(absences.get(row-1).get("Hours"));
@@ -88,16 +94,20 @@ public class ListReport extends Application {
                             break;
                         case 4:
                             int submit = (Integer)(absences.get(row-1).get("Submitted"));
-                            if (submit == 1) {
-                                label.setText("    Yes");
-                            }
-                            else if (submit == 0) {
-                                label.setText("    No");
-                                label.getStyleClass().add("typered");
+                            if (multiHours) {label.setText(" ");}
+                            else {
+                                if (submit == 1) {
+                                    label.setText("    Yes");
+                                }
+                                else if (submit == 0) {
+                                    label.setText("    No");
+                                    label.getStyleClass().add("typered");
+                                }
                             }
                             break;
                         case 5:
-                            label.setText((String)(absences.get(row-1).get("Notes")));
+                            if (!multiHours) {label.setText((String)(absences.get(row-1).get("Notes")));}
+                            else {label.setText(" ");}
                             break;   
                     }
  
