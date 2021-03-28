@@ -71,7 +71,7 @@ public class SetupForm extends Application {
     Label[] lblMaxAccrual = new Label[6];
     
     // create buttons
-    Button btnAddType = new Button("+");   // button to add another Type
+    Button btnAddType = new Button("+");   // button to add another Type  
     Button btnSetupCancel = new Button("Cancel");
     Button btnSetupUpdate = new Button("Update");
     Button btnSetupSave = new Button("Save");
@@ -79,7 +79,7 @@ public class SetupForm extends Application {
     
     GridPane gPane = new GridPane();
     
-    /* empty constructor */
+    /* constructor */
     public SetupForm() {
         
         // Set Current Year for balances insert/update
@@ -123,6 +123,15 @@ public class SetupForm extends Application {
         hBoxB.setSpacing(50);
         HBox.setMargin(btnCancel, new Insets(5, 5, 5, 5));
         hBoxB.setPrefHeight(35);
+        
+        // Add Type (+) button attributes
+        Tooltip ttadd = new Tooltip("Add another type");
+        btnAddType.getStyleClass().add("ttgray");
+        btnAddType.setTooltip(ttadd);
+        btnAddType.getStyleClass().add("btnplus");    
+        btnAddType.setMaxSize(25,25);
+        btnAddType.setMinSize(25,25);
+        btnAddType.setPadding(new Insets(1,1,1,1));
        
         // **** Set Form Fields *****
         // set comboboxes for colors - add color options
@@ -547,7 +556,7 @@ public class SetupForm extends Application {
                         if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
                         if (Validate.notEmpty("Accrual Rate " + num,accrualRate[i])) {
                             if (balType.equals("Accrued Hours")) {
-                                if (Validate.isPosDecimal("Max Accrual " + num,tfMaxAccrual[i].getText())) {
+                                if (Validate.isPosDecimal("Max Accrual " + num,tfMaxAccrual[i].getText(),500)) {
                                     lblMaxAccrual[i].setTextFill(Color.BLACK);                                     
                                     maxAccrual[i] = tfMaxAccrual[i].getText();
                                     validated = true;                      // **** all validations passed ****
