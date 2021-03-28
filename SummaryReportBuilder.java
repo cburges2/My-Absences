@@ -36,7 +36,7 @@ public class SummaryReportBuilder {
     ArrayList<JSONObject> pastHours;
     ArrayList<JSONObject> startBalances;
     ArrayList<JSONObject> absences;
-    ArrayList<JSONObject> stats = new ArrayList<>();   // object to hold stats
+    static ArrayList<JSONObject> stats = new ArrayList<>();   // object to hold stats
     int daysInYear;    
     String lastDate;   // date of last day of this year
     SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
@@ -48,6 +48,13 @@ public class SummaryReportBuilder {
     double accruedNow = 0;
     String absenceType = "";
     int absenceID = 0;
+    
+    // Time Settings
+    double hoursInDay = 8;
+    double hoursInWeek = 40;
+    double daysInWeek = 5;
+    int maxWarningLimit = 180;   // days before max accrual to warn
+    
     static ComboBox<String> cboCalcType = new ComboBox<>();
     
     /* SummaryReportBuilder Constructer
@@ -66,7 +73,7 @@ public class SummaryReportBuilder {
         startBalances = Database.getStartBalances(year);                 
         futureHours = Database.getFutureHours(todayStr, lastDate, year); 
         pastHours = Database.getPastHours(todayStr, year);    
-        absences = Database.getAbsences(year);  
+        absences = Database.getAllAbsences(year);  
                
         // set the size and create the summary table array
         numRows = startBalances.size();      // One row for each absence type
@@ -237,7 +244,7 @@ public class SummaryReportBuilder {
   
         String dayDate = todayStr;
         double totalHours = accruedNow;
-        int warningLimit = 180;   // days before max to warn
+        //int maxWarningLimit = 180;   // days before max to warn
         int numDays = 0;          // days counter for warningLimit
         
         boolean done = false;
@@ -247,24 +254,20 @@ public class SummaryReportBuilder {
             dayDate = nextDay; 
             totalHours = totalHours += accrualRate;
             
-            // check if the day has submitted absence hours to subtract
+            // check if the day has absence hours to subtract if submitted
             if (JsonMatch.getJsonIndex(absences,"Date",dayDate) != -1) {
-                // check if the hours are of the current absence type
-                if (JsonMatch.getJsonString(absences,"Date",dayDate,"Absence_Type").equals(absenceType)) {
-                    // Check if the hours are submitted 
-                    int submitted = JsonMatch.getJsonInt(absences, "Date", nextDay, "Submitted");
-                    double hours = JsonMatch.getJsonDouble(absences, "Date", nextDay, "Hours");
-                    if (submitted == 1) {
-                        totalHours = totalHours - hours; // subtract the submitted hours from totalHours  
-                    }
+                // Get the hours for the type on day and subtract them if the hours are submitted 
+                double hours = Database.getNumDayTypeHours(absenceID, dayDate); 
+                int submitted = JsonMatch.getJsonInt(absences, "Date", dayDate, "Submitted");
+                if (submitted == 1) {
+                    totalHours = totalHours - hours; // subtract the submitted hours from totalHours  
                 }
             }
             numDays++;
             // Check if the totalHours are now more than the accrual Max
-
             String warningName = "MAX_ACCRUAL";
             absenceID = JsonMatch.getJsonInt(startBalances,"Absence_Type",absenceType,"Absence_ID");
-            if ((totalHours  > accrualMax) && numDays < warningLimit) {
+            if ((totalHours  > accrualMax) && numDays < maxWarningLimit) {
                 // add or update the warning
                 Warnings.addWarning(absenceID, dayDate, warningName);
                 done = true;
@@ -287,17 +290,17 @@ public class SummaryReportBuilder {
         
         double hrs = Double.valueOf(h);
         
-        double ww = hrs/40;    // work week
+        double ww = hrs/hoursInWeek;    // work week (default 40 hrs in week)
         double weeks = Math.floor(ww);  // whole weeks
-        double dayValue = 5*((ww)-(int)(ww));
+        double dayValue = daysInWeek*((ww)-(int)(ww)); // (default 5 days in week)
         double days = (int)(dayValue);  // remaining whole days
-        double hours = Math.floor(8*(dayValue-days));   // remaining whole hours
-        double min = Math.round((60*((8*(dayValue-days))-(int)(8*(dayValue-days)))));
+        double hours = Math.floor(hoursInDay*(dayValue-days));   // (default 8 hours in day) remaining whole hours
+        double min = Math.round((60*((hoursInDay*(dayValue-days))-(int)(hoursInDay*(dayValue-days)))));
         
         // fix overlow minutes, hours and hours
         if (min == 60) {hours++; min = 0;}
-        if (hours == 8) {days++; hours = 0;}
-        if (days == 5) {weeks++; days = 0;}
+        if (hours == hoursInDay) {days++; hours = 0;}
+        if (days == daysInWeek) {weeks++; days = 0;}
 
         String breakDown = "";
         if ((int)weeks != 0) {breakDown = (int)weeks + " Weeks ";}      
@@ -413,7 +416,7 @@ public class SummaryReportBuilder {
     /* public getStats
     *
     * Returns the stats arraylist of JSONOjects for DayForm parameter used in MyAbsences  */
-    public ArrayList<JSONObject> getStats() {
+    public static ArrayList<JSONObject> getStats() {
         
         return stats;
     }
