@@ -19,9 +19,9 @@ public class ErrorHandler {
         
         if (error.contains("SQLITE_CONSTRAINT_UNIQUE")) {
             alert.setTitle("SQLITE_CONSTRAINT_UNIQUE");
-            alert.setHeaderText("Warning: Not all your absence days were saved");
-            alert.setContentText("You were saving a repeating absence but there was " +
-            "already an absence planned in that time period");
+            alert.setHeaderText("Warning: You are adding to a day with hours planned!");
+            alert.setContentText("There was already an entry in the database\n"
+                    + "for the date being added");
             
         } else {
             alert.setTitle(error);
