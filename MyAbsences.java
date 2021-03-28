@@ -172,7 +172,7 @@ public class MyAbsences extends Application {
                     if (monthStr.length() == 1) {monthStr = "0" + monthStr;}
                     String dbDate = year + "-" + monthStr + "-" + bText;
                     try {
-                        DayEntry dayEntry = new DayEntry(dbDate,summaryReportBuilder.getStats());    // create BalanceForm object 
+                        DayEntry dayEntry = new DayEntry(dbDate);    // create BalanceForm object ,summaryReportBuilder.getStats()
                         dayEntry.start(null);               // start secondary stage for DayEntry
                         } catch (Exception ex) {
                             Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
