@@ -161,7 +161,63 @@ public static void createNewDatabase(String fileName) {
 
         return 0;        
    }   
-   
+
+   /* public getNumDayTypeHours
+   *
+   * absenceID - The Absence ID to get the hours for
+   * date - The date of the Absence ID 
+   * ==> The number of hours planned for the Absence ID on the date
+   *
+   * This method returns the number of hours planned on a date for an absence ID   */
+    static public double getNumDayTypeHours(int absenceID, String date) {
+        
+        Connection conn = null;
+        Statement stmt = null;
+        double hours = 0;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+
+            // Execute query
+            String sql = "Select Hours From Hours " +
+                    "Where Date = '" + date + "' "
+                    + "and Absence_ID = " + absenceID;
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                hours = rs.getDouble("Hours");
+            }
+
+            return hours;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               ErrorHandler.JDBCError(se);
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               ErrorHandler.classForNameError(e);
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  ErrorHandler.closeConnectionError(se);
+               }//end finally try
+            }//end try */       
+
+        return 0;        
+   }    
+    
    /* public getNumRows
    *
    * table - The table name to get the size for
@@ -215,6 +271,60 @@ public static void createNewDatabase(String fileName) {
 
         return 0;        
    }
+    
+   /* public getGroupSize
+   *
+   * group - The group name to count
+   * ==> The number of rows in the table matching group name
+   *
+   * This method returns the number of rows in hours that share a group   */
+    static public int getGroupSize(String group) {
+        
+        Connection conn = null;
+        Statement stmt = null;
+        int size = 0;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+
+            // Execute query
+            String sql = "select count(Absence_Group) as SIZE " 
+                         + "from Absences where Absence_Group = '" + group + "'";
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                size = rs.getInt("Size");
+            }
+
+            return size;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               ErrorHandler.JDBCError(se);
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               ErrorHandler.classForNameError(e);
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  ErrorHandler.closeConnectionError(se);
+               }//end finally try
+            }//end try */       
+
+        return 0;        
+   }    // end getGroupSize
     
 /* public getStartBalanceCount
    *
@@ -362,12 +472,14 @@ public static void createNewDatabase(String fileName) {
             }
 
             // Execute query
-            String sql = "Select t.Absence_type,sum(Hours) as Past_Hours from Absences as a " +
-            "join absence_types as t " +
-            "on a.absence_id = t.absence_id " +
-            "where a.date BETWEEN '" + year + "-01-01' AND '" + date + "' ";
+            String sql = "Select t.Absence_type,sum(h.Hours) as Past_Hours from HOURS as h " +
+                    "join Absences as a " +
+                    "on h.date = a.date " +
+                    "join absence_types as t " +
+                    "on h.absence_id = t.absence_id " +
+                    "where h.date BETWEEN '" + year + "-01-01' AND '" + date + "' ";
             if (calcType.equals("Submitted Only")) {sql = sql + "and a.submitted = 1 ";} 
-            sql = sql + "Group by absence_type"; 
+            sql = sql + "Group by t.absence_type";                 
 
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
@@ -434,12 +546,14 @@ public static void createNewDatabase(String fileName) {
             // get current year from date to check if the calendar year is the current year
             String thisYear = startDate.substring(0,4);
 
-            String sql = "Select t.Absence_type,sum(Hours)as Future_Hours from Absences as a " +
-            "join absence_types as t " +
-            "on a.absence_id = t.absence_id " +
-            "where a.date BETWEEN '" + startDate + "' AND '" + endDate + "' ";
+            String sql = "Select t.Absence_type,sum(h.Hours) as Future_Hours from HOURS as h " +
+                    "join Absences as a " +
+                    "on h.date = a.date " +
+                    "join absence_types as t " +
+                    "on h.absence_id = t.absence_id " +
+                    "where h.date BETWEEN '" + startDate + "' AND '" + endDate + "' ";
             if (calcType.equals("Submitted Only")) {sql = sql + "and a.submitted = 1 ";}         
-            sql = sql + "group by absence_type"; 
+            sql = sql + "group by absence_type";
 
 
             //Execute query
@@ -494,7 +608,7 @@ public static void createNewDatabase(String fileName) {
      * called from DayEntry to pre-fill the form with absence data for the day
      * 
      * Type, Hours                                                        */
-    static public JSONObject getAbsence (String date) { 
+    static public ArrayList<JSONObject> getDayAbsence (String date) { 
     
         Connection conn = null;
         Statement stmt = null;
@@ -504,18 +618,22 @@ public static void createNewDatabase(String fileName) {
             conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
             //Execute query
-            String sql = "Select Date,t.Absence_type,t.color,Title,Hours,Submitted,Notes,Absence_Group " +
+            String sql = "Select a.Date,t.Absence_type,t.color,a.Title,a.Submitted,a.Notes,a.Absence_Group,h.Hours " +
             "from Absences as a " +
+            "join HOURS as h " +
+            "on h.DATE = a.DATE " +
             "join absence_types as t " +
-            "on a.absence_id = t.absence_id " +
+            "on h.absence_id = t.absence_id " +
             "where a.date = '" + date + "'"; 
 
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
 
-            JSONObject record = new JSONObject();
+            ArrayList<JSONObject> result = new ArrayList<>();
+            
 
             while (rs.next()) {
+                JSONObject record = new JSONObject();
                 record.put("Date",rs.getString("Date"));
                 record.put("Absence_Type",rs.getString("Absence_Type"));
                 record.put("Color",rs.getString("Color"));
@@ -524,12 +642,13 @@ public static void createNewDatabase(String fileName) {
                 record.put("Submitted",rs.getInt("Submitted"));
                 record.put("Notes",rs.getString("Notes"));
                 record.put("Absence_Group",rs.getString("Absence_Group"));
+                result.add(record);                
             }
 
             rs.close();
             stmt.close();
             conn.close();
-            return record;
+            return result;
 
             }catch(SQLException se){
                //Handle errors for JDBC
@@ -560,7 +679,7 @@ public static void createNewDatabase(String fileName) {
      * called before running buildCalendar() method
      * used for marking days with absences in CalendarBuilder and creating the tooltips with hours
      *                                                        */
-    static public ArrayList<JSONObject> getAbsences (String year) {
+    static public ArrayList<JSONObject> getAllAbsences (String year) {
 
         Connection conn = null;
         Statement stmt = null;
@@ -570,12 +689,14 @@ public static void createNewDatabase(String fileName) {
             conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
 
             //Execute query
-            String sql = "Select Date,t.Absence_type,t.color,Title,Hours,Submitted,Notes,Absence_Group " +
+            String sql = "Select a.Date,t.Absence_type,t.color,a.Title,a.submitted,a.Notes,a.Absence_Group,h.Hours " +
             "from Absences as a " +
+            "join HOURS as h " +    
+            "on h.DATE = a.DATE " + 
             "join absence_types as t " +
-            "on a.absence_id = t.absence_id " +
+            "on h.absence_id = t.absence_id " +
             "where a.date BETWEEN '" + year + "-01-01' AND '" + year + "-12-31' " + 
-            "order by date"; 
+            "order by a.date"; 
 
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
