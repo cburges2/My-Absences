@@ -18,6 +18,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 //import static myabsences.MyAbsences.myDatabase;
 import static myabsences.MyAbsences.year;
@@ -37,6 +38,9 @@ public class ListReport extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        // set Modality if this instance has not yet set the stage visible
+        if (!reportStage.isAlwaysOnTop()) {reportStage.initModality(Modality.APPLICATION_MODAL);}
+        
         /* Main pane */
         BorderPane bPane = new BorderPane();
         GridPane gPane = new GridPane();
@@ -134,6 +138,7 @@ public class ListReport extends Application {
         bPane.setCenter(scrollpane);
         bPane.setBottom(hBoxB);
         Scene listReportScene = new Scene(bPane); 
+        reportStage.setAlwaysOnTop(true);
         reportStage.setMaxHeight(700);
         reportStage.setMaxWidth(750);
         listReportScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
