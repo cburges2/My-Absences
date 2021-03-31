@@ -45,6 +45,7 @@ public class DayEntry extends Application {
     ArrayList<JSONObject> typesData;         // absence types
     ArrayList<JSONObject> groupDates;        // Dates of a group of absences
     ArrayList<JSONObject> stats;             // summary stats for hours avaialabe
+    JSONObject settings;                     // settings to get hoursInDay
     String dayDate = "";                     // the db format date for the day
     String[] absenceType = new String[6];    // the user's absence type name
     String[] color = new String[6];          // the user's color for the absence type
@@ -68,7 +69,7 @@ public class DayEntry extends Application {
     int lastPosition = 0;   // row position after a group of hours controls are put in gpane
     double height = 300;    // initial height of stage
     int numTypes = 0;       // number of types available to had hours for
-    double hoursInDay = 8;  // number of hours in the work day
+    double hoursInDay = 0;  // to check scheduled hours do not go over day limit
     
     // controls
     TextField tfTitle = new TextField();
@@ -127,6 +128,9 @@ public class DayEntry extends Application {
         typesData = Database.getAbsenceTypes();     // Arraylist of JSONObject type data
         numTypes = typesData.size();                // number of absence Types that can be planned
         stats = SummaryReportBuilder.getStats();    // get stats for hours available
+        settings = Database.getSettings();          // for hoursInDay setting
+        
+        hoursInDay = (double)settings.get("Hours_In_Day");
        
         // ************* if there was data for the day set the variables to it **************
         if (dayData.size() > 0) {
@@ -154,7 +158,7 @@ public class DayEntry extends Application {
         // set labels and delete button
         for (int i= 0; i < 6; i++) {
             lblType[i] = new Label("Absence Type " + (i+1) +":");   
-            lblHours[i] = new Label("Hours"); 
+            lblHours[i] = new Label(" Hours"); 
             lblMinutes[i] = new Label("Minutes"); 
             lblHoursAvailable[i] = new Label("");  
             btnDeleteHours[i] = new Button("x"); 
@@ -197,7 +201,8 @@ public class DayEntry extends Application {
             if (hours[i] != 0) {cboHours[i].setValue(hours[i]);} 
             else if (i == 0) {cboHours[i].setValue((int)hoursInDay);}    // set first hours cbo to a full day's hours 
             else {cboHours[i].setValue(0);}                         // set remaining hours cbos to 0
-            cboHours[i].setPrefWidth(25);
+            cboHours[i].setMinWidth(55);
+            cboHours[i].setMaxWidth(55);
         }
 
         // set comboboxes for minutes 
@@ -429,6 +434,7 @@ public class DayEntry extends Application {
             final int num = i;
             cboType[i].setOnAction(e->{
                 try {
+                    lblHoursAvailable[num].setTextFill(Color.BLACK); // if previous failed validate hours
                     lblType[num].getStyleClass().clear();
                     String type = cboType[num].getValue(); // get type from combo box
                     double aRate = JsonMatch.getJsonDouble(typesData,"Absence_Type",type,"Accrual_Rate");
@@ -439,7 +445,7 @@ public class DayEntry extends Application {
                     cboType[num].setBackground(background);
                     cboHours[num].setBackground(background);
                     cboMinutes[num].setBackground(background);
-                    setRemainingHours(num);
+                    setRemainingHours(num);   
                 }
                 catch(Exception ex) {
                     // catch
@@ -1014,7 +1020,7 @@ public class DayEntry extends Application {
         
         // validate hours in the day are not over hours available in a day
         valid[numTypeHours] = false;
-        if (Validate.hoursInDay(dayDate, totalHours, 8.0)) {
+        if (Validate.hoursInDay(dayDate, totalHours, hoursInDay)) {
             valid[numTypeHours] = true;
         }
 
