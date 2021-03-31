@@ -9,14 +9,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import static myabsences.MyAbsences.calcType;
 import org.json.simple.JSONObject;
 
 /**
  *
  * @author Christopher Burgess
  */
- public class Database {
+public class Database {
     
    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
    static final String DB_URL = "jdbc:sqlite:c:/sqlite/MyAbsences.db";    
@@ -27,8 +26,9 @@ import org.json.simple.JSONObject;
    public Database () {
 
    }
-   
-public static void createNewDatabase(String fileName) {
+
+    /* Unused - can create a new Database file */   
+    public static void createNewDatabase(String fileName) {
 
         String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
 
@@ -51,8 +51,65 @@ public static void createNewDatabase(String fileName) {
         createNewDatabase("test.db");
     }   
 
+    /* public getSettings
+   *
+   * ==> JSONObject - Hours_In_Day, Days_In_week, Max_Warning_Days
+   *
+   * Gets the settings from the Setting table          */
+    static public JSONObject getSettings () {
+        Connection conn = null;
+        Statement stmt = null;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+            //Execute query
+            String sql = "Select * from Settings";
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            JSONObject record = new JSONObject();
+
+            while (rs.next()) {
+                record.put((String)"Hours_In_Day",rs.getDouble("Hours_In_Day"));
+                record.put("Days_In_Week",rs.getDouble("Days_In_Week"));
+                record.put("Max_Warning_Days",rs.getInt("Max_Warning_Days"));
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+            return record;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               ErrorHandler.JDBCError(se);
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               ErrorHandler.classForNameError(e);
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  ErrorHandler.closeConnectionError(se);
+               }//end finally try
+            }//end try */       
+
+
+          return null;        
+   } // end getSettings    
+    
    /* public getYears
    *
+   * ==> ArrayList<String> - years having start balances in db
    *
    * get the years there is balance data for in the db 
    * return the ArrayList of years ASC       */
@@ -108,9 +165,9 @@ public static void createNewDatabase(String fileName) {
    /* public getAbsenceID
    *
    * absenceID - The type name to get the ID for
-   * ==> The absnce ID for the type name
+   * ==> int - The absnce ID for the type name
    *
-   * This method returns the absenceID from type name   */
+   * This method returns the absenceID from type name in Absence_Types  */
     static public int getAbsenceID(String absenceType) {
         
         Connection conn = null;
@@ -166,7 +223,7 @@ public static void createNewDatabase(String fileName) {
    *
    * absenceID - The Absence ID to get the hours for
    * date - The date of the Absence ID 
-   * ==> The number of hours planned for the Absence ID on the date
+   * ==> double - The number of hours planned for the Absence ID on the date
    *
    * This method returns the number of hours planned on a date for an absence ID   */
     static public double getNumDayTypeHours(int absenceID, String date) {
@@ -221,7 +278,7 @@ public static void createNewDatabase(String fileName) {
    /* public getNumRows
    *
    * table - The table name to get the size for
-   * ==> The number of rows in the table (int)
+   * ==> int - The number of rows in the table (int)
    *
    * This method returns the number of rows ina table   */
     static public int getNumRows(String table) {
@@ -275,7 +332,7 @@ public static void createNewDatabase(String fileName) {
    /* public getGroupSize
    *
    * group - The group name to count
-   * ==> The number of rows in the table matching group name
+   * ==> int - The number of rows in the table matching group name
    *
    * This method returns the number of rows in hours that share a group   */
     static public int getGroupSize(String group) {
@@ -329,7 +386,7 @@ public static void createNewDatabase(String fileName) {
 /* public getStartBalanceCount
    *
    * year - The year to get the balance count for
-   * ==> The number of starting balances for the year
+   * ==> int - The number of starting balances for the year
    *
    * This method returns number of starting balances in the Starting_Balances tabel   */
     static public int getStartBalanceCount(String year) {
@@ -386,9 +443,10 @@ public static void createNewDatabase(String fileName) {
     
     /* public getStartBalance 
    *
+   * year - the year to get the start balances for
+   * ==> ArrayList<JSONObject> - absence_type,Absence_ID,Accrual_Rate,Color,Max_Accrual
    *
-   *
-   *                                  */
+   * This method gets the start balances for all types for a year                                */
     static public ArrayList<JSONObject> getStartBalances (String year) {
         Connection conn = null;
         Statement stmt = null;
@@ -452,10 +510,14 @@ public static void createNewDatabase(String fileName) {
    
    /* public getPastHours
    *
+   * date - the current date
+   * year - the current year
+   * calcType - if "Submitted Only" only calcs submitted values, else calcs all hours
    *
+   * ==> ArrayList<JSONObject> - Absence_Type, Past_Hours 
    *
-   *                         */
-   static public ArrayList<JSONObject> getPastHours(String date, String year) {
+   * This method gets the hours from start of year to today, either only submitted or all.  */
+   static public ArrayList<JSONObject> getPastHours(String date, String year, String calcType) {
        
         Connection conn = null;
         Statement stmt = null;
@@ -527,9 +589,14 @@ public static void createNewDatabase(String fileName) {
    
    /* public getFutureHours
    *
-   *
-   *                         */
-   static public ArrayList<JSONObject> getFutureHours(String startDate, String endDate, String year) {
+   * startDate - start of the time period in future
+   * endDate - end of the time period in future
+   * year - the current year
+   * calcType - if "Submitted Only" only calcs submitted values, else calcs all hours
+   * ==> ArrayList<JSONObject> - Absence_type, Future_Hours
+   *         
+   * This method gets all of the hours in a range between startDate and endDate, for a year, based on calcType */
+   static public ArrayList<JSONObject> getFutureHours(String startDate, String endDate, String year, String calcType) {
 
         Connection conn = null;
         Statement stmt = null;
@@ -604,10 +671,13 @@ public static void createNewDatabase(String fileName) {
        
    } // end getFutureHours
  
-    /* public getAbsence - get the absence for the day in the DayEntry form
-     * called from DayEntry to pre-fill the form with absence data for the day
+    /* public getDayAbsence
      * 
-     * Type, Hours                                                        */
+     * date - the date of the absence
+     * ==> ArrayList<JSONObject> - Date,Absence_type,color,Title,Submitted,Notes,Absence_Group,Hours
+     *
+     * This method gets all the absence hours for a day for the DayEntry form 
+     * called from DayEntry to pre-fill the form with absence data for the day */
     static public ArrayList<JSONObject> getDayAbsence (String date) { 
     
         Connection conn = null;
@@ -675,10 +745,13 @@ public static void createNewDatabase(String fileName) {
         
     }        
    
-    /* getAbsences - get the absences for the current year to ArrayList of JSONObjects
-     * called before running buildCalendar() method
-     * used for marking days with absences in CalendarBuilder and creating the tooltips with hours
-     *                                                        */
+    /* public getAllAbsences  
+     * 
+     * year - the year to get the absences for
+     * ==> ArrayList<JSONObject> - Date,Absence_type,color,Title,submitted,Notes,Absence_Group,Hours
+     *  
+     * This method gets all the absence hours for the current year to an ArrayList of JSONObjects
+     * used for marking days with absences in CalendarBuilder and creating the tooltips with hours */
     static public ArrayList<JSONObject> getAllAbsences (String year) {
 
         Connection conn = null;
@@ -747,9 +820,10 @@ public static void createNewDatabase(String fileName) {
     
     /* public getAbsenceTypes
     *
+    * ==> ArrayList<JSONObject> - Absence_ID, Absence_Type, Color
+    *     Accrual_Rate, Max_Accrual
     *
-    *
-    */
+    * THis method gets the absence types from the Absence_Types table */
     static public ArrayList<JSONObject> getAbsenceTypes() {
 
         Connection conn = null;
@@ -809,9 +883,9 @@ public static void createNewDatabase(String fileName) {
 
     /* public getWarnings
    *
+   * ==> ArrayList<JSONObject> - Absence_ID, Date, Cal_Date, Warning_Name, Absence_Type,Color
    *
-   *
-   *                                  */
+   * This method gets all the warning from the warning table           */
     static public ArrayList<JSONObject> getWarnings() {
         Connection conn = null;
         Statement stmt = null;
@@ -871,9 +945,11 @@ public static void createNewDatabase(String fileName) {
           return null;        
    } // end getWarnings
        
-    /* SQLUpdate -> run a query to insert/delete/update with no data returned
-     * Returns bool for success 
-     *              */
+    /* SQLUpdate
+     *
+     * ==> boolean for success 
+     *  
+     * This method run a query to insert/delete/update with no data returned */
     static public boolean SQLUpdate(String query) {
         
         boolean success = false;
