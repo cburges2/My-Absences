@@ -5,6 +5,7 @@ package myabsences;
 
 import java.sql.SQLException;
 import javafx.scene.control.Alert;
+import javafx.stage.Stage;
 
 /**
  *
@@ -28,7 +29,8 @@ public class ErrorHandler {
             alert.setHeaderText("Warning: Database Error");
             alert.setContentText(error);
         }
-        
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);           
         alert.showAndWait();
     }
      
@@ -50,8 +52,9 @@ public class ErrorHandler {
             alert.setHeaderText("Warning: DB class not found");
             alert.setContentText("Unable to locate the class loader");             
         } 
-        
-         alert.showAndWait();
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);           
+        alert.showAndWait();
 
     }
     
@@ -63,12 +66,9 @@ public class ErrorHandler {
         alert.setTitle(error);
         alert.setHeaderText("Warning: Error closing Database Connection");
         alert.setContentText(error);
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);           
         alert.showAndWait();
         
     }
-    
-    
-    
-    
-    
 }
