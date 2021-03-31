@@ -25,6 +25,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.json.simple.JSONObject;
 
@@ -90,6 +91,9 @@ public class SetupForm extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
+        
+        // set Modality if form object has not yet set the stage visible
+        if (!setupStage.isAlwaysOnTop()) {setupStage.initModality(Modality.APPLICATION_MODAL);}
         
         // get absenceType data from database
         absenceTypes = Database.getAbsenceTypes();  // Arraylist of JSONObject type data
@@ -215,6 +219,7 @@ public class SetupForm extends Application {
         bPane.setBottom(hBoxB);
         Scene SetupScene = new Scene(bPane); 
         SetupScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
+        setupStage.setAlwaysOnTop(true);
         setupStage.setMaxHeight(550);
         setupStage.setMinWidth(665);
         setupStage.setMaxWidth(665);
@@ -534,11 +539,15 @@ public class SetupForm extends Application {
     * 
     * This method gets the values from the controls to variable arrays, to insert into
     * or update the db table Absence_Types if all fields pass verification.    */
-    private boolean getValues() {
+private boolean getValues() {
         
         boolean validated = false;
+        boolean validatedCommon = false;
+        boolean validatedAccrued = false;
        
         if (!prePopulated) {typeSize = typesCounter+1;}
+        
+        // validate the common fields
         for (int i = 0; i < typeSize; i++) { 
             // Get and Valididae the values 
             int num = i+1;
@@ -550,41 +559,51 @@ public class SetupForm extends Application {
                     lblColor[i].setTextFill(Color.BLACK);
                     if (Validate.notEmpty("Balance Type " + num,cboBalanceType[i].getValue())) {
                         lblBalanceType[i].setTextFill(Color.BLACK);
-                        String balType = cboBalanceType[i].getValue();
-                        if (balType.equals("Accrued Hours")) {accrualRate[i] = (tfAccrualRate[i].getText());}
-                        if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
-                        if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
-                        if (Validate.notEmpty("Accrual Rate " + num,accrualRate[i])) {
-                            if (balType.equals("Accrued Hours")) {
-                                if (Validate.isPosDecimal("Max Accrual " + num,tfMaxAccrual[i].getText(),500)) {
-                                    lblMaxAccrual[i].setTextFill(Color.BLACK);                                     
-                                    maxAccrual[i] = tfMaxAccrual[i].getText();
-                                    validated = true;                      // **** all validations passed ****
-                                } else {         // max failed **
-                                   validated = false;
-                                   lblMaxAccrual[i].setTextFill(Color.RED);
-                                } 
-                            } else {    // no max accrual to check 
-                                validated = true;                // **** all but accrued validations passed ****
-                                maxAccrual[i] = "0";
-                            }
-                        } else {        // rate failed
-                            validated = false;
-                            lblAccrualRate[i].setTextFill(Color.RED);
-                        } 
+                        validatedCommon = true;             // **** all common validations passed ****
                       } else {      // Balance failed
-                         validated = false;
+                         validatedCommon = false;                         
                          lblBalanceType[i].setTextFill(Color.RED); 
                     }   
                  } else {           // color failed
-                     validated = false;
+                     validatedCommon = false;
                      lblColor[i].setTextFill(Color.RED);
                  } 
             } else {    // name failed       
-                validated = false;
+                validatedCommon = false;
                 lblAbsenceName[i].setTextFill(Color.RED);
             }
         }    
+        
+        // verify accrued types values
+        if (validatedCommon == true) {
+            for (int i = 0; i < typeSize; i++) {   
+                int num = i+1;  
+                String balType = cboBalanceType[i].getValue();
+                if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
+                if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
+                if (balType.equals("Accrued Hours")) {
+                    if (Validate.isPosDecimal("Accrual Rate " + num,tfAccrualRate[i].getText(),8)) {
+                        lblAccrualRate[i].setTextFill(Color.BLACK);    
+                        accrualRate[i] = (tfAccrualRate[i].getText());
+                        if (Validate.isPosDecimal("Max Accrual " + num,tfMaxAccrual[i].getText(),500)) {
+                            lblMaxAccrual[i].setTextFill(Color.BLACK);                                     
+                            maxAccrual[i] = tfMaxAccrual[i].getText();
+                            validatedAccrued = true;                      // **** all Accrued validations passed ****                            
+                        } else {    // Max Accrual Failed
+                            validatedAccrued = false;
+                            lblMaxAccrual[i].setTextFill(Color.RED); 
+                        }
+                    } else {    // Accrual Rate failed
+                        validatedAccrued = false;
+                        lblAccrualRate[i].setTextFill(Color.RED); 
+                    }
+                }    
+            }
+        }
+        
+        if (validatedCommon && validatedAccrued) {
+            validated = true;       // **** All validations Passed ****
+        }
         
         return validated;
         
