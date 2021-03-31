@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.stage.Stage;
 import org.json.simple.JSONObject;
 
 /**
@@ -35,6 +36,8 @@ public class Validate {
             alert.setContentText("You are short by " + (hours - available) +" hours\n"
                     + "For " + fieldName + "\n"
                     + "Please try again.");
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);            
             alert.showAndWait(); 
             return false;           
         } else {
@@ -60,6 +63,8 @@ public class Validate {
             alert.setContentText("You are over by " + (hours - dayHours) +" hours\n"
                     + "For " + date + "\n"
                     + "Please try again.");
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);            
             alert.showAndWait(); 
             return false;           
         } else {
@@ -83,6 +88,8 @@ public class Validate {
                 alert.setHeaderText("No " + fieldName + " was Entered!");
                 alert.setContentText("You need to select or enter a value\n"
                         + "Please try again.");
+                Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                stage.setAlwaysOnTop(true);
                 alert.showAndWait(); 
                 return false;
             } else {return true;}
@@ -110,7 +117,10 @@ public class Validate {
             alert.setHeaderText(fieldName + " is not a number!");
             alert.setContentText("Enter a number for " + fieldName + "\n"
                     + "Please try again.");
-            alert.showAndWait(); 
+                            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);
+            stage.showAndWait();
+            //alert.showAndWait(); 
             pass = false;
         } else {
             if (Double.valueOf(decimal) > max) {
@@ -119,7 +129,10 @@ public class Validate {
                 alert.setHeaderText(fieldName + " is too big!");
                 alert.setContentText("Enter a number for " + fieldName + " less than " + max + "\n"
                         + "Please try again.");
-                alert.showAndWait(); 
+                Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                stage.setAlwaysOnTop(true);
+                stage.showAndWait();
+                //alert.showAndWait(); 
                 pass = false;            
             }
         }
@@ -147,6 +160,8 @@ public class Validate {
                 + "Press CANCEL to delete the Type Hours from only the current day");
         a.setResizable(true);
         a.setContentText("Press OK Delete from All Days in the Group:");
+        Stage stage = (Stage) a.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);     
         Optional<ButtonType> result = a.showAndWait();
         if(!result.isPresent()) {
             delete = false;
@@ -177,6 +192,8 @@ public class Validate {
                 + "as well as the " + absence_type + " starting balances!");
         a.setResizable(true);
         a.setContentText("Press OK to confirm:");
+        Stage stage = (Stage) a.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);           
         Optional<ButtonType> result = a.showAndWait();
         if(!result.isPresent()) {
             delete = false;
