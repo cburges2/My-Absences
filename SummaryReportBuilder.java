@@ -13,7 +13,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
-import static myabsences.MyAbsences.calcType;
 import org.json.simple.JSONObject;
 
 /** class SummaryReportBuilder
@@ -36,6 +35,7 @@ public class SummaryReportBuilder {
     ArrayList<JSONObject> pastHours;
     ArrayList<JSONObject> startBalances;
     ArrayList<JSONObject> absences;
+    JSONObject settings;
     static ArrayList<JSONObject> stats = new ArrayList<>();   // object to hold stats
     int daysInYear;    
     String lastDate;   // date of last day of this year
@@ -47,13 +47,11 @@ public class SummaryReportBuilder {
     String accruedToday = "";
     double accruedNow = 0;
     String absenceType = "";
+    String calcType = "";               // Calc type from Main class - passed to Database for query
     int absenceID = 0;
-    
-    // Time Settings
-    double hoursInDay = 8;
-    double hoursInWeek = 40;
-    double daysInWeek = 5;
-    int maxWarningLimit = 180;   // days before max accrual to warn
+    static double hoursInDay = 0;       // hours in a work day
+    static double daysInWeek = 0;       // days in the workweek
+    static int maxWarningLimit = 0;     // days before max accrual to warn
     
     static ComboBox<String> cboCalcType = new ComboBox<>();
     
@@ -63,17 +61,24 @@ public class SummaryReportBuilder {
     *
     * This sets the year, the end of year date, and gets the data needed from the db 
     * into the ArrayLists.  It sets the size of the report and the days in the year for calculations */
-    public SummaryReportBuilder (String year) { 
+    public SummaryReportBuilder (String year, String calcType) { 
                 
         this.year = year;   // Set class variable year from parameter
+        this.calcType = calcType;
         
         lastDate = year + "-12-31";   // build string for last day of this year
         
         // get the JSON object arrays from the database
         startBalances = Database.getStartBalances(year);                 
-        futureHours = Database.getFutureHours(todayStr, lastDate, year); 
-        pastHours = Database.getPastHours(todayStr, year);    
+        futureHours = Database.getFutureHours(todayStr, lastDate, year, calcType); 
+        pastHours = Database.getPastHours(todayStr, year, calcType);    
         absences = Database.getAllAbsences(year);  
+        settings = Database.getSettings();
+        
+        // set settings
+        hoursInDay = (double)settings.get("Hours_In_Day");
+        daysInWeek = (double)settings.get("Days_In_Week");
+        maxWarningLimit = (int)settings.get("Max_Warning_Days");
                
         // set the size and create the summary table array
         numRows = startBalances.size();      // One row for each absence type
@@ -290,7 +295,7 @@ public class SummaryReportBuilder {
         
         double hrs = Double.valueOf(h);
         
-        double ww = hrs/hoursInWeek;    // work week (default 40 hrs in week)
+        double ww = hrs/(daysInWeek*hoursInDay);   // work week (default 40 hrs in week)
         double weeks = Math.floor(ww);  // whole weeks
         double dayValue = daysInWeek*((ww)-(int)(ww)); // (default 5 days in week)
         double days = (int)(dayValue);  // remaining whole days
