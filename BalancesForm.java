@@ -19,10 +19,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.json.simple.JSONObject;
 
@@ -80,6 +85,9 @@ public class BalancesForm extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        
+        // set Modality if form object has not yet set the stage visible
+        if (!startBalanceStage.isAlwaysOnTop()) {startBalanceStage.initModality(Modality.APPLICATION_MODAL);}
         
         /* create panes */
         BorderPane bPane = new BorderPane();
@@ -196,9 +204,10 @@ public class BalancesForm extends Application {
         bPane.setBottom(hBoxB);
         Scene startBalancesScene = new Scene(bPane);
         startBalancesScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
+        startBalanceStage.setAlwaysOnTop(true);
+        startBalanceStage.setMaxHeight(700);
         startBalanceStage.setMaxHeight(550);
         startBalanceStage.setMinWidth(500);
-        //startBalanceStage.setMaxWidth(660);
         startBalanceStage.setTitle("Enter Starting Balances");
         startBalanceStage.setScene(startBalancesScene);
         startBalanceStage.show();
@@ -254,7 +263,7 @@ public class BalancesForm extends Application {
     /* private putValues
     *
     * This puts the values from the database into the controls if balances have
-    * already been entered. Allows user to edit existing data. */
+    * already been entered. Allows user to then edit existing data. */
     private void putValues() {
         
         // set data in the controls that was already saved 
@@ -276,32 +285,23 @@ public class BalancesForm extends Application {
         
         boolean validated = false;
         
-        // Get the control values into the variable arrays
+        // Get the validated control values into the variable arrays
         for (int i = 0; i < typeSize; i++) {  
-            
             double arate = (Double)absenceTypes.get(i).get("Accrual_Rate");
-
             // validate if not a holiday
-            if (arate != -1) {
-            
-                if (Validate.notEmpty((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText())) {
-
-                    if (Validate.isPosDecimal((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText(),500)) {
-                       // calculate accrued from date else use entered value
-                       if (arate > 0) {
-                           {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
-                       } else {startingBalances[i] = tfTypeBalance[i].getText();}
-                       validated = true;                   
-                    } else {
-                        validated = false;    // failed for not number
-                    }
-                } else {
-                    validated = false;   // failed for empty
+            if (arate == -1) {startingBalances[i] = "0";}  // set add-in types to zero
+            if (arate != -1) {                   
+                if (Validate.isPosDecimal((lblAbsenceName[i].getText() + " balance"),tfTypeBalance[i].getText(),500)) {
+                   validated = true;   
+                   // calculate accrued from date else use entered value
+                   if (arate > 0) {startingBalances[i] = String.valueOf(calcAccruedStart(i, arate)); }
+                   if (arate == 0){startingBalances[i] = tfTypeBalance[i].getText();}      
+                } else {                    // balance failed for not a positive decimal
+                    validated = false;
+                    setFieldRed(i);
+                    i = typeSize;           // stop validating additonal types
                 }
-            } else if (arate == -1) {
-                startingBalances[i] = "0";
-                validated = true;
-            }
+            } 
         }
         
         return validated;
@@ -335,6 +335,27 @@ public class BalancesForm extends Application {
         double start = balanceValue - (rate * numDays);
         return start;
     } // end method calcAccruedStart
+    
+    /* private setFieldRed
+    *
+    * i - the index of the field that needs to turn red
+    *
+    * This method sets the background of the textbox Red if it failed
+    * validation, and puts focus on that field        */
+    private void setFieldRed(int i) {
+        
+            BackgroundFill backgroundFill = new BackgroundFill(
+            Color.valueOf("#f0a99e"),
+            new CornerRadii(5),
+            new Insets(1)
+            );
+            
+            Background background = new Background(backgroundFill);
+            tfTypeBalance[i].setBackground(background);
+            
+            tfTypeBalance[i].requestFocus();
+        
+    }
     
     /* private insertBalances
      *
