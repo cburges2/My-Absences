@@ -27,6 +27,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.json.simple.JSONObject;
 
@@ -67,6 +68,7 @@ public class DayEntry extends Application {
     int lastPosition = 0;   // row position after a group of hours controls are put in gpane
     double height = 300;    // initial height of stage
     int numTypes = 0;       // number of types available to had hours for
+    double hoursInDay = 8;  // number of hours in the work day
     
     // controls
     TextField tfTitle = new TextField();
@@ -96,8 +98,10 @@ public class DayEntry extends Application {
     Button dayEntryDeleteGroup = new Button("Delete Group");
     Button btnAddType = new Button("+");        // button to add another type hours
     Button btnDeleteHours[] = new Button[6];    // delete type hours button
+    boolean started = false;
     
     GridPane formGPane = new GridPane();  // main form area
+    
 
     /* Constructor
     *
@@ -105,15 +109,18 @@ public class DayEntry extends Application {
     *
     * This constructor sets the dayDate of the absence
     * and sets the starting height for the stage */
-    public DayEntry (String dDate) {   //, ArrayList<JSONObject> statistics
+    public DayEntry (String dDate) {   
         
         this.dayDate = dDate;
         height = 600;           // set intial stage height
- 
-    }
+
+    }  
     
     @Override
     public void start(Stage primaryStage) throws Exception {
+        
+        // set Modality if form object has not yet set the stage visible
+        if (!dayEntryStage.isAlwaysOnTop()) {dayEntryStage.initModality(Modality.APPLICATION_MODAL);}
         
         // Get absence data for the day and the absnece types
         dayData = Database.getDayAbsence(dayDate);  // single JSONObject of the day data
@@ -151,7 +158,7 @@ public class DayEntry extends Application {
             lblMinutes[i] = new Label("Minutes"); 
             lblHoursAvailable[i] = new Label("");  
             btnDeleteHours[i] = new Button("x"); 
-            Tooltip ttdelete = new Tooltip("Delete These Type Hours");
+            Tooltip ttdelete = new Tooltip("Delete These Type Hours\nfrom the database");
             ttdelete.getStyleClass().add("ttred");
             btnDeleteHours[i].setTooltip(ttdelete);
         }
@@ -169,22 +176,27 @@ public class DayEntry extends Application {
         // set values for prepopulated form
         for (int i = 0; i < numTypeHours; i++) {
             cboType[i].setValue(absenceType[i]); 
-            lblHoursAvailable[i].setText(hoursAvailable[i] + " Available");
+            if (currentAvailable[i] > 0) {lblHoursAvailable[i].setText(hoursAvailable[i] + " Available");}
+            else {lblHoursAvailable[i].setText("No Time Available!");}
+            if (hoursAvailable[i].isEmpty()) {lblHoursAvailable[i].setText("No Time Available!");}
         }
         
         // set text field for absence title
         GridPane.setColumnSpan(tfTitle,14);
+        Tooltip tttitle = new Tooltip("Optional: Enter a descriptive title");
+        tttitle.getStyleClass().add("ttgray");
+        tfTitle.setTooltip(tttitle);        
         if (!title.isEmpty()) {tfTitle.setText(title);}
         
         // set comboboxes for hours 
         for (int i = 0; i < 6; i++) {
             cboHours[i] = new ComboBox();
-            for (int h = 0; h < 9; h++) {
+            for (int h = 0; h < hoursInDay+1; h++) {
                 cboHours[i].getItems().add(h);
             }
             if (hours[i] != 0) {cboHours[i].setValue(hours[i]);} 
-            else if (i == 0) {cboHours[i].setValue(8);}     // set first hours cbo to a full day's hours 
-            else {cboHours[i].setValue(0);}                 // set remaining hours cbos to 0
+            else if (i == 0) {cboHours[i].setValue((int)hoursInDay);}    // set first hours cbo to a full day's hours 
+            else {cboHours[i].setValue(0);}                         // set remaining hours cbos to 0
             cboHours[i].setPrefWidth(25);
         }
 
@@ -310,6 +322,7 @@ public class DayEntry extends Application {
         bPane.setTop(topDatePane);
         bPane.setBottom(hBoxB);
         Scene dayFormScene = new Scene(bPane); 
+        dayEntryStage.setAlwaysOnTop(true);
         dayEntryStage.setMinHeight(475);
         dayEntryStage.setMaxWidth(375);
         dayEntryStage.setMinWidth(375);
@@ -437,13 +450,17 @@ public class DayEntry extends Application {
         // Add another type (+) button handler
         btnAddType.setOnAction(e-> {
             try {   
-                removeBottomControls(); // remove bottom controls to make room for new hours entry
-                if (prePopulated) {editAdd++;}              // increse number of hour types added when editing prepopulated form 
-                updateComboBoxes();
-                addHoursControls(numTypeHours); 
-                numTypeHours++;  // increase number of hour types in form
-                addBottomControls();
-                dayEntryStage.setHeight(dayEntryStage.getHeight()+85);
+                System.out.println("numTypeHours before is " + numTypeHours);
+                if (checkPreviousSelected(numTypeHours)) {
+                    removeBottomControls();         // remove bottom controls to make room for new hours entry
+                    if (prePopulated) {editAdd++;}  // increse number of hour types added when editing prepopulated form 
+                    updateComboBoxes();             // remove used types from other type boxes
+                    setNextTypeHoursMin(numTypeHours);
+                    addHoursControls(numTypeHours); 
+                    numTypeHours++;  // increase number of hour types in form
+                    addBottomControls();
+                    dayEntryStage.setHeight(dayEntryStage.getHeight()+85);
+                }
             } catch (Exception cancel) {
                 
             }
@@ -494,14 +511,20 @@ public class DayEntry extends Application {
        
     } // end getBackgroundFill    
     
+    /* private SetRemainingHours
+    *
+    * i - The index in the data to set the hours for
+    *
+    * This methods sets the label that appears when Absence Type is chosen in the form. 
+    * The label tells how many hours are available to be scheduled for the type chosen.  */
     private void setRemainingHours(int i) {
         
         if (JsonMatch.getJsonDouble(typesData,"Absence_Type",cboType[i].getValue(),"Accrual_Rate") >= 0) {
            String rHours = JsonMatch.getJsonString(stats,"Absence_Type",cboType[i].getValue(),"Remaining_Hours");
            double dHours = Double.valueOf(JsonMatch.getJsonString(stats,"Absence_Type",cboType[i].getValue(),"Remaining_Hours"));
            String rDayH = JsonMatch.getJsonString(stats,"Absence_Type",cboType[i].getValue(),"Remaining_DayHours"); 
-           if (dHours > 0) {rDayH = rDayH + "Available";} 
-           else {rDayH = "No Time Available!";}
+           if (dHours > 0) {rDayH = rDayH + " Available";} 
+           if (!(dHours > 0)) {rDayH = "No Time Available!";}
            lblHoursAvailable[i].setText(rDayH);
            currentAvailable[i] = Double.parseDouble(rHours);
         } else {                
@@ -587,7 +610,7 @@ public class DayEntry extends Application {
         formGPane.getChildren().add(ckbSubmitted);   
         
         // add optional fields
-        if (!prePopulated) {addToggleFields();}  // add repeat day fields
+        if (!prePopulated) {addRepeatFields();}  // add repeat day fields
         if (inGroup) {addGroupButtons();}        // add group buttons      
         
         // add label notes 
@@ -607,7 +630,7 @@ public class DayEntry extends Application {
     
     /* private removeBottomControls
     *
-    * This method removes the controls under the hours entries, to make room for 
+    * This method removes all the controls under the hours entries, to make room for 
     * new hours entries when added. They are then replace using addBottomControls() */
     private void removeBottomControls() {
         
@@ -622,10 +645,10 @@ public class DayEntry extends Application {
         formGPane.getChildren().remove(dayEntryDeleteGroup);        
     } // end removeBottomControls
  
-    /* addToggleFields()
+    /* addRepeatFields()
     *
-    * This method toggles the fields for a repeat entry to only show on empty form */   
-    private void addToggleFields() {
+    * This method adds the fields for a repeat entry that only show on an empty form */   
+    private void addRepeatFields() {
         
         // Repeat 
         GridPane.setConstraints(lblRepeat,1,lastPosition+1);
@@ -642,7 +665,7 @@ public class DayEntry extends Application {
         
         lastPosition++;
 
-    } // end addToggleFields
+    } // end addRepeatFields
     
     /* addGroupButtons()
     *
@@ -1001,6 +1024,7 @@ public class DayEntry extends Application {
             if (valid[v]) {numValidated++;}
         }
         if (numValidated == numValidate) {validated = true;}
+        
         return validated;
         
     } // end validateData
@@ -1051,6 +1075,7 @@ public class DayEntry extends Application {
         float dblHours = Float.valueOf(hours[i]);
         float decHours = (dblHours + decMinutes);
         decimalHours[i] = decHours;
+        
  
     } // End getHoursDecimal
     
@@ -1094,6 +1119,63 @@ public class DayEntry extends Application {
                }
             }
         }
+    }
+    
+    /* private checkPreviousSelected
+    *
+    * num - the number of type hours in the form
+    * ==> false if a preceeding type has not been selected
+    *
+    * This method checks that when the add type (+) button is pressed, the user 
+    * has chosen a type for the preceeding entry.  Else they get a verification alert and
+    * the new controls are not added for another type hours entry */
+    private boolean checkPreviousSelected(int num) {
+        
+        boolean selected = true;
+        
+        for (int i = 0; i < num; i++) {
+            if (!Validate.notEmpty("Absence Type " + (i+1), cboType[i].getValue())) {
+                selected = false;
+                i = num;
+            }
+        }
+        
+        return selected;
+    }
+    
+    /* private setNextTypeHoursMin
+    *
+    * num - the number of types in the form
+    *
+    * This method is used to set the next type hours and mintues when 
+    * the add Type (+) button is pressed. Hours and minutes are calculated
+    * based on hours and mintutes already added for preceeding types, and sets 
+    * the next type hours and minutes to what is remaining to get to hoursInDay */
+    private void setNextTypeHoursMin(int num) {
+        
+        int sumHours = 0;
+        int sumMinutes = 0;
+        
+        for (int i = 0; i < num; i++) {
+            sumHours += (int)cboHours[i].getValue();
+            sumMinutes += (int)cboMinutes[i].getValue();
+        }
+        double decimal = getHoursDecimal(sumHours,sumMinutes);
+        double remain = hoursInDay - decimal;
+        
+        int remainHours = (int)remain;
+        System.out.println("Remaining Hours is " + remainHours);
+        cboHours[num].setValue(remainHours);
+        double fractional = remain - remainHours;
+        cboMinutes[num].setValue((int)Math.rint(fractional * 60.0));
+
+    }
+    
+    public void setDate (String dDate) {
+        
+        dayDate = dDate;
+        height = 600;           // set intial stage height
+        
     }
     
 } // end class DayEntry 
