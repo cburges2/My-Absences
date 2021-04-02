@@ -1,7 +1,4 @@
-/*
- * Christopher Burgess
-* SDEV 435
- */
+
 package myabsences;
 
 import java.text.SimpleDateFormat;
@@ -10,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -19,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -33,20 +32,24 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author Christopher
- */
-//Begin Subclass ListReport
+ * @author Christopher Burgess
+ * 
+ * This class provides a form for the user to enter or edit starting balances for the 
+ * absence types they defined in Setup  */
 public class BalancesForm extends Application {
     
     SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd"); // db format 
     SimpleDateFormat formatDp = new SimpleDateFormat("M/d/yyyy");  // date picker format
     
     DateTimeFormatter format = DateTimeFormatter.ofPattern("d/M/yyyy");
+    Date today = Calendar.getInstance().getTime();
+    String todayStr = formatDb.format(today);   // today's date in db format
     
     /* Instantiate new stage object */
     static Stage startBalanceStage = new Stage();
     ArrayList<JSONObject> absenceTypes = new ArrayList<>();
     ArrayList<JSONObject> startBalances = new ArrayList<>();
+    ArrayList<JSONObject> pastHours = new ArrayList<>();
     
     int typeSize = 0;      // size of absence types
     int balancesSize = 0;  // number of balances in table for this year
@@ -117,6 +120,7 @@ public class BalancesForm extends Application {
         // get data from db
         absenceTypes = Database.getAbsenceTypes();
         startBalances = Database.getStartBalances(String.valueOf(year));
+        pastHours = Database.getPastHours(todayStr, String.valueOf(year), "All");
         
         // get sizes of db data
         typeSize = absenceTypes.size();
@@ -126,7 +130,7 @@ public class BalancesForm extends Application {
         startingBalances = new String[typeSize];
         datePicker = new DatePicker[typeSize]; 
 
-        // set to prepopulate
+        // set to prepopulated
         if (balancesSize > 0) {
             prePopulate = true;
         }  
@@ -136,6 +140,12 @@ public class BalancesForm extends Application {
             lblAbsenceName[i] = new Label((String)absenceTypes.get(i).get("Absence_Type"));
             String colorStyle = "type" + ((String)absenceTypes.get(i).get("Color")).toLowerCase();
             lblAbsenceName[i].getStyleClass().add(colorStyle);
+            double arate = (Double)absenceTypes.get(i).get("Accrual_Rate");
+            Tooltip ttype = new Tooltip();
+            if (arate == 0) {ttype.setText("Fixed Balance");}
+            if (arate > 0) {ttype.setText("Accrued Balance");}
+            ttype.getStyleClass().add(colorStyle);
+            lblAbsenceName[i].setTooltip(ttype);             
         }
         
         // set Textfields for entering the balances
@@ -331,9 +341,15 @@ public class BalancesForm extends Application {
 	long daysBetween = ChronoUnit.DAYS.between(dateBefore, targetDate);
         double numDays = (double)daysBetween;
         
-        // get rate on Jan 1st
-        double start = balanceValue - (rate * numDays);
+        // get past hours used for type
+        String absenceType = lblAbsenceName[index].getText();
+        double pastTypeHours = JsonMatch.getJsonDouble(pastHours, "Absence_Type", absenceType, "Past_Hours");
+        
+        // get rate on Jan 1st accounting for past hours on calendar
+        double start = (balanceValue - (rate * numDays)) - pastTypeHours;
+        
         return start;
+        
     } // end method calcAccruedStart
     
     /* private setFieldRed
