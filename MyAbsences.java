@@ -32,10 +32,10 @@ public class MyAbsences extends Application {
     static ComboBox<String> cboYear = new ComboBox<>(); // year combo
     static ComboBox<String> cboCalcType = new ComboBox<>();
     static Button[][] btnMonth = new Button[12][42];  // days in month button array (month, day)
-    static Button[] btnsTop = new Button[4];           // top pane navigattion buttons
+    static Button[] btnsTop = new Button[5];           // top pane navigattion buttons
     static Button appStart = new Button();
     static ArrayList<String> years = new ArrayList<>(); // years with balances for combobox
-    static String calcType = "Calculate All";
+    static String calcType = "Calculate All";           // type of calc for SummaryReportBuilder
     String todayStr = new String();
     
     // Set Static Current Year for initial calendar display
@@ -58,7 +58,7 @@ public class MyAbsences extends Application {
         BorderPane bPane = new BorderPane();             // Main Layout pane, Top, Middle, Bottom  
         
         // Build the Bottom gPane -> Summary Report
-        SummaryReportBuilder summaryReportBuilder = new SummaryReportBuilder(year);
+        SummaryReportBuilder summaryReportBuilder = new SummaryReportBuilder(year, calcType);
         GridPane bottomReport = summaryReportBuilder.buildReport();   
         cboCalcType = summaryReportBuilder.getCboCalcType();   // get the calc combobox
          
@@ -87,7 +87,7 @@ public class MyAbsences extends Application {
         
         // Top Buttons Handler
         // top buttons stored in the btnsTop array
-        for (int btnNum = 0; btnNum < 4; btnNum++) {
+        for (int btnNum = 0; btnNum < 5; btnNum++) {
         final int btnNumber = btnNum;
         btnsTop[btnNum].setOnAction(e->{
             try {
@@ -97,6 +97,7 @@ public class MyAbsences extends Application {
                         SetupForm setupWindow = new SetupForm();            // create SetupForm object
                         setupWindow.start(null);                            // start secondary stage
                     } catch (Exception ex) {
+                        ErrorHandler.exception(ex, "entering setup form");
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
                }
@@ -105,6 +106,7 @@ public class MyAbsences extends Application {
                         BalancesForm balanceWindow = new BalancesForm();    // create BalanceForm object
                         balanceWindow.start(null);                          // start secondary stage
                     } catch (Exception ex) {
+                        ErrorHandler.exception(ex, "entering balances form");
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
                }
@@ -112,12 +114,24 @@ public class MyAbsences extends Application {
                     try {
                         listWindow.start(null);            // start secondary stage
                     } catch (Exception ex) {
+                        ErrorHandler.exception(ex, "entering list view");
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
                }
+               if (btnText.equals("Settings")) {
+                    try {
+                        Settings settingsForm = new Settings();
+                        settingsForm.start(null);            // start secondary stage
+                    } catch (Exception ex) {
+                        ErrorHandler.exception(ex, "entering setup");
+                        Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+               }               
+               
                if (btnText.equals("Exit")) { System.exit(1); }
             }
             catch(Exception ex) {
+                ErrorHandler.exception(ex, "exiting the program");
             }
         });
         }              
@@ -130,6 +144,7 @@ public class MyAbsences extends Application {
                 app.start(primaryStage);
             }
             catch(Exception ex) {
+                ErrorHandler.exception(ex, "changing the year combobox");
             }
         });
         
@@ -141,6 +156,7 @@ public class MyAbsences extends Application {
                 app.start(primaryStage);
             }
             catch(Exception ex) {
+                ErrorHandler.exception(ex, "chaning calc type");
             }
         });        
         
@@ -149,8 +165,8 @@ public class MyAbsences extends Application {
             MyAbsences app=new MyAbsences();
             try {
                 app.start(primaryStage);
-            } catch (Exception exit) {
-                // handle the error
+            } catch (Exception refresh) {
+                ErrorHandler.exception(refresh, "refreshing the main window");
             }
         });
         
@@ -172,9 +188,10 @@ public class MyAbsences extends Application {
                     if (monthStr.length() == 1) {monthStr = "0" + monthStr;}
                     String dbDate = year + "-" + monthStr + "-" + bText;
                     try {
-                        DayEntry dayEntry = new DayEntry(dbDate);    // create BalanceForm object ,summaryReportBuilder.getStats()
+                        DayEntry dayEntry = new DayEntry(dbDate);    // create BalanceForm object
                         dayEntry.start(null);               // start secondary stage for DayEntry
                         } catch (Exception ex) {
+                            ErrorHandler.exception(ex, "bringing up the day entry form");
                             Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                         }                 
                     }
@@ -201,6 +218,7 @@ public class MyAbsences extends Application {
     * refresh the stage from another object */
     static public void refresh() {
         System.out.println("Restarting...");
+        
         appStart.fire();
     };
     
