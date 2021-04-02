@@ -13,6 +13,18 @@ import javafx.stage.Stage;
  */
 public class ErrorHandler {
     
+    public static void exception(Exception ex, String action) {
+    
+        String error = ex.toString();
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(error);
+        alert.setHeaderText("Warning: An Error Occurred while " + action);
+        alert.setContentText(error);
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);           
+        alert.showAndWait();
+    }
+    
     public static void JDBCError(SQLException sqlEx) {
     
         String error = sqlEx.toString();
@@ -23,7 +35,6 @@ public class ErrorHandler {
             alert.setHeaderText("Warning: You are adding to a day with hours planned!");
             alert.setContentText("There was already an entry in the database\n"
                     + "for the date being added");
-            
         } else {
             alert.setTitle(error);
             alert.setHeaderText("Warning: Database Error");
@@ -55,7 +66,6 @@ public class ErrorHandler {
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
         stage.setAlwaysOnTop(true);           
         alert.showAndWait();
-
     }
     
     public static void closeConnectionError(Exception closeError) {
@@ -69,6 +79,5 @@ public class ErrorHandler {
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
         stage.setAlwaysOnTop(true);           
         alert.showAndWait();
-        
     }
 }
