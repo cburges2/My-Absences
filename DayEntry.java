@@ -70,6 +70,7 @@ public class DayEntry extends Application {
     double height = 300;    // initial height of stage
     int numTypes = 0;       // number of types available to had hours for
     double hoursInDay = 0;  // to check scheduled hours do not go over day limit
+    int workWeekends = 0;   // flag for if work week includes weekends
     
     // controls
     TextField tfTitle = new TextField();
@@ -130,7 +131,9 @@ public class DayEntry extends Application {
         stats = SummaryReportBuilder.getStats();    // get stats for hours available
         settings = Database.getSettings();          // for hoursInDay setting
         
+        // get settings needed
         hoursInDay = (double)settings.get("Hours_In_Day");
+        workWeekends = (int)settings.get("Work_Weekends");
        
         // ************* if there was data for the day set the variables to it **************
         if (dayData.size() > 0) {
@@ -349,8 +352,8 @@ public class DayEntry extends Application {
                     MyAbsences.refresh();
                     dayEntryStage.close();
                     app.start(primaryStage);
-                } catch(Exception ex) {
-                    // catch
+                } catch(Exception delete) {
+                    ErrorHandler.exception(delete, "deleting type hours");
                 }
             });      
         }         
@@ -365,7 +368,7 @@ public class DayEntry extends Application {
                     dayEntryStage.close();
                 }
             } catch (Exception save) {
-                
+                ErrorHandler.exception(save, "saving a day");
             }
         });
         
@@ -380,7 +383,7 @@ public class DayEntry extends Application {
                     MyAbsences.refresh();
                 }
             } catch (Exception update) {
-                
+                ErrorHandler.exception(update, "updating a day");
             }
         });
         
@@ -394,7 +397,7 @@ public class DayEntry extends Application {
                     MyAbsences.refresh();
                 }
             } catch (Exception update) {
-                
+                ErrorHandler.exception(update, "updating a group");
             }
         });
 
@@ -405,7 +408,7 @@ public class DayEntry extends Application {
             dayEntryStage.close(); 
             MyAbsences.refresh();
             } catch (Exception delete) {
-                
+                ErrorHandler.exception(delete, "deleting a day");
             }
         });    
         
@@ -416,7 +419,7 @@ public class DayEntry extends Application {
             dayEntryStage.close(); 
             MyAbsences.refresh();
             } catch (Exception delete) {
-                
+                ErrorHandler.exception(delete, "deleting a group");
             }
         });  
         
@@ -425,7 +428,7 @@ public class DayEntry extends Application {
             try {
             dayEntryStage.close(); 
             } catch (Exception cancel) {
-                
+                ErrorHandler.exception(cancel, "canceling the form");
             }
         });
         
@@ -435,10 +438,10 @@ public class DayEntry extends Application {
             cboType[i].setOnAction(e->{
                 try {
                     lblHoursAvailable[num].setTextFill(Color.BLACK); // if previous failed validate hours
-                    lblType[num].getStyleClass().clear();
+                    lblType[num].setTextFill(Color.BLACK);  // if previous failed for no type selected
                     String type = cboType[num].getValue(); // get type from combo box
                     double aRate = JsonMatch.getJsonDouble(typesData,"Absence_Type",type,"Accrual_Rate");
-                    if (aRate == -1) {ckbSubmitted.setSelected(true);}
+                    if (aRate == -1) {ckbSubmitted.setSelected(true);} // pre-select submitted for add-in types
                     else {ckbSubmitted.setSelected(false);}
                     String cboColor = JsonMatch.getJsonString(typesData,"Absence_Type",type,"Color");
                     Background background = new Background(getBackgroundFill(cboColor));
@@ -447,8 +450,8 @@ public class DayEntry extends Application {
                     cboMinutes[num].setBackground(background);
                     setRemainingHours(num);   
                 }
-                catch(Exception ex) {
-                    // catch
+                catch(Exception type) {
+                    ErrorHandler.exception(type, "selecting the absence type");
                 }
             });
         }
@@ -460,15 +463,15 @@ public class DayEntry extends Application {
                 if (checkPreviousSelected(numTypeHours)) {
                     removeBottomControls();         // remove bottom controls to make room for new hours entry
                     if (prePopulated) {editAdd++;}  // increse number of hour types added when editing prepopulated form 
-                    updateComboBoxes();             // remove used types from other type boxes
-                    setNextTypeHoursMin(numTypeHours);
-                    addHoursControls(numTypeHours); 
+                    updateComboBoxes();             // remove used types from other type boxes selection
+                    setNextTypeHoursMin(numTypeHours);  // set next type hours/min to remaining hours in day
+                    addHoursControls(numTypeHours);     // add another set of type controls  
                     numTypeHours++;  // increase number of hour types in form
                     addBottomControls();
                     dayEntryStage.setHeight(dayEntryStage.getHeight()+85);
                 }
-            } catch (Exception cancel) {
-                
+            } catch (Exception add) {
+                ErrorHandler.exception(add, "adding a type");
             }
         });     
 
@@ -751,7 +754,10 @@ public class DayEntry extends Application {
             dayDate = nextDay;   
             // iterate through the hours entries and insert to Hours table
             for (int h = 0; h < numTypeHours; h++) {
-                if (!dayOfWeek.equals("SATURDAY") && !dayOfWeek.equals("SUNDAY")) {
+                boolean workDay = true;
+                if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
+                if (workDay) {
+                    // insert hours fields to Hours table
                     sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
                     "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
                     + "', '" + group + "')";       
@@ -759,9 +765,11 @@ public class DayEntry extends Application {
                 }
             }
             // insert common fields to Absences table
-            if (!dayOfWeek.equals("SATURDAY") && !dayOfWeek.equals("SUNDAY")) {
+            boolean workDay = true;
+            if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
+            if (workDay) {
                 // insert common fields to Absences table
-                sql = "INSERT into absences (Date, Title, Submitted, Notes, Absence_Group) " +
+                sql = "INSERT into Absences (Date, Title, Submitted, Notes, Absence_Group) " +
                 "VALUES ('" + dayDate + "', '" + title + "', '"
                 + submitted + "', '" + notes + "', '" + group + "')";       
                 Database.SQLUpdate(sql);
@@ -852,12 +860,15 @@ public class DayEntry extends Application {
         while (i < repeatInsert) {
             // iterate through the hours entries and insert to Hours table
             for (int h = updateNum; h < numTypeHours; h++) {
-                if (!dayOfWeek.equals("SATURDAY") && !dayOfWeek.equals("SUNDAY")) {
+                boolean workDay = true;
+                if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
+                if (workDay) {
                     String sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
                     "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
                     + "', '" + group + "')"; 
                     Database.SQLUpdate(sql);                    
                 } else {i--;}    // don't count a weekend day as a repeat insert
+                
             }
             // increment date
             String nextDay =  LocalDate.parse(dayDate).plusDays(1).toString();
@@ -989,10 +1000,10 @@ public class DayEntry extends Application {
     private boolean validateData (String buttonPushed) {
         
         boolean validated = false;
-        int numValidate = numTypeHours + 1;
+        int numValidate = numTypeHours + 2;
         boolean[] valid = new boolean[numValidate];
         double totalHours = 0.0;     // total hours planned on day
-
+        
         for (int i = 0; i < numTypeHours; i++) {
             valid[i] = false;
             double aRate = JsonMatch.getJsonDouble(typesData,"Absence_Type",cboType[i].getValue(),"Accrual_Rate");
@@ -1000,7 +1011,6 @@ public class DayEntry extends Application {
             else {repeatDays = (int)(cboRepeat.getValue());}
             double hoursDecimal = getHoursDecimal((int)cboHours[i].getValue(),(int)cboMinutes[i].getValue());
             double hoursToValidate = hoursDecimal * repeatDays;           
-            System.out.println("Hours to validate is " + hoursToValidate);
             totalHours+=hoursDecimal;         // add all the hours being scheduled in the day, for validation after loop
             if (aRate == -1) {hoursToValidate = 0;}  // Don't validate Add-In hours
             if (Validate.notEmpty("Absence Type " + (i+1), cboType[i].getValue())) {  
@@ -1022,6 +1032,20 @@ public class DayEntry extends Application {
         valid[numTypeHours] = false;
         if (Validate.hoursInDay(dayDate, totalHours, hoursInDay)) {
             valid[numTypeHours] = true;
+        }
+        
+        // Validate text field size
+        valid[numTypeHours + 1] = false;
+        if (Validate.textSize("Title", tfTitle.getText(),50)) {
+            tfTitle.getStyleClass().remove("textfieldfail");  
+            if (Validate.textSize("Notes",taNotes.getText(),100)) {
+                lblNotes.setTextFill(Color.BLACK);
+                valid[numTypeHours+1] = true;
+            } else {
+                lblNotes.setTextFill(Color.RED); 
+            }
+        } else {
+            tfTitle.getStyleClass().add("textfieldfail"); 
         }
 
         // check that all types validated
@@ -1175,13 +1199,6 @@ public class DayEntry extends Application {
         double fractional = remain - remainHours;
         cboMinutes[num].setValue((int)Math.rint(fractional * 60.0));
 
-    }
-    
-    public void setDate (String dDate) {
-        
-        dayDate = dDate;
-        height = 600;           // set intial stage height
-        
     }
     
 } // end class DayEntry 
