@@ -74,6 +74,7 @@ public class Database {
             while (rs.next()) {
                 record.put((String)"Hours_In_Day",rs.getDouble("Hours_In_Day"));
                 record.put("Days_In_Week",rs.getDouble("Days_In_Week"));
+                record.put("Work_Weekends",rs.getInt("Work_Weekends"));
                 record.put("Max_Warning_Days",rs.getInt("Max_Warning_Days"));
             }
 
