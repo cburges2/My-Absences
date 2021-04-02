@@ -235,7 +235,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-border-insets: 0;
  }
  .btnwarnyellow{
-      -fx-border-width: 1.0;
+     -fx-border-width: 1.0;
      -fx-font-weight: bold;
      -fx-text-fill: Yellow;
      -fx-border-color: Yellow;
@@ -260,4 +260,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-text-fill: #e04d48;
      -fx-border-color: #e04d48;
      -fx-border-insets: 0;
+ }
+ .textfieldfail {
+      -fx-border-color: red;    
  }
