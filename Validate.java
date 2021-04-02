@@ -17,6 +17,28 @@ import org.json.simple.JSONObject;
  * Gets confirmation from the user through an alert dialogue.
  */
 public class Validate {
+    
+    /* public textSize
+    *
+    * fieldName - the field being validated
+    * text - the text length being checked
+    * size - the max length allowed for the text
+    *
+    * This method checks that a String is within a max length    */
+    public static boolean textSize(String fieldName, String text, int size) {
+        
+        if (text.length() > size) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText("Too much text in the textbox!");
+            alert.setContentText("You added more text than is allowed for " + fieldName + "\n"
+                    + "Please try again and limit text to " + size + " characters.");
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);            
+            alert.showAndWait();             
+            return false;
+        } else {return true;} 
+    }
    
     /* public availableHours
     *
