@@ -30,8 +30,8 @@ public class TopPaneBuilder {
     String year = "";   // calendar year
     ArrayList<String> years = new ArrayList<>();    // years to put in ComboBox
     ComboBox<String> cboYear = new ComboBox<>();    // year combo
-    Button[] btnsTop = new Button[4];               // top pane navigattion buttons
-    Tooltip[] btnTip = new Tooltip[4];              // help tooltips for buttons
+    Button[] btnsTop = new Button[5];               // top pane navigattion buttons
+    Tooltip[] btnTip = new Tooltip[5];              // help tooltips for buttons
     
     /* public TopPaneBuilder - Constructor
     * 
@@ -102,12 +102,13 @@ public class TopPaneBuilder {
         buttonHBox.getStyleClass().add("bpane");
        
         // Create top left buttons and help tooltips
-        String[] navButtons = new String[]{"Setup","Enter Balances","List View","Exit"};
+        String[] navButtons = new String[]{"Setup","Enter Balances","List View","Settings","Exit"};
         for (int numBtn=0; numBtn < navButtons.length; numBtn++) {
             if (numBtn == 0)  {btnTip[numBtn] = new Tooltip("Setup\nDefine your abasence types");}
             if (numBtn == 1)  {btnTip[numBtn] = new Tooltip("Enter Balances\nEnter this year's starting balances for your absence types");}
             if (numBtn == 2)  {btnTip[numBtn] = new Tooltip("List View\nView all absences for the year in a list");}
-            if (numBtn == 3)  {btnTip[numBtn] = new Tooltip("Exit My Absences");}
+            if (numBtn == 3)  {btnTip[numBtn] = new Tooltip("User Settings");}
+            if (numBtn == 4)  {btnTip[numBtn] = new Tooltip("Exit My Absences");}
             btnTip[numBtn].getStyleClass().add("ttgray");
             btnsTop[numBtn] = new Button(navButtons[numBtn]); 
             btnsTop[numBtn].setTooltip(btnTip[numBtn]);
