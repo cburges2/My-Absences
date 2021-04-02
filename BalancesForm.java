@@ -168,7 +168,7 @@ public class BalancesForm extends Application {
                 startBalanceStage.close();                  
               } 
             } catch (Exception save) {
-                // TODO - handle error
+                ErrorHandler.exception(save, "saving the balances");
             }
         });
         
@@ -185,7 +185,7 @@ public class BalancesForm extends Application {
                     MyAbsences.refresh();
                 }
             } catch (Exception update) {
-                
+                ErrorHandler.exception(update, "updating the balances");
             }
         });  
         
@@ -194,7 +194,7 @@ public class BalancesForm extends Application {
             try {
                 startBalanceStage.close(); 
             } catch (Exception cancel) {
-                
+                ErrorHandler.exception(cancel, "cancelling the form");
             }
         });    
 
