@@ -237,7 +237,7 @@ public class SetupForm extends Application {
                     setupStage.close(); 
                 }
             } catch (Exception save) {
-                
+                ErrorHandler.exception(save, "saving types setup");
             }
         });
         
@@ -250,7 +250,7 @@ public class SetupForm extends Application {
                     MyAbsences.refresh();
                 }
             } catch (Exception update) {
-                
+                ErrorHandler.exception(update, "updating types setup");
             }
         });   
         
@@ -266,8 +266,8 @@ public class SetupForm extends Application {
                          MyAbsences.refresh();
                          app.start(primaryStage);
                      } else {}
-                } catch(Exception ex) {
-                    // catch
+                } catch(Exception delete) {
+                    ErrorHandler.exception(delete, "deleting a type");
                 }
             });      
         }        
@@ -277,7 +277,7 @@ public class SetupForm extends Application {
             try {
                 setupStage.close(); 
             } catch (Exception cancel) {
-                
+                ErrorHandler.exception(cancel, "cancelling setup");
             }
         });
         
@@ -293,8 +293,8 @@ public class SetupForm extends Application {
                     typesCounter++; 
                 }
                 addDefaultControls(typesCounter);
-            } catch (Exception cancel) {
-                
+            } catch (Exception add) {
+                ErrorHandler.exception(add, "adding a type");
             }
         });        
         
@@ -314,6 +314,7 @@ public class SetupForm extends Application {
                     }
                 }
                 catch(Exception ex) {
+                    ErrorHandler.exception(ex, "changing the balance type");
                 }
             });      
         }
@@ -328,7 +329,7 @@ public class SetupForm extends Application {
                         cboAbsenceColor[num].setBackground(background);
                         tfAbsenceType[num].setBackground(background);
                 } catch(Exception ex) {
-                
+                    ErrorHandler.exception(ex, "changing a type color");
                 }
             });      
         }        
