@@ -34,8 +34,12 @@ import org.json.simple.JSONObject;
 /**
  *
  * @author Christopher Burgess
+ * 
+ * This class provides a form to let the user schedule absence time on a day of the year. 
+ * It is launched from the event handler in MyAbsences using the buttons created in 
+ * Calendar Builder. User defines hours and minutes used for any or all absence types, and marks them as
+ * submitted or not. It also provides optional fields for a title and notes about the day's absence. 
  */
-//Begin Subclass DayEntry
 public class DayEntry extends Application {
   
     static Stage dayEntryStage = new Stage();  // stage for the form
@@ -45,6 +49,7 @@ public class DayEntry extends Application {
     ArrayList<JSONObject> typesData;         // absence types
     ArrayList<JSONObject> groupDates;        // Dates of a group of absences
     ArrayList<JSONObject> stats;             // summary stats for hours avaialabe
+    ArrayList<JSONObject> absences;          // all absence data
     JSONObject settings;                     // settings to get hoursInDay
     String dayDate = "";                     // the db format date for the day
     String[] absenceType = new String[6];    // the user's absence type name
@@ -71,6 +76,7 @@ public class DayEntry extends Application {
     int numTypes = 0;       // number of types available to had hours for
     double hoursInDay = 0;  // to check scheduled hours do not go over day limit
     int workWeekends = 0;   // flag for if work week includes weekends
+    String year = "";
     
     // controls
     TextField tfTitle = new TextField();
@@ -103,7 +109,6 @@ public class DayEntry extends Application {
     boolean started = false;
     
     GridPane formGPane = new GridPane();  // main form area
-    
 
     /* Constructor
     *
@@ -114,8 +119,9 @@ public class DayEntry extends Application {
     public DayEntry (String dDate) {   
         
         this.dayDate = dDate;
-        height = 600;           // set intial stage height
-
+        height = 600;                   // set intial stage height
+        year = dayDate.substring(0,4);  // get year from date
+        
     }  
     
     @Override
@@ -125,7 +131,8 @@ public class DayEntry extends Application {
         if (!dayEntryStage.isAlwaysOnTop()) {dayEntryStage.initModality(Modality.APPLICATION_MODAL);}
         
         // Get absence data for the day and the absnece types
-        dayData = Database.getDayAbsence(dayDate);  // single JSONObject of the day data
+        dayData = Database.getDayAbsence(dayDate);  // ArrayList of JSONObject of the day absence data
+        absences = Database.getAllAbsences(year);
         typesData = Database.getAbsenceTypes();     // Arraylist of JSONObject type data
         numTypes = typesData.size();                // number of absence Types that can be planned
         stats = SummaryReportBuilder.getStats();    // get stats for hours available
@@ -185,7 +192,7 @@ public class DayEntry extends Application {
             cboType[i].setValue(absenceType[i]); 
             if (currentAvailable[i] > 0) {lblHoursAvailable[i].setText(hoursAvailable[i] + " Available");}
             else {lblHoursAvailable[i].setText("No Time Available!");}
-            if (hoursAvailable[i].isEmpty()) {lblHoursAvailable[i].setText("No Time Available!");}
+            if (hoursAvailable[i].isEmpty()) {lblHoursAvailable[i].setText("");}
         }
         
         // set text field for absence title
@@ -853,28 +860,33 @@ public class DayEntry extends Application {
         int repeatInsert = Database.getGroupSize(group);
         System.out.println("repeat insert is " + repeatInsert);
         
-        String today =  LocalDate.parse(dayDate).plusDays(0).toString();
-        LocalDate date1 = LocalDate.parse(today);
-        String dayOfWeek = date1.getDayOfWeek().toString();       
+        String upDate = group; //LocalDate.parse(dayDate).plusDays(0).toString();
+//        LocalDate date1 = LocalDate.parse(upDate);
+//        String dayOfWeek = date1.getDayOfWeek().toString();  
+//        System.out.println("dayDate is "+ dayDate);
         int i = 0;
         while (i < repeatInsert) {
             // iterate through the hours entries and insert to Hours table
+            LocalDate date1 = LocalDate.parse(upDate);
+            String dayOfWeek = date1.getDayOfWeek().toString();
             for (int h = updateNum; h < numTypeHours; h++) {
-                boolean workDay = true;
-                if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
-                if (workDay) {
+                // do not insert to hours if day not a workday, or if the day has been deleted from absences
+                boolean isAbsenceDay = true;
+                if (JsonMatch.getJsonIndex(absences,"Date",upDate) == -1) {isAbsenceDay = false;}
+                boolean isWorkDay = true;
+                if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {isWorkDay = false;}
+                if (isWorkDay && isAbsenceDay) {  
                     String sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
-                    "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
+                    "VALUES ('" + upDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
                     + "', '" + group + "')"; 
-                    Database.SQLUpdate(sql);                    
-                } else {i--;}    // don't count a weekend day as a repeat insert
+                    boolean success = Database.SQLUpdate(sql); 
+                    System.out.println("Insert Success is " + success);
+                } else {i--;}    // don't count a weekend day as a repeat insert for incrmenting date
                 
             }
             // increment date
-            String nextDay =  LocalDate.parse(dayDate).plusDays(1).toString();
-            date1 = LocalDate.parse(nextDay);
-            dayOfWeek = date1.getDayOfWeek().toString();
-            dayDate = nextDay; 
+            String nextDay =  LocalDate.parse(upDate).plusDays(1).toString();
+            upDate = nextDay; 
             i++;           
         }
     
@@ -889,44 +901,38 @@ public class DayEntry extends Application {
 
     /* private deleteAbsence
     *
-    * Deletes the absence in the absences table for the dayDate  
-    * Builds the delete string and calls the Database SQLUpdate method */ 
+    * Deletes the absence in the Absences table for the dayDate  
+    * and hours in the Hours table for dayDate */ 
     private void deleteAbsence() {
-        
-        getValues();   // get current values from the controls
-        
+               
         // Delete all type hours in Hours table
-        for (int h = 0; h < numTypeHours; h++) {
-            String sql = "DELETE from Hours " + 
-            "WHERE Date = '" + dayDate + "'";
-            Database.SQLUpdate(sql);
-        }
-        
+        String sql = "DELETE from Hours " + 
+        "WHERE Date = '" + dayDate + "'";
+        Database.SQLUpdate(sql);
+
         // Delete from Absences table
-        String sql = "DELETE from absences " + 
+        sql = "DELETE from absences " + 
         "WHERE Date = '" + dayDate + "'";
         Database.SQLUpdate(sql);
          
     }   // end deleteAbsences
     
-    /* private deleteAbsence
+    /* private deleteAbsenceGroup
     *
-    * Deletes the absence in the absences table for the dayDate  
+    * Deletes the absence in the absences table and hours in hours table for group 
     * Builds the delete string and calls the Database SQLUpdate method */ 
     private void deleteAbsenceGroup() {
         
-        getValues();   // get current values from the controls
-        
-        // Delete all type hours in the Hours table in group
-        for (int h = 0; h < numTypeHours; h++) {
-            String sql = "DELETE from Hours " + 
-            "WHERE Absence_Group = '" + group + "'";
-            Database.SQLUpdate(sql);            
-        }
+        String sql = "DELETE from Hours " + 
+        "WHERE Absence_Group = '" + group + "'";
+        Database.SQLUpdate(sql);         
+
         // delete all the days that are in the group
-        String sql = "DELETE from absences " + 
+        sql = "DELETE from Absences " + 
         "WHERE Absence_Group = '" + group + "'";
         Database.SQLUpdate(sql);
+        
+        deleteOrphanedHours();
         
     } // end deleteAbsenceGroup
     
@@ -937,6 +943,7 @@ public class DayEntry extends Application {
             repeatDelete = Database.getGroupSize(group);
         } 
         
+        // check with user if day is in a group
         boolean deleteAll = false;
         if (repeatDelete > 0) {
             if (Validate.confirmDeleteTypeHours(absenceType[i])) {
@@ -944,6 +951,7 @@ public class DayEntry extends Application {
             }
         }
         
+        // Delete hours from everyday in the group, or only a single day
         if (deleteAll) {
             String sql = "DELETE from Hours " + 
             "WHERE Absence_Group = '" + group + "' and Absence_ID = '" +
@@ -956,14 +964,35 @@ public class DayEntry extends Application {
             Database.SQLUpdate(sql);
         }
 
-        // if this is the last type hours left, delete the day from absences as well
+        // if this is the last type hours left, delete the day(s) from absences as well
         if ((numTypeHours-editAdd) == 1) {
-            // Delete from Absences table
-            String sql = "DELETE from absences " + 
-            "WHERE Date = '" + dayDate + "'";
-            Database.SQLUpdate(sql);    
+            if (deleteAll) {                        // Delete the group
+                String sql = "DELETE from absences " + 
+                "WHERE Absence_Group = '" + group + "'";
+                Database.SQLUpdate(sql);                    
+            } else {                                // Delete the single day
+                String sql = "DELETE from absences " + 
+                "WHERE Date = '" + dayDate + "'";
+                Database.SQLUpdate(sql);                  
+            }
+            
+            deleteOrphanedHours();  
         }
 
+    }
+    /* private deleteOrphanedHours
+    *
+    * This method deletes any hours entries with dates that are not in absences 
+    * there are some rare cases where hours could get orphaned if part of a group */
+    private void deleteOrphanedHours() {
+
+        String sql = "Delete from Hours where date = " 
+               + "(select h.date from hours as h "
+               + "left join Absences as a "
+               + "on a.date = h.date "
+               + "where a.date IS NULL and h.date IS NOT NULL)";
+        Database.SQLUpdate(sql);       
+    
     }
     
     /* private getValues
