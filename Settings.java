@@ -21,8 +21,10 @@ import javafx.stage.Stage;
 import org.json.simple.JSONObject;
 
 /**
- *
+ * Class Settings
  * @author Christopher Burgess
+ * This class provides a form to change the settings for the user's work schedule
+ * and to change the look-ahead time for the Max Accrual warning. 
  */
 public class Settings extends Application {
        
@@ -67,7 +69,7 @@ public class Settings extends Application {
         // get Settings object from db
         settings = Database.getSettings();
         
-        // get settings values from settings
+        // get settings values from settings object
         hoursInDay = (double)settings.get("Hours_In_Day");
         daysInWeek = (double)settings.get("Days_In_Week");        
         workWeekends = (int)settings.get("Work_Weekends");
@@ -125,7 +127,7 @@ public class Settings extends Application {
             btnSettingsUpdate.requestFocus();  // Set focus on cancel 
         });
    
-        
+        // Add controls to the GPane and put DB values in controls
         addControls();
         putValues();
         
@@ -161,53 +163,54 @@ public class Settings extends Application {
         settingsStage.setAlwaysOnTop(true);
         settingsStage.setMaxHeight(700);
         settingsStage.setMaxHeight(550);
-        settingsStage.setMinWidth(500);
+        settingsStage.setMinWidth(350);
         settingsStage.setTitle("Settings");
         settingsStage.setScene(setupScene);
         settingsStage.show();
-    } 
+        
+    } // End Start
     
     /* private addControls
      *
      * adds the controls to the gridpane    */
     private void addControls() {
 
-        // add label
+        // add label for hours in day
         GridPane.setConstraints(lblHoursInDay, 1, 1); 
         GridPane.setColumnSpan(lblHoursInDay, 4);
         gPane.getChildren().add(lblHoursInDay);
 
-        // add combobox
-        GridPane.setConstraints(cboHoursInDay, 5, 1); 
+        // add combobox for hours in day
+        GridPane.setConstraints(cboHoursInDay, 10, 1); 
         GridPane.setColumnSpan(cboHoursInDay, 4);
         gPane.getChildren().add(cboHoursInDay);
 
-        // add label
+        // add label for days in week
         GridPane.setConstraints(lblDaysInWeek, 1, 2); 
         GridPane.setColumnSpan(lblDaysInWeek, 4);
         gPane.getChildren().add(lblDaysInWeek);
 
-        // add combobox
-        GridPane.setConstraints(cboDaysInWeek, 5, 2); 
+        // add combobox for days in week
+        GridPane.setConstraints(cboDaysInWeek, 10, 2); 
         GridPane.setColumnSpan(cboDaysInWeek, 4);
         gPane.getChildren().add(cboDaysInWeek);
         
-        // add label
+        // add label for max warning
         GridPane.setConstraints(lblMaxWarning, 1, 3); 
         GridPane.setColumnSpan(lblMaxWarning, 4);
         gPane.getChildren().add(lblMaxWarning);
 
-        // add combobox
-        GridPane.setConstraints(cboMaxWarning, 5, 3); 
+        // add combobox for max warning
+        GridPane.setConstraints(cboMaxWarning, 10, 3); 
         GridPane.setColumnSpan(cboMaxWarning, 4);
         gPane.getChildren().add(cboMaxWarning);        
         
-        // add checkBox
+        // add checkBox for work weekends
         GridPane.setConstraints(ckbWeekends, 1, 4); 
         GridPane.setColumnSpan(ckbWeekends, 4);
         gPane.getChildren().add(ckbWeekends);        
 
-    }
+    } // end addControls
     
     /* private putValues
     *
@@ -219,8 +222,7 @@ public class Settings extends Application {
         cboHoursInDay.setValue(hoursInDay);
         cboDaysInWeek.setValue(daysInWeek);
         
-        
-        int maxWarnMonths = maxWarningDays/30;
+        int maxWarnMonths = maxWarningDays/30; // convert days to months
         cboMaxWarning.setValue(maxWarnMonths);
         
         if (workWeekends == 1) {ckbWeekends.setSelected(true);}
@@ -230,8 +232,8 @@ public class Settings extends Application {
     
     /* private getValues
     * 
-    * This method gets the values from the controls to variables, to insert into
-    * or update the db table Settings     */
+    * This method gets the values from the controls to variables, 
+    * to update the Settings db table    */
     private void getValues() {
         
         hoursInDay = cboHoursInDay.getValue();
@@ -254,7 +256,6 @@ public class Settings extends Application {
         "SET Hours_In_Day = '" + hoursInDay + "', Days_In_Week = '" + daysInWeek +
         "', Work_Weekends = '" + workWeekends + "', Max_Warning_Days = '" + maxWarningDays + "'";
         Database.SQLUpdate(sql);
- 
 
     } // end method updateSettings    
 
