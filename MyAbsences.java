@@ -1,7 +1,7 @@
 /** 
  * @Course: SDEV 435
- * @Author Name: Christopher Burgess -
- * @Assignment Name: cburgess_Project
+ * @Author Name: Christopher Burgess 
+ * @Assignment Name: Semester long Project
  * @Date: Jan 28, 2021
  * @Description: MyAbsences - A program to store and track absence hours by a company employee
  */
@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 
-//Begin Class Main
+// Begin Main Class
 public class MyAbsences extends Application {
     
     // variables
@@ -42,7 +42,7 @@ public class MyAbsences extends Application {
     final static SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
     static String year = FORMAT_YEAR.format(Calendar.getInstance().getTime()); // current year
     
-    // Create Window Objects
+    // Create Window Object for list Report
     static ListReport listWindow = new ListReport();           // create ListReport object
                
     @Override
@@ -188,7 +188,7 @@ public class MyAbsences extends Application {
                     if (monthStr.length() == 1) {monthStr = "0" + monthStr;}
                     String dbDate = year + "-" + monthStr + "-" + bText;
                     try {
-                        DayEntry dayEntry = new DayEntry(dbDate);    // create BalanceForm object
+                        DayEntry dayEntry = new DayEntry(dbDate);    // create DayEntry object
                         dayEntry.start(null);               // start secondary stage for DayEntry
                         } catch (Exception ex) {
                             ErrorHandler.exception(ex, "bringing up the day entry form");
@@ -199,7 +199,7 @@ public class MyAbsences extends Application {
             }
         }        
         
-        /********************** Set Stage and Scene **********************/
+        /********************** Set Main Stage and Scene **********************/
         Scene scene = new Scene(bPane); // new scene add the border pane 
         scene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         primaryStage.setTitle("My Absences");
@@ -215,10 +215,9 @@ public class MyAbsences extends Application {
     /* public refresh
     *
     *
-    * refresh the stage from another object */
+    * refresh the Main stage from another object */
     static public void refresh() {
-        System.out.println("Restarting...");
-        
+        System.out.println("Restarting...");        
         appStart.fire();
     };
     
