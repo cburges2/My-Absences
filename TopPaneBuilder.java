@@ -22,7 +22,8 @@ import javafx.scene.text.Text;
 /**
  * TopPaneBuilder Class
  * @author Christopher
- * This class builds a HBox containing all the top pane features
+ * This class builds an HBox containing all the top pane features
+ * for Buttons, Title, year combobox, and an imageview. 
  */
 public class TopPaneBuilder {
     
@@ -60,16 +61,20 @@ public class TopPaneBuilder {
         VBox warningVBox = new VBox();          // Warning box to be put in leftVBox
 
         /* Set middleVBox attributes */
-        middleVBox.setMaxHeight(30);     
+        middleVBox.setMaxHeight(30);  
+        middleVBox.setMaxWidth(10);
+        
         middleVBox.setSpacing(10);
-        middleVBox.setPadding(new Insets(5, 5, 0, 5));   // top, right, bottom, left
+        middleVBox.setPadding(new Insets(5, 35, 0, 0));   // top, right, bottom, left
         middleVBox.getStyleClass().add("bpane");
         middleVBox.setAlignment(Pos.CENTER);  // center the children in the pane
         
         /* Set leftVBox attributes */
-        leftVBox.setMaxHeight(30);     
+        leftVBox.setMaxHeight(30);
+        leftVBox.setMaxWidth(300);
+        leftVBox.setMinWidth(300);
         leftVBox.setSpacing(10);
-        leftVBox.setPadding(new Insets(5, 5, 0, 5));   // top, right, bottom, left
+        leftVBox.setPadding(new Insets(5, 0, 0, 5));   // top, right, bottom, left
         leftVBox.getStyleClass().add("bpane");
         leftVBox.setAlignment(Pos.TOP_LEFT);  // center the children in the pane
         
