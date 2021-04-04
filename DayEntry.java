@@ -132,7 +132,7 @@ public class DayEntry extends Application {
         
         // Get absence data for the day and the absnece types
         dayData = Database.getDayAbsence(dayDate);  // ArrayList of JSONObject of the day absence data
-        absences = Database.getAllAbsences(year);
+        absences = Database.getAllAbsences(year);   // ArrayList of JSONObject of all the years absences
         typesData = Database.getAbsenceTypes();     // Arraylist of JSONObject type data
         numTypes = typesData.size();                // number of absence Types that can be planned
         stats = SummaryReportBuilder.getStats();    // get stats for hours available
@@ -761,27 +761,57 @@ public class DayEntry extends Application {
             dayDate = nextDay;   
             // iterate through the hours entries and insert to Hours table
             for (int h = 0; h < numTypeHours; h++) {
+                boolean absenceDay = true;
+                if (JsonMatch.getJsonIndex(absences,"Date",dayDate) == -1) {absenceDay = false;}
                 boolean workDay = true;
                 if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
-                if (workDay) {
+                if (workDay && !absenceDay) { 
                     // insert hours fields to Hours table
                     sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
                     "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
                     + "', '" + group + "')";       
                     Database.SQLUpdate(sql);                    
+                } else if (workDay && absenceDay) {
+                    // insert hours fields to Hours table without any hours
+                    sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
+                    "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + 0 
+                    + "', '" + group + "')";    
+                    Database.SQLUpdate(sql); 
                 }
             }
-            // insert common fields to Absences table
+            // insert common fields to Absences table if no day planned
+            boolean absenceDay = true;   // do not try to insert day if there is a day planned already
+            if (JsonMatch.getJsonIndex(absences,"Date",dayDate) == -1) {absenceDay = false;} 
+            if (absenceDay) {
+                // verify add to group or only day
+                if (Validate.confirmAddToGroup(dayDate)) {
+                    // Update absence day to be part of group
+                    sql = "UPDATE Absences " +
+                    "SET Title = '" + title + "', Submitted = '"
+                    + submitted + "', Notes = '" + notes + "', " +  " Absence_Group = '" + group + "' "
+                    + "WHERE Date = '" + dayDate + "'";
+                    Database.SQLUpdate(sql); 
+                    // add any day hours for the day to the group
+                    sql = "UPDATE Hours " + "SET Absence_Group = '" + group + "' "
+                    + "WHERE Date = '" + dayDate + "'";
+                    Database.SQLUpdate(sql);
+                    
+                    i++;
+                } else {i++;}
+            }
+            
             boolean workDay = true;
             if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
-            if (workDay) {
+            if (workDay && !absenceDay) {
                 // insert common fields to Absences table
                 sql = "INSERT into Absences (Date, Title, Submitted, Notes, Absence_Group) " +
                 "VALUES ('" + dayDate + "', '" + title + "', '"
                 + submitted + "', '" + notes + "', '" + group + "')";       
                 Database.SQLUpdate(sql);
+                
                 i++;
             } 
+            
         }
     } // end insertAbsence 
     
@@ -860,10 +890,8 @@ public class DayEntry extends Application {
         int repeatInsert = Database.getGroupSize(group);
         System.out.println("repeat insert is " + repeatInsert);
         
-        String upDate = group; //LocalDate.parse(dayDate).plusDays(0).toString();
-//        LocalDate date1 = LocalDate.parse(upDate);
-//        String dayOfWeek = date1.getDayOfWeek().toString();  
-//        System.out.println("dayDate is "+ dayDate);
+        String upDate = group; // Incrementing date for updating
+
         int i = 0;
         while (i < repeatInsert) {
             // iterate through the hours entries and insert to Hours table
@@ -871,11 +899,11 @@ public class DayEntry extends Application {
             String dayOfWeek = date1.getDayOfWeek().toString();
             for (int h = updateNum; h < numTypeHours; h++) {
                 // do not insert to hours if day not a workday, or if the day has been deleted from absences
-                boolean isAbsenceDay = true;
-                if (JsonMatch.getJsonIndex(absences,"Date",upDate) == -1) {isAbsenceDay = false;}
+                boolean isabsenceDay = true;
+                if (JsonMatch.getJsonIndex(absences,"Date",upDate) == -1) {isabsenceDay = false;}
                 boolean isWorkDay = true;
                 if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {isWorkDay = false;}
-                if (isWorkDay && isAbsenceDay) {  
+                if (isWorkDay && isabsenceDay) {  
                     String sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
                     "VALUES ('" + upDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
                     + "', '" + group + "')"; 
@@ -1115,9 +1143,8 @@ public class DayEntry extends Application {
         float decMinutes = dblMinutes/60;
         float dblHours = Float.valueOf(hours);
         float decHours = (dblHours + decMinutes);
-        double decimalHours = decHours;
         
-        return decimalHours;
+        return decHours;
  
     } // End getHoursDecimal
     
