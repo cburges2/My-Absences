@@ -6,6 +6,7 @@ package myabsences;
 import java.util.ArrayList;
 import java.util.Optional;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import org.json.simple.JSONObject;
@@ -14,7 +15,7 @@ import org.json.simple.JSONObject;
  *
  * @author Christopher Burgess
  * This class contains static methods to validate data inputs
- * Gets confirmation from the user through an alert dialogue.
+ * Gives information and gets confirmation from the user through alert dialogues.
  */
 public class Validate {
     
@@ -163,13 +164,13 @@ public class Validate {
         
         
     } // end isPosDecimal
-
+    
     /* public confirmDeleteTypeHours
     *
     * absence_type - the type that user selected to delete the Type Hours for
     * 
     * ==> Returns true if user confirms delete from all days in the group
-    * ==> Returns false if user Cancels to delete only the type hours on the day
+    * ==> Returns false if user chooses to delete only the type hours on the day
     * 
     * This method confirms that the user wants to delete the Type Hours from 
     * all the days in the group, else only the single day hour will be deleted */    
@@ -178,10 +179,46 @@ public class Validate {
         boolean delete = false;
         
         Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Delete Absence Type Hours");
-        a.setHeaderText(absence_type + " hours are part of an Absence Group!\n"
-                + "Press CANCEL to delete the Type Hours from only the current day");
+        a.setHeaderText(absence_type + " hours are part of an Absence Group!\n");
         a.setResizable(true);
-        a.setContentText("Press OK Delete from All Days in the Group:");
+        a.setContentText("Select to Delete from all days in group or only from the day:");
+        ((Button) a.getDialogPane().lookupButton(ButtonType.OK)).setText("Delete from Group");
+        ((Button) a.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Delete from Day");
+        Stage stage = (Stage) a.getDialogPane().getScene().getWindow();
+        stage.setAlwaysOnTop(true);     
+        Optional<ButtonType> result = a.showAndWait();
+        if(!result.isPresent()) {
+            delete = false;
+        } else if(result.get() == ButtonType.OK) {
+            delete = true;
+        } else if (result.get() == ButtonType.CANCEL) {
+            delete = false;
+        }
+        
+        return delete;
+        
+    } // end method confirmDeleteTypeHours    
+
+    /* public confirmAddToGroup
+    *
+    * absence_type - the type that user selected to delete the Type Hours for
+    * 
+    * ==> Returns true if user confirms make the day part of the group
+    * ==> Returns false if user wants to not make the day part of the group
+    * 
+    * This method confirms that the user wants to incorporate a single day into a group  
+    * when adding a group and there is already a day planned in the group time period.  */    
+    public static boolean confirmAddToGroup(String date) {
+        
+        boolean delete = false;
+        
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Delete Absence Type Hours");
+        a.setHeaderText(date + " already has planned hours!\n");
+        a.setResizable(true);
+        a.setContentText("Select to make this day part of the group, or to leave it as a single day\n"
+                        + "Note: The new type being added to the day will have zero hours. ");
+        ((Button) a.getDialogPane().lookupButton(ButtonType.OK)).setText("Make Day part of Group");
+        ((Button) a.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Leave the day as is");
         Stage stage = (Stage) a.getDialogPane().getScene().getWindow();
         stage.setAlwaysOnTop(true);     
         Optional<ButtonType> result = a.showAndWait();
