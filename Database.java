@@ -14,6 +14,8 @@ import org.json.simple.JSONObject;
 /**
  *
  * @author Christopher Burgess
+ * This is a static class that contains methods for getting data in and out 
+ * of the database. 
  */
 public class Database {
     
@@ -21,11 +23,6 @@ public class Database {
    static final String DB_URL = "jdbc:sqlite:c:/sqlite/MyAbsences.db";    
    static final String USER = "username";
    static final String PASS = "password";  
-   
-   // Empty constructor
-   public Database () {
-
-   }
 
     /* Unused - can create a new Database file */   
     public static void createNewDatabase(String fileName) {
@@ -383,7 +380,7 @@ public class Database {
 
         return 0;        
    }    // end getGroupSize
-    
+       
 /* public getStartBalanceCount
    *
    * year - The year to get the balance count for
@@ -975,14 +972,15 @@ public class Database {
              
             stmt.close();
             conn.close();
-            return success;
 
             }catch(SQLException se){
                 //Handle errors for JDBC
                 ErrorHandler.JDBCError(se);
+                success = false;
             }catch(Exception e){
                //Handle errors for Class.forName
                ErrorHandler.classForNameError(e);
+               success = false;
              }finally{
                 //finally block used to close resources
                 try{
