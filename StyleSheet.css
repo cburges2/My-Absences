@@ -89,7 +89,7 @@ Stylesheet for text and controls in MyAbsences classes
      -fx-background-color: white, -fx-control-inner-background; -fx-background-insets: 2, 2; -fx-padding: 10;
  }
  .daytitle{    
-     -fx-font: 20px Tahoma;
+     -fx-font: 16px Tahoma;
      -fx-font-weight: bold;
      -fx-fill: lightslategray; 
  }
