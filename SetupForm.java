@@ -1,6 +1,4 @@
-/*
- * Christopher Burgess
- */
+
 package myabsences;
 
 import java.text.SimpleDateFormat;
@@ -31,9 +29,12 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author Christopher
- */
-//Begin Subclass SetupForm
+ * @author Christopher Burgess
+ *
+ * Begin Subclass SetupForm - This class allows the user to define their absence types
+ * by naming them, choosing a color, choosing a balance type, and defining the 
+ * accrual rate and max accrual for accrued balance types. 
+*/
 public class SetupForm extends Application {
   
     /* Instantiate new stage object */
