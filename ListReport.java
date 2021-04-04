@@ -26,7 +26,9 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author Christopher
+ * @author Christopher Burgess
+ * This class is a pop-up report to list all absences and the day data
+ * for the year in the calendar. 
  */
 //Begin Subclass ListReport
 public class ListReport extends Application {
