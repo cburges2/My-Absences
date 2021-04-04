@@ -162,7 +162,7 @@ public class Settings extends Application {
         setupScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         settingsStage.setAlwaysOnTop(true);
         settingsStage.setMaxHeight(700);
-        settingsStage.setMaxHeight(550);
+        settingsStage.setMinHeight(300);
         settingsStage.setMinWidth(350);
         settingsStage.setTitle("Settings");
         settingsStage.setScene(setupScene);
