@@ -9,7 +9,8 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author Christopher
+ * @author Christopher Burgess
+ * This class handles errors from the try-catch statements used in all other classes 
  */
 public class ErrorHandler {
     
