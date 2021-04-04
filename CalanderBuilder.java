@@ -1,10 +1,9 @@
 /** 
  * @Course: SDEV 435 ~ 
  * @Author Name: Christopher Burgess
- * @Assignment Name: week3
  * @Date: Feb 6, 2021
- * @Subclass CalanderBuilder - Builds the year calendar 
- * Parameters : GridPane - The Calander Gridpane
+ * @Subclass CalanderBuilder - Builds the year calendar out of buttons, and adds the day absence data
+ * to the day buttons for coloring and tool tips. 
  */
 package myabsences;
 
