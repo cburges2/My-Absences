@@ -1052,7 +1052,7 @@ public class Database {
      *
      * ==> boolean for success 
      *  
-     * */
+     * This Method creates the Tables in the database for first startup*/
     static public boolean createTables() {
         
         boolean success = false;
@@ -1061,83 +1061,83 @@ public class Database {
         Statement stmt = null;
         
         try{
-             //Register JDBC driver
-             Class.forName("org.sqlite.JDBC");
+            //Register JDBC driver
+            Class.forName("org.sqlite.JDBC");
 
-             //Open a connection
-             conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            //Open a connection
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
 
-             //Execute query
-        String sql = "PRAGMA foreign_keys = off;" +
-        "BEGIN TRANSACTION;" +
-        "CREATE TABLE ABSENCE_TYPES (" +
-        "    ABSENCE_ID   INTEGER     UNIQUE" +
-        "                             PRIMARY KEY AUTOINCREMENT" +
-        "                             NOT NULL," +
-        "    ABSENCE_TYPE CHAR (10)," +
-        "    COLOR        CHAR (20)," +
-        "    ACCRUAL_RATE DOUBLE (15)," +
-        "    MAX_ACCRUAL  DOUBLE (2) " +
-        ");" +
-        "CREATE TABLE ABSENCES (" +
-        "    DATE          DATE          UNIQUE" +
-        "                                PRIMARY KEY," +
-        "    TITLE         VARCHAR (50)," +
-        "    SUBMITTED     INTEGER," +
-        "    NOTES         VARCHAR (100)," +
-        "    ABSENCE_GROUP VARCHAR (10)  DEFAULT ''" +
-        "                                NOT NULL" +
-        ");" +
-        "CREATE TABLE HOURS (" +
-        "    ROWID         INTEGER      PRIMARY KEY AUTOINCREMENT," +
-        "    DATE          DATE         REFERENCES ABSENCES (DATE)," +
-        "    ABSENCE_ID    INTEGER      REFERENCES ABSENCE_TYPES (ABSENCE_ID)," +
-        "    HOURS         DOUBLE (10)," +
-        "    ABSENCE_GROUP VARCHAR (10) NOT NULL" +
-        "                               DEFAULT ''" +
-        ");" +
-        "CREATE TABLE SETTINGS (" +
-        "    HOURS_IN_DAY     DOUBLE (3)," +
-        "    DAYS_IN_WEEK     DOUBLE (2)," +
-        "    WORK_WEEKENDS    INTEGER," +
-        "    MAX_WARNING_DAYS INTEGER" +
-        ");" +
-        "" +
-        "INSERT INTO SETTINGS (" +
-        "                         HOURS_IN_DAY," +
-        "                         DAYS_IN_WEEK," +
-        "                         WORK_WEEKENDS," +
-        "                         MAX_WARNING_DAYS" +
-        "                     )" +
-        "                     VALUES (" +
-        "                         8.0," +
-        "                         5.0," +
-        "                         0," +
-        "                         180" +
-        "                     );" +
-        "CREATE TABLE STARTING_BALANCES (" +
-        "    ROWID            INTEGER     PRIMARY KEY AUTOINCREMENT" +
-        "                                 NOT NULL," +
-        "    YEAR             INTEGER," +
-        "    ABSENCE_ID       INTEGER (4) REFERENCES ABSENCE_TYPES (ABSENCE_ID)," +
-        "    STARTING_BALANCE DOUBLE (2) " +
-        ");" +
-        "CREATE TABLE WARNINGS (" +
-        "    WARNING_ID   INTEGER      UNIQUE" +
-        "                              PRIMARY KEY AUTOINCREMENT" +
-        "                              NOT NULL," +
-        "    WARNING_NAME CHAR (20)," +
-        "    ABSENCE_ID   INTEGER (2)," +
-        "    DATE         DATE," +
-        "    CAL_DATE     VARCHAR (10) " +
-        ");" +
-        "COMMIT TRANSACTION;" +
-        "PRAGMA foreign_keys = on; ";      
+            //Execute query
+            String sql = "PRAGMA foreign_keys = off;" +
+            "BEGIN TRANSACTION;" +
+            "CREATE TABLE ABSENCE_TYPES (" +
+            "    ABSENCE_ID   INTEGER     UNIQUE" +
+            "                             PRIMARY KEY AUTOINCREMENT" +
+            "                             NOT NULL," +
+            "    ABSENCE_TYPE VARCHAR (20)," +
+            "    COLOR        VARCHAR (20)," +
+            "    ACCRUAL_RATE DOUBLE (15)," +
+            "    MAX_ACCRUAL  DOUBLE (2) " +
+            ");" +
+            "CREATE TABLE ABSENCES (" +
+            "    DATE          DATE          UNIQUE" +
+            "                                PRIMARY KEY," +
+            "    TITLE         VARCHAR (50)," +
+            "    SUBMITTED     INTEGER," +
+            "    NOTES         VARCHAR (100)," +
+            "    ABSENCE_GROUP VARCHAR (10)  DEFAULT ''" +
+            "                                NOT NULL" +
+            ");" +
+            "CREATE TABLE HOURS (" +
+            "    ROWID         INTEGER      PRIMARY KEY AUTOINCREMENT," +
+            "    DATE          DATE         REFERENCES ABSENCES (DATE)," +
+            "    ABSENCE_ID    INTEGER      REFERENCES ABSENCE_TYPES (ABSENCE_ID)," +
+            "    HOURS         DOUBLE (10)," +
+            "    ABSENCE_GROUP VARCHAR (10) NOT NULL" +
+            "                               DEFAULT ''" +
+            ");" +
+            "CREATE TABLE SETTINGS (" +
+            "    HOURS_IN_DAY     DOUBLE (3)," +
+            "    DAYS_IN_WEEK     DOUBLE (2)," +
+            "    WORK_WEEKENDS    INTEGER," +
+            "    MAX_WARNING_DAYS INTEGER" +
+            ");" +
+            "" +
+            "INSERT INTO SETTINGS (" +
+            "                         HOURS_IN_DAY," +
+            "                         DAYS_IN_WEEK," +
+            "                         WORK_WEEKENDS," +
+            "                         MAX_WARNING_DAYS" +
+            "                     )" +
+            "                     VALUES (" +
+            "                         8.0," +
+            "                         5.0," +
+            "                         0," +
+            "                         180" +
+            "                     );" +
+            "CREATE TABLE STARTING_BALANCES (" +
+            "    ROWID            INTEGER     PRIMARY KEY AUTOINCREMENT" +
+            "                                 NOT NULL," +
+            "    YEAR             INTEGER," +
+            "    ABSENCE_ID       INTEGER (4) REFERENCES ABSENCE_TYPES (ABSENCE_ID)," +
+            "    STARTING_BALANCE DOUBLE (2) " +
+            ");" +
+            "CREATE TABLE WARNINGS (" +
+            "    WARNING_ID   INTEGER      UNIQUE" +
+            "                              PRIMARY KEY AUTOINCREMENT" +
+            "                              NOT NULL," +
+            "    WARNING_NAME VARCHAR (20)," +
+            "    ABSENCE_ID   INTEGER (2)," +
+            "    DATE         DATE," +
+            "    CAL_DATE     VARCHAR (10) " +
+            ");" +
+            "COMMIT TRANSACTION;" +
+            "PRAGMA foreign_keys = on; ";      
              
-             stmt = conn.createStatement();
-             stmt.executeUpdate(sql);//ResultSet rs = 
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sql);//ResultSet rs = 
 
-             success = true;
+            success = true;
              
             stmt.close();
             conn.close();
