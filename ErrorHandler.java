@@ -27,23 +27,30 @@ public class ErrorHandler {
     }
     
     public static void JDBCError(SQLException sqlEx) {
-    
-        String error = sqlEx.toString();
-        Alert alert = new Alert(Alert.AlertType.WARNING);
         
-        if (error.contains("SQLITE_CONSTRAINT_UNIQUE")) {
-            alert.setTitle("SQLITE_CONSTRAINT_UNIQUE");
-            alert.setHeaderText("Warning: You are adding to a day with hours planned!");
-            alert.setContentText("There was already an entry in the database\n"
-                    + "for the date being added");
-        } else {
-            alert.setTitle(error);
-            alert.setHeaderText("Warning: Database Error");
-            alert.setContentText(error);
+        // if missing tables (first start), create database tables
+        String error = sqlEx.toString();
+        if (error.contains("no such table")) {
+            Database.createTables();
+        } else {   // else handle other errors
+    
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+
+            if (error.contains("SQLITE_CONSTRAINT_UNIQUE")) {
+                alert.setTitle("SQLITE_CONSTRAINT_UNIQUE");
+                alert.setHeaderText("Warning: You are adding to a day with hours planned!");
+                alert.setContentText("There was already an entry in the database\n"
+                        + "for the date being added");
+            } 
+            else {
+                alert.setTitle(error);
+                alert.setHeaderText("Warning: Database Error");
+                alert.setContentText(error);
+            }
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);           
+            alert.showAndWait();
         }
-        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.setAlwaysOnTop(true);           
-        alert.showAndWait();
     }
      
     public static void classForNameError(Exception cfnError) {
