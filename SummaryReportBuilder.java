@@ -91,7 +91,8 @@ public class SummaryReportBuilder {
         if (leapYear(intYear)) {
             daysInYear = 366;
         }
-
+        
+       
     } // End Constructor
     
     /* public buildReport: Build a report of absences balances for the year  
@@ -125,7 +126,7 @@ public class SummaryReportBuilder {
         Tooltip calcType = new Tooltip("Calculate all hours or submitted hours only");
         calcType.getStyleClass().add("ttgray");
         cboCalcType.setTooltip(calcType);
-
+        
         // add the summaryTable array to the gridpane, while breaking down hours and adding colors and hours tooltips
         bottomReport.setHgap(40);    // Add space between columns
         bottomReport.setVgap(-2);    // Reduce space between rows
@@ -182,15 +183,15 @@ public class SummaryReportBuilder {
             JSONObject record = new JSONObject();   // record of stats for dayform to get
             absenceType = (String)startBalances.get(row).get("Absence_Type");
             summaryTable[row][0] = absenceType;                   // set first table column to absenceType name
-            // get start balance for type
+            // get start balance for type      
             startBalance = (double)startBalances.get(row).get("Starting_Balance");
             summaryTable[row][1] = Double.toString(startBalance);                                                  
             double past_Hours = JsonMatch.getJsonDouble(pastHours,"Absence_Type",absenceType,"Past_Hours");
             summaryTable[row][2] = Double.toString(past_Hours);
             // get future hours for type
-            double future_Hours = JsonMatch.getJsonDouble(futureHours,"Absence_Type",absenceType,"Future_Hours");
+            double future_Hours = JsonMatch.getJsonDouble(futureHours,"Absence_Type",absenceType,"Future_Hours");            
             summaryTable[row][3] = Double.toString(future_Hours);
-            accrualRate = (double)startBalances.get(row).get("Accrual_Rate");
+            accrualRate = (double)startBalances.get(row).get("Accrual_Rate");            
             String accrualType = getAccrualType(accrualRate);  // get the type - accrued, fixed, or not calculated. 
             // set accrued absence type data for summary table and check accrual max
             if (accrualType.equals("Accrued")) {
@@ -447,6 +448,11 @@ public class SummaryReportBuilder {
         return isLeap;
     } // End leapYear
     
+    /* public getCboCalcType
+    *
+    * ==> the year combobox
+    *
+    * This method returns the year combobox to main class for the event hander*/
     public ComboBox<String> getCboCalcType() {
         
         return cboCalcType;
