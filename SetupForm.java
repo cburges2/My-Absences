@@ -57,6 +57,7 @@ public class SetupForm extends Application {
     int typesCounter = 0;   // counts types added for control row positioning
     int typeSize = 0;       // number of types in the db table
     int editAdd = 0;        // number of types added when in edit mode
+    double height = 100;    // height of stage
     
     // create textfield and combobox controls
     TextField[] tfAbsenceType = new TextField[6];   // up to 6 absence types (names)
@@ -87,6 +88,7 @@ public class SetupForm extends Application {
         // Set Current Year for balances insert/update
         final SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
         year = Integer.parseInt(FORMAT_YEAR.format(Calendar.getInstance().getTime())); // current year
+        height = 250;  // initial height of stage
         
     }
     
@@ -101,12 +103,12 @@ public class SetupForm extends Application {
         typeSize = absenceTypes.size();
         if (typeSize > 0) {
             prePopulated = true;
-        }    
-        
-        // Get the refrence to existing absence IDs for updating the table
-        for (int i = 0; i < typeSize; i++) {
-            absenceID[i] = (Integer)absenceTypes.get(i).get("Absence_ID");
-        }        
+            // Get the refrence to existing absence IDs for updating the table
+            for (int i = 0; i < typeSize; i++) {
+                absenceID[i] = (Integer)absenceTypes.get(i).get("Absence_ID");
+            }       
+            setupStage.setHeight(175+(65*typeSize));
+        } else {setupStage.setHeight(240);}   
         
         /* Main pane */
         BorderPane bPane = new BorderPane();
@@ -117,7 +119,7 @@ public class SetupForm extends Application {
         bPane.setPadding(new Insets(5, 5, 5, 5));
         gPane.setAlignment(Pos.TOP_LEFT);
         gPane.setPadding(new Insets(5, 5, 5, 5));
-        gPane.setMinHeight(400);
+        gPane.setMinHeight(100);
         gPane.getStyleClass().add("setuppane");
         gPane.setHgap(20);
         gPane.setVgap(4);
@@ -294,6 +296,7 @@ public class SetupForm extends Application {
                     typesCounter++; 
                 }
                 addDefaultControls(typesCounter);
+                setupStage.setHeight(setupStage.getHeight()+65);
             } catch (Exception add) {
                 ErrorHandler.exception(add, "adding a type");
             }
@@ -575,14 +578,21 @@ private boolean getValues() {
                 lblAbsenceName[i].setTextFill(Color.RED);
             }
         }    
+       
+        // set arrucal rate field for non-accrued types
+        for (int i = 0; i < typeSize; i++) {
+            String balType = cboBalanceType[i].getValue();
+            if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
+            if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}           
+        }
         
         // verify accrued types values
         if (validatedCommon == true) {
-            for (int i = 0; i < typeSize; i++) {   
+            for (int i = 0; i < typeSize; i++) { 
                 int num = i+1;  
                 String balType = cboBalanceType[i].getValue();
-                if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
-                if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
+                //if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
+                //if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
                 if (balType.equals("Accrued Hours")) {
                     if (Validate.isPosDecimal("Accrual Rate " + num,tfAccrualRate[i].getText(),8)) {
                         lblAccrualRate[i].setTextFill(Color.BLACK);    
@@ -685,12 +695,25 @@ private boolean getValues() {
      * This method deletes an absence ID and its reference rows from all tables    */
     private void deleteAbsenceType(int i) {
         
-        // Delete all absences in absences table associated with the type id
-        String sql = "DELETE from absences " + 
+        // get the number instances of the Absence ID in the hours table
+        int count = Database.getHoursCountID(absenceID[i]);
+        
+        // Delete all absences in hours table associated with the type id
+        String sql = "DELETE from hours " + 
         "WHERE Absence_ID = '" + absenceID[i] + "'";
         Database.SQLUpdate(sql);
         
-        // Delete all in starting_balances table associatesd with the type id
+        // remove orphaned Days in Absences that no longer have hours now
+        for (int d = 0; d < count; d++) {
+            sql = "Delete from Absences where date = "
+                 + "(select a.date from absences as a "
+                 + "left join Hours as h "
+                 + "on h.date = a.date "
+                 + "where h.date IS NULL and a.date IS NOT NULL)";
+            Database.SQLUpdate(sql);
+        }
+        
+        // Delete Starting Balance for the type ID from the starting_balances table
         sql = "DELETE from Starting_Balances " + 
         "WHERE Absence_ID = '" + absenceID[i] + "'";
         Database.SQLUpdate(sql);
