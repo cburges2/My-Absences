@@ -20,8 +20,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-//import static myabsences.MyAbsences.myDatabase;
-import static myabsences.MyAbsences.year;
 import org.json.simple.JSONObject;
 
 /**
@@ -36,6 +34,12 @@ public class ListReport extends Application {
     static Stage reportStage = new Stage();
     SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");
     SimpleDateFormat formatCal = new SimpleDateFormat("MM/dd/yyyy");
+    String year = "";
+    
+    public ListReport(String year) {
+        
+        this.year = year;
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
