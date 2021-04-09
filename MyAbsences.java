@@ -41,9 +41,6 @@ public class MyAbsences extends Application {
     // Set Static Current Year for initial calendar display
     final static SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
     static String year = FORMAT_YEAR.format(Calendar.getInstance().getTime()); // current year
-    
-    // Create Window Object for list Report
-    static ListReport listWindow = new ListReport();           // create ListReport object
                
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -51,9 +48,9 @@ public class MyAbsences extends Application {
         Date today = Calendar.getInstance().getTime();
         SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");  
         todayStr = formatDb.format(today); //note: todayStr will not show on past year calendars
-
+        
         Validate.checkData(todayStr, year);    // Create a Warning if data entry is needed
-
+        
         // **** Create Main Border Pane ****  
         BorderPane bPane = new BorderPane();             // Main Layout pane, Top, Middle, Bottom  
         
@@ -103,7 +100,7 @@ public class MyAbsences extends Application {
                }
                if (btnText.equals("Enter Balances")) {
                     try {
-                        BalancesForm balanceWindow = new BalancesForm();    // create BalanceForm object
+                        BalancesForm balanceWindow = new BalancesForm(year);    // create BalanceForm object
                         balanceWindow.start(null);                          // start secondary stage
                     } catch (Exception ex) {
                         ErrorHandler.exception(ex, "entering balances form");
@@ -112,6 +109,7 @@ public class MyAbsences extends Application {
                }
                if (btnText.equals("List View")) {
                     try {
+                        ListReport listWindow = new ListReport(year);           // create ListReport object
                         listWindow.start(null);            // start secondary stage
                     } catch (Exception ex) {
                         ErrorHandler.exception(ex, "entering list view");
@@ -127,7 +125,6 @@ public class MyAbsences extends Application {
                         Logger.getLogger(MyAbsences.class.getName()).log(Level.SEVERE, null, ex);
                     }
                }               
-               
                if (btnText.equals("Exit")) { System.exit(1); }
             }
             catch(Exception ex) {
@@ -140,7 +137,7 @@ public class MyAbsences extends Application {
         cboYear.setOnAction(e->{
             MyAbsences app=new MyAbsences();
             try {
-                year = cboYear.getValue(); // get year from combo box   
+                year = cboYear.getValue(); // get year from combo box  
                 app.start(primaryStage);
             }
             catch(Exception ex) {
@@ -152,11 +149,11 @@ public class MyAbsences extends Application {
         cboCalcType.setOnAction(e->{
             MyAbsences app=new MyAbsences();
             try {
-                calcType = cboCalcType.getValue(); // get type from combo box   
+                calcType = cboCalcType.getValue(); // get type from combo box 
                 app.start(primaryStage);
             }
             catch(Exception ex) {
-                ErrorHandler.exception(ex, "chaning calc type");
+                ErrorHandler.exception(ex, "changing calc type");
             }
         });        
         
