@@ -732,7 +732,9 @@ public class DayEntry extends Application {
     
     /* private insertAbsence
     *
-    * Inserts the absence data from the controls into the database if it is a new entry   */ 
+    * Inserts the absence data from the controls into the database if it is a new entry 
+    * The Absence Day is inserted into Absences, the hours for the day are inserted into
+    * Hours table.  Groups adds iterate through the days for inserts. */ 
     private void insertAbsence() {
          
         if (repeatDays > 1) {group = dayDate;}
@@ -752,6 +754,7 @@ public class DayEntry extends Application {
         Database.SQLUpdate(sql);
 
         // Repeat insert for Add Days
+        System.out.println("repeat days is " + repeatDays);
         int i = 0;
         while (i < repeatDays-1) {
             // increment date
@@ -759,59 +762,60 @@ public class DayEntry extends Application {
             LocalDate date1 = LocalDate.parse(nextDay);
             String dayOfWeek = date1.getDayOfWeek().toString();
             dayDate = nextDay;   
+            
+            // Check if this is already a planned absense day and if workday
+            boolean absenceDay = true;
+            if (JsonMatch.getJsonIndex(absences,"Date",dayDate) == -1) {absenceDay = false;}
+            boolean workDay = true;
+            if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
+            boolean overWrite = false;
+            // validate overwrite or skip and leave as single day
+            if (workDay && absenceDay) {
+                if (Validate.confirmAddToGroup(dayDate)) {
+                    overWrite = true;
+                    // Overwrite: delete the hours that were already planned on the day
+                    sql = "DELETE from Hours " + 
+                    "WHERE Date = '" + dayDate+ "'";
+                    Database.SQLUpdate(sql);
+                } else {i++;}
+            }
+
             // iterate through the hours entries and insert to Hours table
             for (int h = 0; h < numTypeHours; h++) {
-                boolean absenceDay = true;
-                if (JsonMatch.getJsonIndex(absences,"Date",dayDate) == -1) {absenceDay = false;}
-                boolean workDay = true;
-                if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
-                if (workDay && !absenceDay) { 
-                    // insert hours fields to Hours table
+                if ((workDay && !absenceDay) || (overWrite && workDay && absenceDay)) { 
+                    // insert hours fields to Hours table if workday and not a planned day
                     sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
                     "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + decimalHours[h]
                     + "', '" + group + "')";       
-                    Database.SQLUpdate(sql);                    
-                } else if (workDay && absenceDay) {
-                    // insert hours fields to Hours table without any hours
-                    sql = "INSERT into Hours (Date, Absence_ID, Hours, Absence_Group) " +
-                    "VALUES ('" + dayDate + "', '" + absenceID[h] + "', '" + 0 
-                    + "', '" + group + "')";    
                     Database.SQLUpdate(sql); 
                 }
             }
-            // insert common fields to Absences table if no day planned
-            boolean absenceDay = true;   // do not try to insert day if there is a day planned already
-            if (JsonMatch.getJsonIndex(absences,"Date",dayDate) == -1) {absenceDay = false;} 
-            if (absenceDay) {
-                // verify add to group or only day
-                if (Validate.confirmAddToGroup(dayDate)) {
-                    // Update absence day to be part of group
-                    sql = "UPDATE Absences " +
-                    "SET Title = '" + title + "', Submitted = '"
-                    + submitted + "', Notes = '" + notes + "', " +  " Absence_Group = '" + group + "' "
-                    + "WHERE Date = '" + dayDate + "'";
-                    Database.SQLUpdate(sql); 
-                    // add any day hours for the day to the group
-                    sql = "UPDATE Hours " + "SET Absence_Group = '" + group + "' "
-                    + "WHERE Date = '" + dayDate + "'";
-                    Database.SQLUpdate(sql);
-                    
-                    i++;
-                } else {i++;}
-            }
             
-            boolean workDay = true;
-            if ((dayOfWeek.equals("SATURDAY") || dayOfWeek.equals("SUNDAY")) && workWeekends == 0) {workDay = false;}
+            // update  Absences table if overwriting a day
+            if (workDay && absenceDay && overWrite) {
+                // Update absence day to be part of group
+                sql = "UPDATE Absences " +
+                "SET Title = '" + title + "', Submitted = '"
+                + submitted + "', Notes = '" + notes + "', " +  " Absence_Group = '" + group + "' "
+                + "WHERE Date = '" + dayDate + "'";
+                Database.SQLUpdate(sql); 
+                // add any day hours for the day to the group
+                sql = "UPDATE Hours " + "SET Absence_Group = '" + group + "' "
+                + "WHERE Date = '" + dayDate + "'";
+                Database.SQLUpdate(sql);   
+                i++;
+            } 
+            
+            // Insert to Absences table if not overwriting and day is a work day
             if (workDay && !absenceDay) {
                 // insert common fields to Absences table
                 sql = "INSERT into Absences (Date, Title, Submitted, Notes, Absence_Group) " +
                 "VALUES ('" + dayDate + "', '" + title + "', '"
                 + submitted + "', '" + notes + "', '" + group + "')";       
                 Database.SQLUpdate(sql);
-                
                 i++;
             } 
-            
+         
         }
     } // end insertAbsence 
     
