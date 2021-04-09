@@ -78,11 +78,11 @@ public class BalancesForm extends Application {
     DatePicker[] datePicker; 
     
     /* Constructor */
-    public BalancesForm() {
+    public BalancesForm(String year) {
         
         // Set Current Year for balances
         final SimpleDateFormat FORMAT_YEAR = new SimpleDateFormat("yyyy");       
-        year = Integer.parseInt(FORMAT_YEAR.format(Calendar.getInstance().getTime())); // current year
+        this.year = Integer.parseInt(year);
         
     }
 
@@ -327,7 +327,7 @@ public class BalancesForm extends Application {
      * ==> .526
      *
      * Returns the starting balance for an accurued type on Jan 1st based on a
-     * later balance at a later date, based on the accrual rate */
+     * later balance at a later date, based on the accrual rate and used hours */
     private double calcAccruedStart(int index, double rate) {
         
         // get entered value for starting balance
@@ -391,7 +391,7 @@ public class BalancesForm extends Application {
     /* private updateBalances
      *
      * Updates the balances when form is prepopulated, and inserts any 
-     * new absence type balances that were added in settings and set in the control */
+     * new absence type balances that were added in setup and set */
     private void updateBalances () {
  
         // update those existing in database
@@ -414,4 +414,4 @@ public class BalancesForm extends Application {
         }
     } // end method updateBalances
   
-} //End Subclass ListReport
+} //End Subclass SetupForm
