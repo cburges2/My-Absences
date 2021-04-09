@@ -71,15 +71,17 @@ public class TopPaneBuilder {
         
         /* Set leftVBox attributes */
         leftVBox.setMaxHeight(30);
-        leftVBox.setMaxWidth(300);
-        leftVBox.setMinWidth(300);
+        leftVBox.setMaxWidth(310);
+        leftVBox.setMinWidth(310);
         leftVBox.setSpacing(10);
         leftVBox.setPadding(new Insets(5, 0, 0, 5));   // top, right, bottom, left
         leftVBox.getStyleClass().add("bpane");
         leftVBox.setAlignment(Pos.TOP_LEFT);  // center the children in the pane
         
         /* Set warningVBox attributes */
-        warningVBox.setMaxHeight(30);     
+        warningVBox.setMaxHeight(30); 
+        warningVBox.setMinWidth(300);
+        warningVBox.setMaxWidth(300);
         warningVBox.setSpacing(0);
         warningVBox.setPadding(new Insets(5, 5, 0, 5));   // top, right, bottom, left
         warningVBox.getStyleClass().add("bpane");
@@ -129,7 +131,6 @@ public class TopPaneBuilder {
         cboYear.setTooltip(cboYearTip);
         
         // Put the warnings in the warningHBox if current year
-        if (year.equals(thisYear)) {
             ArrayList<String> warnings = Warnings.getWarnings();
             for (int i = 0; i < warnings.size(); i++) {
                 String warningStr = warnings.get(i);
@@ -149,7 +150,6 @@ public class TopPaneBuilder {
                     });
                 }
             }
-        }
         
         /* Set Title attributes */
         Text title = new Text();      // Main Title Text                                                        
@@ -159,9 +159,19 @@ public class TopPaneBuilder {
         title.getStyleClass().add("title");    
         
         // Set the Year combo box attributes
-        if (cboYear.getItems().isEmpty()) {          // Add years from database only if empty (to not add years again on year refresh)  
+        if (cboYear.getItems().isEmpty()) {          // Add years from database only if empty (to not add years again on year refresh) 
             for(int numYear=0; numYear < years.size(); numYear++) {
-                cboYear.getItems().add(years.get(numYear));                                               
+                cboYear.getItems().add(years.get(numYear));  
+            } 
+            int currentYear = Integer.parseInt(thisYear);
+            int nextYear = currentYear + 1;
+            // add this year if not balances yet
+            if (years.indexOf(String.valueOf(thisYear)) == -1) {
+                cboYear.getItems().add(String.valueOf(thisYear));
+            }                 
+            // Add next year if no balances yet
+            if (years.indexOf(String.valueOf(nextYear)) == -1) {
+                cboYear.getItems().add(String.valueOf(nextYear));
             }
         }  
         cboYear.setValue(year);   // Set year combobox to current selected year
