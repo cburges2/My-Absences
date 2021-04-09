@@ -7,7 +7,7 @@ It is coded in JavaFX.
 
 This application uses an SQLite database file, created for the user at start-up. The database contains 6 tables.
 
-![image](https://user-images.githubusercontent.com/66129215/114195583-93a40280-991e-11eb-893a-7c6cd88da7cb.png)
+![image](https://user-images.githubusercontent.com/66129215/114210160-6f9bed80-992d-11eb-9f3b-78c7a3604b3d.png)
 
 ABSENCE_TYPES: Stores the user-defined absence types.  They are given an absence ID, a color, and an Accrual Rate value
 to determine if balances are Accrued, Fixed, or Added-In. If accrued, the table stores a Max Accrual value. 
