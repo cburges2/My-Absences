@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
+
 import org.json.simple.JSONObject;
 
 /**
@@ -20,14 +21,15 @@ import org.json.simple.JSONObject;
 public class Database {
     
    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-   static final String DB_URL = "jdbc:sqlite:c:/sqlite/MyAbsences.db";    
+   static String DB_URL = "jdbc:sqlite:" + System.getProperty("user.dir") + "\\myAbsences.db";
    static final String USER = "username";
-   static final String PASS = "password";  
+   static final String PASS = "password"; 
+   
 
     /* Unused - can create a new Database file */   
-    public static void createNewDatabase(String fileName) {
+    public static void createNewDatabase(String filePath) {
 
-        String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
+        String url = "jdbc:sqlite:" + filePath;
 
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
@@ -39,14 +41,8 @@ public class Database {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+  
     }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        createNewDatabase("test.db");
-    }   
 
     /* public getSettings
    *
@@ -271,7 +267,60 @@ public class Database {
             }//end try */       
 
         return 0;        
-   }    
+   } 
+
+   /* public getHoursCountID
+   *
+   * ==> int - The absence ID to count
+   *
+   * This method returns the number of hours entries for an absence ID   */
+    static public int getHoursCountID(int ID) {
+        
+        Connection conn = null;
+        Statement stmt = null;
+        int count = 0;
+
+        try{    
+            Class.forName("org.sqlite.JDBC");    //Register JDBC driver
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);    //Open a connection
+
+
+            // Execute query
+            String sql = "select count(Absence_ID) as Count " +
+                          "from Hours where Absence_ID = " + ID; 
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                count = rs.getInt("Count");
+            }
+
+            return count;
+
+            }catch(SQLException se){
+               //Handle errors for JDBC
+               ErrorHandler.JDBCError(se);
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               ErrorHandler.classForNameError(e);
+            }finally{
+               //finally block used to close resources
+               try{
+                  if(stmt!=null)
+                     stmt.close();
+               }catch(SQLException se2){
+               }// nothing we can do
+               try{
+                  if(conn!=null)
+                     conn.close();
+               }catch(SQLException se){
+                  ErrorHandler.closeConnectionError(se);
+               }//end finally try
+            }//end try */       
+
+        return 0;        
+   }
     
    /* public getNumRows
    *
@@ -632,7 +681,7 @@ public class Database {
                 record.put("Absence_Type",rs.getString("Absence_Type"));
                 double futureHrs = rs.getDouble("Future_Hours");
                 if (!thisYear.equals(year)) {
-                    record.put("Future_Hours",0);
+                    record.put("Future_Hours",0.0);
                 } else {
                     record.put("Future_Hours",futureHrs);
                 }
@@ -964,6 +1013,126 @@ public class Database {
 
              //Execute query
              String sql = query;        // set from queries loop
+             
+             stmt = conn.createStatement();
+             stmt.executeUpdate(sql);//ResultSet rs = 
+
+             success = true;
+             
+            stmt.close();
+            conn.close();
+
+            }catch(SQLException se){
+                //Handle errors for JDBC
+                ErrorHandler.JDBCError(se);
+                success = false;
+            }catch(Exception e){
+               //Handle errors for Class.forName
+               ErrorHandler.classForNameError(e);
+               success = false;
+             }finally{
+                //finally block used to close resources
+                try{
+                   if(stmt!=null)
+                      stmt.close();
+                }catch(SQLException se2){
+                }// nothing we can do
+                try{
+                   if(conn!=null)
+                      conn.close();
+                }catch(SQLException se){
+                   ErrorHandler.closeConnectionError(se);
+                }//end finally try
+             }//end try
+
+        return success;
+    }   
+    
+    /* createTables
+     *
+     * ==> boolean for success 
+     *  
+     * */
+    static public boolean createTables() {
+        
+        boolean success = false;
+        
+        Connection conn = null;
+        Statement stmt = null;
+        
+        try{
+             //Register JDBC driver
+             Class.forName("org.sqlite.JDBC");
+
+             //Open a connection
+             conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+             //Execute query
+        String sql = "PRAGMA foreign_keys = off;" +
+        "BEGIN TRANSACTION;" +
+        "CREATE TABLE ABSENCE_TYPES (" +
+        "    ABSENCE_ID   INTEGER     UNIQUE" +
+        "                             PRIMARY KEY AUTOINCREMENT" +
+        "                             NOT NULL," +
+        "    ABSENCE_TYPE CHAR (10)," +
+        "    COLOR        CHAR (20)," +
+        "    ACCRUAL_RATE DOUBLE (15)," +
+        "    MAX_ACCRUAL  DOUBLE (2) " +
+        ");" +
+        "CREATE TABLE ABSENCES (" +
+        "    DATE          DATE          UNIQUE" +
+        "                                PRIMARY KEY," +
+        "    TITLE         VARCHAR (50)," +
+        "    SUBMITTED     INTEGER," +
+        "    NOTES         VARCHAR (100)," +
+        "    ABSENCE_GROUP VARCHAR (10)  DEFAULT ''" +
+        "                                NOT NULL" +
+        ");" +
+        "CREATE TABLE HOURS (" +
+        "    ROWID         INTEGER      PRIMARY KEY AUTOINCREMENT," +
+        "    DATE          DATE         REFERENCES ABSENCES (DATE)," +
+        "    ABSENCE_ID    INTEGER      REFERENCES ABSENCE_TYPES (ABSENCE_ID)," +
+        "    HOURS         DOUBLE (10)," +
+        "    ABSENCE_GROUP VARCHAR (10) NOT NULL" +
+        "                               DEFAULT ''" +
+        ");" +
+        "CREATE TABLE SETTINGS (" +
+        "    HOURS_IN_DAY     DOUBLE (3)," +
+        "    DAYS_IN_WEEK     DOUBLE (2)," +
+        "    WORK_WEEKENDS    INTEGER," +
+        "    MAX_WARNING_DAYS INTEGER" +
+        ");" +
+        "" +
+        "INSERT INTO SETTINGS (" +
+        "                         HOURS_IN_DAY," +
+        "                         DAYS_IN_WEEK," +
+        "                         WORK_WEEKENDS," +
+        "                         MAX_WARNING_DAYS" +
+        "                     )" +
+        "                     VALUES (" +
+        "                         8.0," +
+        "                         5.0," +
+        "                         0," +
+        "                         180" +
+        "                     );" +
+        "CREATE TABLE STARTING_BALANCES (" +
+        "    ROWID            INTEGER     PRIMARY KEY AUTOINCREMENT" +
+        "                                 NOT NULL," +
+        "    YEAR             INTEGER," +
+        "    ABSENCE_ID       INTEGER (4) REFERENCES ABSENCE_TYPES (ABSENCE_ID)," +
+        "    STARTING_BALANCE DOUBLE (2) " +
+        ");" +
+        "CREATE TABLE WARNINGS (" +
+        "    WARNING_ID   INTEGER      UNIQUE" +
+        "                              PRIMARY KEY AUTOINCREMENT" +
+        "                              NOT NULL," +
+        "    WARNING_NAME CHAR (20)," +
+        "    ABSENCE_ID   INTEGER (2)," +
+        "    DATE         DATE," +
+        "    CAL_DATE     VARCHAR (10) " +
+        ");" +
+        "COMMIT TRANSACTION;" +
+        "PRAGMA foreign_keys = on; ";      
              
              stmt = conn.createStatement();
              stmt.executeUpdate(sql);//ResultSet rs = 
