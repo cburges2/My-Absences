@@ -212,13 +212,12 @@ public class Validate {
         
         boolean delete = false;
         
-        Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Delete Absence Type Hours");
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Overwriting a Day");
         a.setHeaderText(date + " already has planned hours!\n");
         a.setResizable(true);
-        a.setContentText("Select to make this day part of the group, or to leave it as a single day\n"
-                        + "Note: The new type being added to the day will have zero hours. ");
-        ((Button) a.getDialogPane().lookupButton(ButtonType.OK)).setText("Make Day part of Group");
-        ((Button) a.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Leave the day as is");
+        a.setContentText("Select to either overwrite the day, or to skip it");
+        ((Button) a.getDialogPane().lookupButton(ButtonType.OK)).setText("Overwrite");
+        ((Button) a.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Skip Day");
         Stage stage = (Stage) a.getDialogPane().getScene().getWindow();
         stage.setAlwaysOnTop(true);     
         Optional<ButtonType> result = a.showAndWait();
@@ -274,12 +273,18 @@ public class Validate {
      * also checks if a balance type changed and it now needs a balance entered.  */
     public static void checkData(String todayStr, String year) {
         
+        String todayYear = todayStr.substring(0,4);
+        String dateStr = todayStr;
+        if (!year.equals(todayYear)) {
+            dateStr = year + "-01-01";   // create a valid date for Warnings in off years
+        } 
+
         int numTypes = Database.getNumRows("Absence_Types");
         System.out.println("There are " + numTypes + " Types");
         
         // Set a Setup warning
         if (numTypes == 0) {
-            Warnings.addWarning(0, todayStr, "RUN_SETUP");
+            Warnings.addWarning(0, dateStr, "RUN_SETUP");
         } else {Warnings.removeWarning(0,"RUN_SETUP");}
     
         int startCount = Database.getStartBalanceCount(year);
@@ -287,7 +292,7 @@ public class Validate {
         
         // Set a Enter Balances warning
         if (numTypes > startCount) {
-            Warnings.addWarning(0, todayStr, "ENTER_BALANCES");
+            Warnings.addWarning(0, dateStr, "ENTER_BALANCES");
         } else {Warnings.removeWarning(0,"ENTER_BALANCES");} 
         
         // Check for zero balances on fixed or accrued (due to changing accrual type)
@@ -299,7 +304,7 @@ public class Validate {
                     int absenceID = (int)startBalances.get(i).get("Absence_ID");
                     if ((double)startBalances.get(i).get("Starting_Balance") == 0) {
                         // set warning for zero balance
-                        Warnings.addWarning(absenceID, todayStr, "ZERO_BALANCE");
+                        Warnings.addWarning(absenceID, dateStr, "ZERO_BALANCE");
                     } else {Warnings.removeWarning(absenceID,"ZERO_BALANCE");}
                 } 
             }
