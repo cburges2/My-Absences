@@ -14,6 +14,9 @@ import javafx.stage.Stage;
  */
 public class ErrorHandler {
     
+    /* private exception
+    *
+    * This method handles any general exceptions and report them to the user */
     public static void exception(Exception ex, String action) {
     
         String error = ex.toString();
@@ -26,6 +29,10 @@ public class ErrorHandler {
         alert.showAndWait();
     }
     
+    /* public JDBCError
+    *
+    * This method handles JDBC Erros from the database.  It handles a missing table as 
+    * a trigger to create the database tables at start-up.  It handles a Unique Contraint specifically */
     public static void JDBCError(SQLException sqlEx) {
         
         // if missing tables (first start), create database tables
@@ -38,9 +45,9 @@ public class ErrorHandler {
 
             if (error.contains("SQLITE_CONSTRAINT_UNIQUE")) {
                 alert.setTitle("SQLITE_CONSTRAINT_UNIQUE");
-                alert.setHeaderText("Warning: You are adding to a day with hours planned!");
+                alert.setHeaderText("Warning: You are adding to a table with a unique contraint!");
                 alert.setContentText("There was already an entry in the database\n"
-                        + "for the date being added");
+                        + "for the data being added");
             } 
             else {
                 alert.setTitle(error);
@@ -53,6 +60,9 @@ public class ErrorHandler {
         }
     }
      
+    /* public classForNameError
+    *
+    * This method handles class For Name Errors specifically for the Database methods    */
     public static void classForNameError(Exception cfnError) {
         
         String error = cfnError.toString();
@@ -76,6 +86,9 @@ public class ErrorHandler {
         alert.showAndWait();
     }
     
+    /* public closeConnectionError
+    *
+    * This class handles connection close errors for the Database    */
     public static void closeConnectionError(Exception closeError) {
         
         String error = closeError.toString();
