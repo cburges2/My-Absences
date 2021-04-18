@@ -26,7 +26,7 @@ import org.json.simple.JSONObject;
  *
  * @author Christopher Burgess
  * This class is a pop-up report to list all absences and the day data
- * for the year in the calendar. 
+ * for the current year in the calendar. 
  */
 //Begin Subclass ListReport
 public class ListReport extends Application {
@@ -36,6 +36,9 @@ public class ListReport extends Application {
     SimpleDateFormat formatCal = new SimpleDateFormat("MM/dd/yyyy");
     String year = "";
     
+    /* Constructor
+    *
+    * Sets the year in the calander */
     public ListReport(String year) {
         
         this.year = year;
@@ -77,8 +80,7 @@ public class ListReport extends Application {
                     label.setText(headers[col]);
                     label.getStyleClass().add("summaryheader");
                 }    
-                if (row > 0) {
-                    
+                if (row > 0) { 
                     switch (col) {  // build the column data for each row
                         case 0:
                             Date date = formatDb.parse((String)(absences.get(row-1).get("Date")));
@@ -138,7 +140,6 @@ public class ListReport extends Application {
         btnExit.setMaxWidth(50);
         HBox.setMargin(btnExit, new Insets(5, 5, 5, 5));
         hBoxB.getChildren().addAll(btnExit);
-
         
         /* set panes in stage and show stage */
         bPane.setCenter(scrollpane);
@@ -155,8 +156,10 @@ public class ListReport extends Application {
     
     /* private getHoursMin 
     *
+    * double decimalHours - The hours value in decimal format
+    * ==> A string representing the decimal hours in Hours and Minutes 
     *
-    */
+    * This method returns a human readable hours and minutes string from decimal hours */
     private String getHoursMinutes (double decimalHours) {
         
         int hours = (int)decimalHours;
@@ -171,7 +174,7 @@ public class ListReport extends Application {
     } // End getHoursMin    
     
     /**
-     * Method to close stage and return to main without accepting data
+     * Method to close stage and return to main 
      */
     private static class exitHandler implements EventHandler<ActionEvent> {
 
