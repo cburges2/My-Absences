@@ -228,7 +228,8 @@ public class SummaryReportBuilder {
         }
 
         // move array elements and add headers to top of summary Table
-        String[] headers = new String[]{"","Beginning Balance      ","Used                   ","Planned                ","Available Today        ","Remaining              "};
+        String[] headers = new String[]{"              ","Beginning Balance             ","Used                           ","Planned                        ",
+            "Available Today                ","Remaining                      "};
         for (int row = numRows; row > 0; row--) {
             for (int col = 0; col < numColumns; col++) {
                 summaryTable[row][col] = summaryTable[row-1][col]; // move exiting array up on element
@@ -372,7 +373,7 @@ public class SummaryReportBuilder {
     *
     * accrualType - type data from the db table
     *
-    * Example"
+    * Example:
     * getaccrualType(0)
     * => "Fixed"
     *
