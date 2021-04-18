@@ -29,6 +29,7 @@ import javafx.scene.control.ComboBox;
 public class MyAbsences extends Application {
     
     // variables
+    String version = "1.0.0 beta";
     static ComboBox<String> cboYear = new ComboBox<>(); // year combo
     static ComboBox<String> cboCalcType = new ComboBox<>();
     static Button[][] btnMonth = new Button[12][42];  // days in month button array (month, day)
@@ -202,7 +203,7 @@ public class MyAbsences extends Application {
         primaryStage.setTitle("My Absences");
         primaryStage.setScene(scene);   // set stage
         primaryStage.setHeight(900);    // main window height
-        primaryStage.setWidth(1100);    // main window width
+        primaryStage.setWidth(1150);    // main window width
         primaryStage.show();            // show the GUI
          
     } // ** End start ** 
