@@ -57,9 +57,9 @@ public class Settings extends Application {
     Button btnSettingsCancel = new Button("Cancel");
     Button btnSettingsUpdate = new Button("Update");
     
+    // Gridpane for the form
     GridPane gPane = new GridPane();
       
-    
 @Override
     public void start(Stage primaryStage) throws Exception {
         
