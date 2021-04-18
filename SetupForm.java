@@ -82,7 +82,9 @@ public class SetupForm extends Application {
     
     GridPane gPane = new GridPane();
     
-    /* constructor */
+    /* constructor 
+    *
+    * Sets the current year and initial stage height */
     public SetupForm() {
         
         // Set Current Year for balances insert/update
@@ -444,11 +446,11 @@ public class SetupForm extends Application {
             GridPane.setColumnSpan(btnAddType, 8);
             gPane.getChildren().add(btnAddType);  
         }
-        if (editAdd > 0) {  // types added during edit mode
-            // set focus on new control group
-            tfAbsenceType[num].requestFocus();
-                rowCounter+=3;
-                typesCounter++; 
+        // Increase the row counter and types counter if a type was added
+        if (editAdd > 0) {          // types added during edit mode
+            tfAbsenceType[num].requestFocus();  // set focus on new control group
+            rowCounter+=3;          // each group of controls takes two lines
+            typesCounter++;         // increse the number of types in the form
         }
     } // end addDefaultControls
     
@@ -542,9 +544,9 @@ public class SetupForm extends Application {
     *
     * ==> valided flag for all data validated and ready
     * 
-    * This method gets the values from the controls to variable arrays, to insert into
-    * or update the db table Absence_Types if all fields pass verification.    */
-private boolean getValues() {
+    * This method gets the values from the controls to variable arrays after they 
+    * pass validation, to insert into or update the db table Absence_Types */
+    private boolean getValues() {
         
         boolean validated = false;
         boolean validatedCommon = false;
@@ -591,8 +593,6 @@ private boolean getValues() {
             for (int i = 0; i < typeSize; i++) { 
                 int num = i+1;  
                 String balType = cboBalanceType[i].getValue();
-                //if (balType.equals("Fixed Hours")) {accrualRate[i] = "0";}
-                //if (balType.equals("Add-In Hours")) {accrualRate[i] = "-1";}
                 if (balType.equals("Accrued Hours")) {
                     if (Validate.isPosDecimal("Accrual Rate " + num,tfAccrualRate[i].getText(),8)) {
                         lblAccrualRate[i].setTextFill(Color.BLACK);    
@@ -704,6 +704,7 @@ private boolean getValues() {
         Database.SQLUpdate(sql);
         
         // remove orphaned Days in Absences that no longer have hours now
+        // query runs once for each absence type ID that was removed from the Hours table
         for (int d = 0; d < count; d++) {
             sql = "Delete from Absences where date = "
                  + "(select a.date from absences as a "
