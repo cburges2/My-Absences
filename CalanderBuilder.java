@@ -22,7 +22,11 @@ import org.json.simple.JSONObject;
 /**
  *
  * @author Christopher Burgess
- */
+ * 
+ * This class builds the calendar grid pane for the main screen.  It is composed 
+ * of month grid panes that are built out of buttons for the dates.  A get method 
+ * allows the main class to get the button array of all the year days, so that 
+ * the control handlers can act on a day button being pushed. */
 public class CalanderBuilder {
     
     // Set calander build variables
