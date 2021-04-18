@@ -35,7 +35,7 @@ import org.json.simple.JSONObject;
  * @author Christopher Burgess
  * 
  * This class provides a form for the user to enter or edit starting balances for the 
- * absence types they defined in Setup  */
+ * absence types they defined in Setup (Add-In types have no start balances and do not show)  */
 public class BalancesForm extends Application {
     
     SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd"); // db format 
@@ -47,15 +47,17 @@ public class BalancesForm extends Application {
     
     /* Instantiate new stage object */
     static Stage startBalanceStage = new Stage();
+    
+    // Arraylists used for data from db
     ArrayList<JSONObject> absenceTypes = new ArrayList<>();
     ArrayList<JSONObject> startBalances = new ArrayList<>();
     ArrayList<JSONObject> pastHours = new ArrayList<>();
     
-    int typeSize = 0;      // size of absence types
-    int balancesSize = 0;  // number of balances in table for this year
-    int year = 0;      // current year. 
-    int controlCount = 0;
-    boolean prePopulate = false;
+    int typeSize = 0;       // size of absence types
+    int balancesSize = 0;   // number of balances in table for this year
+    int year = 0;           // current year. 
+    int controlCount = 0;   // number of controls in the form
+    boolean prePopulate = false;   // true if database already had start balances for the year
     
     // text fields for entering start balance
     TextField[] tfTypeBalance = new TextField[6];   // up to 6 absence types (balances)
@@ -63,7 +65,7 @@ public class BalancesForm extends Application {
     // text for title
     Text balancesTitle = new Text("Start Balances");
     
-    // labels
+    // labels for the absence types to enter balances for
     Label[] lblAbsenceName = new Label[6];
     
     // buttons
@@ -71,13 +73,15 @@ public class BalancesForm extends Application {
     Button btnBalancesUpdate = new Button("Update");
     Button btnBalancesSave = new Button("Save");
 
-    String[] startingBalances;
+    String[] startingBalances;   // for storing the starting balances
     
-    GridPane gPane = new GridPane();
+    GridPane gPane = new GridPane();  // main pane
     
-    DatePicker[] datePicker; 
+    DatePicker[] datePicker;  // used for calcualating accrued start from later date
     
-    /* Constructor */
+    /* Constructor 
+    *
+    * Sets the year that was in the calendar, and sets the current year  */
     public BalancesForm(String year) {
         
         // Set Current Year for balances
@@ -215,8 +219,8 @@ public class BalancesForm extends Application {
         Scene startBalancesScene = new Scene(bPane);
         startBalancesScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         startBalanceStage.setAlwaysOnTop(true);
-        startBalanceStage.setMaxHeight(700);
-        startBalanceStage.setMaxHeight(550);
+        startBalanceStage.setMaxHeight(300);
+        startBalanceStage.setMinHeight(300);
         startBalanceStage.setMinWidth(500);
         startBalanceStage.setTitle("Enter Starting Balances");
         startBalanceStage.setScene(startBalancesScene);
@@ -273,7 +277,8 @@ public class BalancesForm extends Application {
     /* private putValues
     *
     * This puts the values from the database into the controls if balances have
-    * already been entered. Allows user to then edit existing data. */
+    * already been entered, pre-populating the form with data. Users can then edit existing
+    * and save it which will update the data in the table. */
     private void putValues() {
         
         // set data in the controls that was already saved 
@@ -289,8 +294,9 @@ public class BalancesForm extends Application {
     *
     * ==> true if validated
     * 
-    * This method gets the values from the controls to variable arrays, to insert into
-    * or update the db table Starting_Balances     */
+    * This method gets the values from the controls and validates them before
+    * adding the values to the variable arrays. Data can then be inserted into
+    * or updated in the db table Starting_Balances    */
     private boolean getValues() {
         
         boolean validated = false;
@@ -327,7 +333,7 @@ public class BalancesForm extends Application {
      * ==> .526
      *
      * Returns the starting balance for an accurued type on Jan 1st based on a
-     * later balance at a later date, based on the accrual rate and used hours */
+     * later balance at a later date, based on the accrual rate and any used hours */
     private double calcAccruedStart(int index, double rate) {
         
         // get entered value for starting balance
@@ -376,7 +382,7 @@ public class BalancesForm extends Application {
     /* private insertBalances
      *
     * Inserts the balances in the controls into the starting_Balances table
-    * when the form was not prepopulated*/
+    * for when the form was not prepopulated */
     private void insertBalances () {
         
         for (int i = 0; i < typeSize; i++) {  
@@ -391,7 +397,7 @@ public class BalancesForm extends Application {
     /* private updateBalances
      *
      * Updates the balances when form is prepopulated, and inserts any 
-     * new absence type balances that were added in setup and set */
+     * new absence type balances that were added in setup  */
     private void updateBalances () {
  
         // update those existing in database
