@@ -15,8 +15,8 @@ import org.json.simple.JSONObject;
  *
  * @author Christopher Burgess
  * This class contains static methods to validate data inputs
- * Gives information and gets confirmation from the user through alert dialogues.
- */
+ * Gives information and gets confirmation from the user through alert dialogues,
+ * or through the main screen message window area. */
 public class Validate {
     
     /* public textSize
@@ -143,7 +143,6 @@ public class Validate {
                             Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
             stage.setAlwaysOnTop(true);
             stage.showAndWait();
-            //alert.showAndWait(); 
             pass = false;
         } else {
             if (Double.valueOf(decimal) > max) {
@@ -155,7 +154,6 @@ public class Validate {
                 Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
                 stage.setAlwaysOnTop(true);
                 stage.showAndWait();
-                //alert.showAndWait(); 
                 pass = false;            
             }
         }
@@ -268,9 +266,11 @@ public class Validate {
     /* checkData
      *
      * todayStr - Today's date in DB format
+     * year - The year we are checking the data for
      *
-     * Checks if Setup has been run and if each absence type has a starting balance for this year
-     * also checks if a balance type changed and it now needs a balance entered.  */
+     * Checks if Setup has been run and if each absence type has a starting balance for the year
+     * Also checks if a balance type changed and it now needs a balance entered.  
+     * Alerts user using a warning to appear in message window on main screen   */
     public static void checkData(String todayStr, String year) {
         
         String todayYear = todayStr.substring(0,4);
