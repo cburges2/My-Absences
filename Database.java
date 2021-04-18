@@ -327,7 +327,7 @@ public class Database {
    * table - The table name to get the size for
    * ==> int - The number of rows in the table (int)
    *
-   * This method returns the number of rows ina table   */
+   * This method returns the number of rows in a table   */
     static public int getNumRows(String table) {
         
         Connection conn = null;
