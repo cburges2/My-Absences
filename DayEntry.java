@@ -63,6 +63,7 @@ public class DayEntry extends Application {
     String group = "";          // absence group for multiple edits
     int repeatDays = 0;         // Days to repeat the absence
     int[] absenceID = new int[6];           // the id of the absence type
+    int[] previousID = new int[6];           // the id of the absence type before being changed.   
     boolean prePopulated = false;           // flag for day already having data on load
     boolean inGroup = false;                // flag for day is part of a group
     double[] currentAvailable = new double[6]; // used for verification that hours are available now
@@ -883,9 +884,9 @@ public class DayEntry extends Application {
         
         // update existing hours in Hours table that are part of the group
         for (int h = 0; h < updateNum; h++) {
-            String sql = "UPDATE Hours " + "SET Absence_ID = '"  //Date = '" + dayDate + "', 
+            String sql = "UPDATE Hours " + "SET Absence_ID = '"   
             + absenceID[h] + "', Hours = '" + decimalHours[h] + "' "
-            + "WHERE Absence_Group = '" + group + "' and Absence_ID = '" + absenceID[h] +  "'";
+            + "WHERE Absence_Group = '" + group + "' and Absence_ID = '" + previousID[h] +  "'"; 
             Database.SQLUpdate(sql);
         }
 
@@ -1035,6 +1036,7 @@ public class DayEntry extends Application {
          
         for (int i = 0; i < numTypeHours; i++) {
             absenceType[i] = (cboType[i].getValue());
+            previousID[i] = absenceID[i];   // if type was changed, need to know group ID to update
             absenceID[i] = getAbsenceTypeID(absenceType[i]);
             hours[i] = (int)cboHours[i].getValue();
             minutes[i] = (int)cboMinutes[i].getValue();
