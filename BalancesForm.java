@@ -337,22 +337,23 @@ public class BalancesForm extends Application {
     private double calcAccruedStart(int index, double rate) {
         
         // get entered value for starting balance
-        double balanceValue = Double.valueOf(tfTypeBalance[index].getText());      
+        double balanceValue = Double.valueOf(tfTypeBalance[index].getText());  
 
         // get chosen date from the control
-        LocalDate targetDate = datePicker[index].getValue();     
+        LocalDate targetDate = datePicker[index].getValue(); 
                 
         // calculate days from Jan 1st to date in control
 	LocalDate dateBefore = LocalDate.of(year, 1, 1);
 	long daysBetween = ChronoUnit.DAYS.between(dateBefore, targetDate);
         double numDays = (double)daysBetween;
         
-        // get past hours used for type
+        // get past type hours based on datepicker date from first of year
+        ArrayList<JSONObject> pastDateHours = Database.getPastHours(targetDate.toString(),String.valueOf(year) , "Submitted Only"); //
         String absenceType = lblAbsenceName[index].getText();
-        double pastTypeHours = JsonMatch.getJsonDouble(pastHours, "Absence_Type", absenceType, "Past_Hours");
+        double pastTypeHours = JsonMatch.getJsonDouble(pastDateHours, "Absence_Type", absenceType, "Past_Hours");
         
         // get rate on Jan 1st accounting for past hours on calendar
-        double start = (balanceValue - (rate * numDays)) - pastTypeHours;
+        double start = (balanceValue - (rate * numDays) + pastTypeHours);  
         
         return start;
         
