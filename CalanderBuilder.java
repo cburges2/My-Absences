@@ -45,8 +45,10 @@ public class CalanderBuilder {
     int btnIter = 0;          // incrementor for the button number in a month in the button 2d array 
     ArrayList<JSONObject> absences = new ArrayList<>();
     ArrayList<JSONObject> warnings = new ArrayList<>();
+    JSONObject settings = new JSONObject();
     String buildDate;         // the date we are building in the month calendar
     static Button[][] btnMonth = new Button[12][42];  // days in month button array (month, day)
+    int workWeekends = 0;
     
     /* Constructor
     * year sets the current year being viewed in the calendar
@@ -58,6 +60,8 @@ public class CalanderBuilder {
         this.year = year;
         absences = Database.getAllAbsences(year);
         warnings = Database.getWarnings();
+        settings = Database.getSettings();          // for weekend coloring
+        workWeekends = (int)settings.get("Work_Weekends");
         // Set Today's date as a string in db format            
         Date today = Calendar.getInstance().getTime();
         SimpleDateFormat formatDb = new SimpleDateFormat("yyyy-MM-dd");  
@@ -132,7 +136,7 @@ public class CalanderBuilder {
                             String calDate = dateString;
                             if (calDate.length() == 1 && !calDate.equals(" ")) {calDate = "0" + calDate;}
                             buildDate = year + "-" + calMonth + "-" + calDate;
-                            if (dayColumn == 0 || dayColumn == 6) {
+                            if ((dayColumn == 0 || dayColumn == 6) && workWeekends == 0) {
                                 btnMonth[buildMonth][btnIter].getStyleClass().add("btnweekend"); // grey date number for weekends
                             }
                             String toolTipText = ""; 
