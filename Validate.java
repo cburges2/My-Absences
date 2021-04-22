@@ -105,18 +105,18 @@ public class Validate {
     * Validates that the string is not empty */  
     public static boolean notEmpty(String fieldName, String checkString) {
 
-            if (checkString.length() == 0) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Warning");
-                alert.setHeaderText("No " + fieldName + " was Entered!");
-                alert.setContentText("You need to select or enter a value\n"
-                        + "Please try again.");
-                Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.setAlwaysOnTop(true);
-                alert.showAndWait(); 
-                return false;
-            } else {return true;}
-            
+        if (checkString.length() == 0) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText("No " + fieldName + " was Entered!");
+            alert.setContentText("You need to select or enter a value\n"
+                    + "Please try again.");
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.setAlwaysOnTop(true);
+            alert.showAndWait(); 
+            return false;
+        } else {return true;}
+
     } // end notEmpty
     
     /* public isPosDecimal
