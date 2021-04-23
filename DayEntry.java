@@ -340,11 +340,11 @@ public class DayEntry extends Application {
         Scene dayFormScene = new Scene(bPane); 
         dayEntryStage.setAlwaysOnTop(true);
         dayEntryStage.setMinHeight(475);
-        dayEntryStage.setMaxWidth(375);
-        dayEntryStage.setMinWidth(375);
         dayFormScene.getStylesheets().add(getClass().getResource("StyleSheet.css").toExternalForm());
         dayEntryStage.setTitle("Day Hours Entry");
         dayEntryStage.setScene(dayFormScene);
+        dayEntryStage.setMaxWidth(375);
+        dayEntryStage.setMinWidth(375);         
         dayEntryStage.show();   
         
         // ******** Controls Event Handlers *************
